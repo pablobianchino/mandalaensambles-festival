@@ -157,7 +157,7 @@
             </ul>
 
             <div class="sidebar-footer">
-                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta1.1</div>
+                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta1.2</div>
             </div>
         </aside>
 
@@ -1564,34 +1564,41 @@
                                 <h4 style="margin:0 0 12px 0; font-size:14px; font-weight:800; color:var(--accent-blue);">
                                     💡 Liquidación y Ganancia Real del Festival
                                 </h4>
-                                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:14px;">
+                                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap:12px;">
                                     
                                     <!-- 1. Ingresos Netos Festival -->
                                     <div style="background:#ffffff; padding:14px; border-radius:12px; border:1px solid var(--border-color);">
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">1. Ingresos Netos Festival</span>
-                                        <div style="font-size:1.5em; font-weight:800; color:var(--accent-teal); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-ingresos-tot">$ 451.029</div>
-                                        <span style="font-size:11px; color:var(--text-muted);" id="resumen-card-sub-ingresos">Online ($420k) + Ventas Especiales ($31k)</span>
+                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">1. Ingresos Netos Entradas</span>
+                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-teal); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-ingresos-tot">+$ 0</div>
+                                        <span style="font-size:11px; color:var(--text-muted);" id="resumen-card-sub-ingresos">Taquilla ($ 0) + Ventas Esp. ($ 0)</span>
                                     </div>
 
-                                    <!-- 2. Gastos Operativos -->
+                                    <!-- 2. Ingresos por Incumplimientos de Entradas -->
                                     <div style="background:#ffffff; padding:14px; border-radius:12px; border:1px solid var(--border-color);">
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">2. Gastos Operativos</span>
-                                        <div style="font-size:1.5em; font-weight:800; color:var(--accent-red); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-gastos-tot">$ 75.000</div>
+                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">2. Cobros Incumplimientos</span>
+                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-incumplimientos-tot">+$ 0</div>
+                                        <span style="font-size:11px; color:var(--text-muted);" id="resumen-card-sub-incumplimientos">Pagos de cupo entradas alumnos</span>
+                                    </div>
+
+                                    <!-- 3. Gastos Operativos -->
+                                    <div style="background:#ffffff; padding:14px; border-radius:12px; border:1px solid var(--border-color);">
+                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">3. Gastos Operativos</span>
+                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-red); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-gastos-tot">-$ 0</div>
                                         <span style="font-size:11px; color:var(--text-muted);">Fletes, sonido extra, staff</span>
                                     </div>
 
-                                    <!-- 3. Cobertura Neta a Pagar -->
+                                    <!-- 4. Cobertura Neta a Pagar -->
                                     <div style="background:#ffffff; padding:14px; border-radius:12px; border:1px solid var(--border-color);">
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">3. Cobertura Neta Escuela</span>
-                                        <div style="font-size:1.5em; font-weight:800; color:var(--accent-amber); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-cobertura-tot">$ 140.000</div>
-                                        <span style="font-size:11px; color:var(--text-muted);">$300k prod. - $160k pagado artistas</span>
+                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">4. Cobertura Neta Escuela</span>
+                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-amber); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-cobertura-tot">-$ 0</div>
+                                        <span style="font-size:11px; color:var(--text-muted);" id="resumen-card-sub-cobertura">Presupuesto prod. - aporte bandas</span>
                                     </div>
 
-                                    <!-- 4. Ganancia Real Neta -->
+                                    <!-- 5. Ganancia Real Neta -->
                                     <div style="background:#f0fdf4; padding:14px; border-radius:12px; border:2px solid #86efac;">
-                                        <span style="font-size:10.5px; font-weight:800; color:#166534; text-transform:uppercase;">4. Ganancia Real Escuela</span>
-                                        <div style="font-size:1.7em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-ganancia-tot">$ 236.029</div>
-                                        <span style="font-size:11px; font-weight:700; color:#15803d;">Rentabilidad líquida final</span>
+                                        <span style="font-size:10.5px; font-weight:800; color:#166534; text-transform:uppercase;">5. Ganancia Real Escuela</span>
+                                        <div style="font-size:1.6em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-ganancia-tot">+$ 0</div>
+                                        <span style="font-size:11px; font-weight:700; color:#15803d;" id="resumen-card-sub-ganancia">Rentabilidad líquida final</span>
                                     </div>
                                 </div>
                             </div>
@@ -1787,6 +1794,41 @@
                                             Total $ Ventas Especiales (100% Escuela):
                                         </span>
                                         <strong style="font-family:'Geist Mono'; font-size:1.3em; color:var(--accent-teal);" id="txt-total-ventas-especiales">$ 0</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. RESUMEN DE INGRESOS POR PAGO DE INCUMPLIMIENTOS DE ENTRADAS -->
+                            <div class="content-card" style="margin-top:20px;">
+                                <div class="card-header-flex">
+                                    <div>
+                                        <h3 class="card-title">💳 3. Ingresos por Pago de Incumplimientos de Entradas (Alumnos / Bandas)</h3>
+                                        <span style="font-size:12px; color:var(--text-muted);">
+                                            Resumen automático de los cobros registrados por cupos de entradas no cubiertos. Estos montos ingresan 100% a la escuela y se suman a la ganancia real del festival.
+                                        </span>
+                                    </div>
+                                    <button type="button" class="btn-app btn-secondary" onclick="switchFinanzasTab('cobros')">
+                                        Ir a Cobros & Cuotas →
+                                    </button>
+                                </div>
+
+                                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-top:10px;">
+                                    <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0;">
+                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Total Deuda Generada (Incumplimientos)</span>
+                                        <div style="font-size:1.4em; font-weight:800; color:var(--text-main); font-family:'Geist Mono'; margin:4px 0;" id="txt-inc-resumen-total-deuda">$ 0</div>
+                                        <span style="font-size:11px; color:var(--text-muted);" id="txt-inc-resumen-sub-deuda">Diferencia de cupos contractuales</span>
+                                    </div>
+
+                                    <div style="background:#eff6ff; padding:14px; border-radius:12px; border:1px solid #bfdbfe;">
+                                        <span style="font-size:10.5px; font-weight:800; color:#1e40af; text-transform:uppercase;">Cobrado por Incumplimientos (Ingresa a Caja)</span>
+                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin:4px 0;" id="txt-inc-resumen-cobrado">+$ 0</div>
+                                        <span style="font-size:11px; color:#1d4ed8; font-weight:600;" id="txt-inc-resumen-sub-cobrado">Sin pagos registrados aún</span>
+                                    </div>
+
+                                    <div style="background:#fffbeb; padding:14px; border-radius:12px; border:1px solid #fde68a;">
+                                        <span style="font-size:10.5px; font-weight:800; color:#92400e; text-transform:uppercase;">Pendiente de Cobro (Incumplimientos)</span>
+                                        <div style="font-size:1.4em; font-weight:800; color:var(--accent-amber); font-family:'Geist Mono'; margin:4px 0;" id="txt-inc-resumen-pendiente">$ 0</div>
+                                        <span style="font-size:11px; color:#b45309;" id="txt-inc-resumen-sub-pendiente">Saldos pendientes de alumnos</span>
                                     </div>
                                 </div>
                             </div>
@@ -2411,6 +2453,31 @@
                 </div>
 
                 <div id="contenedor-campos-cuotas-deuda">
+                    <!-- CONFIGURACIÓN MANUAL DE VALOR DE ENTRADA / MONTO REAL DE DEUDA -->
+                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #cbd5e1; margin-bottom:14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span style="font-size:11.5px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
+                                🎯 Valor de Entrada / Monto Real por Incumplimiento
+                            </span>
+                            <button type="button" class="btn-app btn-secondary" style="font-size:10.5px; padding:2px 8px;" onclick="restablecerMontoOficialDeudaModal()" title="Volver a calcular con el precio oficial de entrada del festival">
+                                ↺ Valor Oficial
+                            </button>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label style="font-size:11px;">Valor Unitario Entrada ($)</label>
+                                <input type="number" id="modal-deuda-valor-entrada" class="form-control" style="font-family:'Geist Mono'; font-weight:800; color:var(--accent-blue);" min="0" step="500" oninput="recalcularMontoDesdeValorEntradaModal(this.value)">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label style="font-size:11px;">Monto Total a Pagar ($)</label>
+                                <input type="number" id="modal-deuda-monto-input" class="form-control" style="font-family:'Geist Mono'; font-weight:800; color:var(--accent-red);" min="0" step="500" oninput="recalcularValorEntradaDesdeMontoModal(this.value)">
+                            </div>
+                        </div>
+                        <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:6px;">
+                            Podés editar el valor de entrada o el monto final real abonado/pactado por este alumno (ej. si pagó $ 18.000 en lugar del valor base).
+                        </span>
+                    </div>
+
                     <div class="form-group">
                         <label>Modalidad de Pago Pactada</label>
                         <select id="modal-deuda-modalidad" class="form-control" onchange="actualizarPrevisualizacionCuotasDeuda()">
@@ -4815,7 +4882,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta1.1";
+        const APP_VERSION = "beta1.2";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -7613,6 +7680,8 @@
                     const metricas = calcularBalanceGeneralFestival(fId, fest);
                     const bruto = metricas.brutoTotal;
                     const neta70 = metricas.recaudacionNeta;
+                    const ingEntradas = metricas.recaudacionEntradas !== undefined ? metricas.recaudacionEntradas : neta70;
+                    const ingIncumplimientos = metricas.ingresosIncumplimientos || 0;
                     const gastosOp = metricas.gastosOperativos;
                     const gastosCob = metricas.gastosCobertura;
                     const neto = metricas.gananciaEscuela;
@@ -7637,8 +7706,8 @@
                         <td style="font-family:'Geist Mono'; font-weight:700; color:#0f172a;" onclick="abrirDetalleFinanzasFestival('${fId}')">${fechaDisplay}</td>
                         <td onclick="abrirDetalleFinanzasFestival('${fId}')"><strong style="color:var(--accent-blue); font-size:13.5px;">${(fest.nombre || 'FESTIVAL').toUpperCase()}</strong></td>
                         <td style="font-family:'Geist Mono'; font-weight:600; color:var(--accent-teal); text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">$ ${neta70.toLocaleString('es-AR')}</td>
-                        <td style="font-family:'Geist Mono'; font-weight:500; color:var(--accent-red); text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">$ ${gastosOp.toLocaleString('es-AR')}</td>
-                        <td style="font-family:'Geist Mono'; font-weight:500; color:${gastosCob > 0 ? 'var(--accent-purple)' : 'var(--accent-muted)'}; text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">$ ${gastosCob.toLocaleString('es-AR')}</td>
+                        <td style="font-family:'Geist Mono'; font-weight:500; color:var(--accent-red); text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">${gastosOp > 0 ? `-$ ${gastosOp.toLocaleString('es-AR')}` : '$ 0'}</td>
+                        <td style="font-family:'Geist Mono'; font-weight:500; color:${gastosCob > 0 ? 'var(--accent-purple)' : 'var(--accent-muted)'}; text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">${gastosCob > 0 ? `-$ ${gastosCob.toLocaleString('es-AR')}` : '$ 0'}</td>
                         <td style="font-family:'Geist Mono'; font-weight:700; color:${colorGanancia}; font-size:13.5px; text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">${signoGanancia}${Math.abs(neto).toLocaleString('es-AR')}</td>
                         <td style="text-align:center;" onclick="abrirDetalleFinanzasFestival('${fId}')"><span class="pill-status ${estadoClass}">${fest.estado || 'Finalizado'}</span></td>
                     `;
@@ -7660,18 +7729,22 @@
                                         Abrir Ficha Completa →
                                     </button>
                                 </div>
-                                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
+                                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;">
                                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
-                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Ingresos Netos Festival</div>
-                                        <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal); margin-top:2px;" class="sub-fin-ingresos">$ ${neta70.toLocaleString('es-AR')}</div>
+                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Ingresos Netos Entradas</div>
+                                        <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal); margin-top:2px;" class="sub-fin-ingresos">+$ ${ingEntradas.toLocaleString('es-AR')}</div>
+                                    </div>
+                                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Cobros Incumplimientos</div>
+                                        <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-blue); margin-top:2px;" class="sub-fin-incumplimientos">${ingIncumplimientos > 0 ? `+$ ${ingIncumplimientos.toLocaleString('es-AR')}` : '$ 0'}</div>
                                     </div>
                                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
                                         <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Gastos Operativos</div>
-                                        <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red); margin-top:2px;" class="sub-fin-gastos-op">$ ${gastosOp.toLocaleString('es-AR')}</div>
+                                        <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red); margin-top:2px;" class="sub-fin-gastos-op">${gastosOp > 0 ? `-$ ${gastosOp.toLocaleString('es-AR')}` : '$ 0'}</div>
                                     </div>
                                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
                                         <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Gastos Cobertura Escuela</div>
-                                        <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-purple); margin-top:2px;" class="sub-fin-gastos-cob">$ ${gastosCob.toLocaleString('es-AR')}</div>
+                                        <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-purple); margin-top:2px;" class="sub-fin-gastos-cob">${gastosCob > 0 ? `-$ ${gastosCob.toLocaleString('es-AR')}` : '$ 0'}</div>
                                     </div>
                                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
                                         <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Ganancia Neta Escuela</div>
@@ -7742,7 +7815,7 @@
             );
 
             let brutoTotal = Number(fest?.recaudacionBruta) || 0;
-            let recaudacionNeta = Math.round(brutoTotal * 0.7);
+            let recaudacionEntradas = Math.round(brutoTotal * 0.7);
 
             if (tieneDatosIngresos && fin) {
                 const pPrev = Number(ent.preventa) || 0;
@@ -7770,8 +7843,14 @@
                 const totEsp = (fin.ventasEspeciales || []).reduce((acc, v) => acc + (Math.max(0, parseFloat(v.monto || 0) || 0)), 0);
 
                 brutoTotal = brutoTaq + totEsp;
-                recaudacionNeta = netoTaq + totEsp;
+                recaudacionEntradas = netoTaq + totEsp;
             }
+
+            const incRes = (typeof calcularIngresosIncumplimientosFestival === 'function')
+                ? calcularIngresosIncumplimientosFestival(fId)
+                : { cobrado: 0 };
+            const ingresosIncumplimientos = Math.max(0, Number(incRes.cobrado || 0));
+            const recaudacionNeta = recaudacionEntradas + ingresosIncumplimientos;
 
             let gastosOperativos = Number(fest?.gastosFestival) || 0;
             if (fin && Array.isArray(fin.gastosOperativos)) {
@@ -7784,12 +7863,14 @@
             }
 
             let gananciaEscuela = Number(fest?.netoEscuela) || (brutoTotal > 0 ? Math.max(0, brutoTotal - gastosOperativos) : 0);
-            if (tieneDatosIngresos || tieneDatosGastosOp || tieneDatosCobertura) {
+            if (tieneDatosIngresos || tieneDatosGastosOp || tieneDatosCobertura || ingresosIncumplimientos > 0) {
                 gananciaEscuela = recaudacionNeta - gastosOperativos - gastosCobertura;
             }
 
             return {
                 brutoTotal,
+                recaudacionEntradas,
+                ingresosIncumplimientos,
                 recaudacionNeta,
                 gastosOperativos,
                 gastosCobertura,
@@ -7813,9 +7894,9 @@
                 const colorGanancia = metricas.gananciaEscuela >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
                 const signoGanancia = metricas.gananciaEscuela < 0 ? '-$ ' : '$ ';
                 if (tds[3]) tds[3].textContent = `$ ${metricas.recaudacionNeta.toLocaleString('es-AR')}`;
-                if (tds[4]) tds[4].textContent = `$ ${metricas.gastosOperativos.toLocaleString('es-AR')}`;
+                if (tds[4]) tds[4].textContent = metricas.gastosOperativos > 0 ? `-$ ${metricas.gastosOperativos.toLocaleString('es-AR')}` : '$ 0';
                 if (tds[5]) {
-                    tds[5].textContent = `$ ${metricas.gastosCobertura.toLocaleString('es-AR')}`;
+                    tds[5].textContent = metricas.gastosCobertura > 0 ? `-$ ${metricas.gastosCobertura.toLocaleString('es-AR')}` : '$ 0';
                     tds[5].style.color = metricas.gastosCobertura > 0 ? 'var(--accent-purple)' : 'var(--accent-muted)';
                 }
                 if (tds[6]) {
@@ -7829,12 +7910,16 @@
                 const colorGanancia = metricas.gananciaEscuela >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
                 const signoGanancia = metricas.gananciaEscuela < 0 ? '-$ ' : '$ ';
                 const elIng = subfila.querySelector('.sub-fin-ingresos');
+                const elInc = subfila.querySelector('.sub-fin-incumplimientos');
                 const elGop = subfila.querySelector('.sub-fin-gastos-op');
                 const elGcob = subfila.querySelector('.sub-fin-gastos-cob');
                 const elGan = subfila.querySelector('.sub-fin-ganancia');
-                if (elIng) elIng.textContent = `$ ${metricas.recaudacionNeta.toLocaleString('es-AR')}`;
-                if (elGop) elGop.textContent = `$ ${metricas.gastosOperativos.toLocaleString('es-AR')}`;
-                if (elGcob) elGcob.textContent = `$ ${metricas.gastosCobertura.toLocaleString('es-AR')}`;
+                const ingEntradas = metricas.recaudacionEntradas !== undefined ? metricas.recaudacionEntradas : metricas.recaudacionNeta;
+                const ingInc = metricas.ingresosIncumplimientos || 0;
+                if (elIng) elIng.textContent = `+$ ${ingEntradas.toLocaleString('es-AR')}`;
+                if (elInc) elInc.textContent = ingInc > 0 ? `+$ ${ingInc.toLocaleString('es-AR')}` : '$ 0';
+                if (elGop) elGop.textContent = metricas.gastosOperativos > 0 ? `-$ ${metricas.gastosOperativos.toLocaleString('es-AR')}` : '$ 0';
+                if (elGcob) elGcob.textContent = metricas.gastosCobertura > 0 ? `-$ ${metricas.gastosCobertura.toLocaleString('es-AR')}` : '$ 0';
                 if (elGan) {
                     elGan.textContent = `${signoGanancia}${Math.abs(metricas.gananciaEscuela).toLocaleString('es-AR')}`;
                     elGan.style.color = colorGanancia;
@@ -11238,6 +11323,8 @@
                 const pagado = Boolean(g.pagado);
                 const metodo = g.metodo || 'Transferencia';
                 const resp = g.responsable || 'Guido';
+                const montoNum = Math.max(0, parseFloat(g.monto || 0) || 0);
+                const montoDisplay = montoNum > 0 ? `-$ ${montoNum.toLocaleString('es-AR')}` : '$ 0';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="padding:6px 8px;">
@@ -11250,7 +11337,7 @@
                         <input type="text" class="spreadsheet-inp text-left" value="${g.proveedor || ''}" placeholder="Ej: Proveedor o destinatario..." oninput="actualizarGastoOperativoFestival(${idx}, 'proveedor', this.value)">
                     </td>
                     <td style="padding:6px 8px;">
-                        <input type="number" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:800; color:var(--accent-red); text-align:right;" value="${g.monto !== undefined ? g.monto : 0}" min="0" step="500" oninput="actualizarGastoOperativoFestival(${idx}, 'monto', this.value)">
+                        <input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:800; color:var(--accent-red); font-size:14px; text-align:right; padding-right:4px;" value="${montoDisplay}" onfocus="enfocarInputMontoGasto(this, ${idx})" onblur="formatearInputMontoGasto(this, ${idx})" oninput="actualizarGastoOperativoFestival(${idx}, 'monto', this.value)">
                     </td>
                     <td style="text-align:center; padding:6px 8px;">
                         <select class="installment-select" style="font-size:11.5px;" onchange="actualizarGastoOperativoFestival(${idx}, 'metodo', this.value)">
@@ -11284,6 +11371,21 @@
         }
         window.renderizarTablaGastosOperativosFestival = renderizarTablaGastosOperativosFestival;
 
+        function enfocarInputMontoGasto(inp, idx) {
+            const datos = obtenerDatosIngresosEventoActual();
+            const m = Math.max(0, parseFloat(datos?.gastosOperativos?.[idx]?.monto || 0) || 0);
+            inp.value = m > 0 ? String(m) : '';
+            setTimeout(() => { try { inp.select(); } catch (_) {} }, 0);
+        }
+        window.enfocarInputMontoGasto = enfocarInputMontoGasto;
+
+        function formatearInputMontoGasto(inp, idx) {
+            const datos = obtenerDatosIngresosEventoActual();
+            const m = Math.max(0, parseFloat(datos?.gastosOperativos?.[idx]?.monto || 0) || 0);
+            inp.value = m > 0 ? `-$ ${m.toLocaleString('es-AR')}` : '$ 0';
+        }
+        window.formatearInputMontoGasto = formatearInputMontoGasto;
+
         function agregarGastoOperativoFestival() {
             const datos = obtenerDatosIngresosEventoActual();
             if (!Array.isArray(datos.gastosOperativos)) datos.gastosOperativos = [];
@@ -11309,7 +11411,8 @@
             const datos = obtenerDatosIngresosEventoActual();
             if (!datos.gastosOperativos || !datos.gastosOperativos[idx]) return;
             if (campo === 'monto') {
-                datos.gastosOperativos[idx].monto = Math.max(0, parseFloat(valor || '0') || 0);
+                const limpio = String(valor || '').replace(/[^0-9.]/g, '');
+                datos.gastosOperativos[idx].monto = Math.max(0, parseFloat(limpio || '0') || 0);
             } else {
                 datos.gastosOperativos[idx][campo] = valor;
             }
@@ -11445,6 +11548,9 @@
             // Sincronizar tarjetas de Resumen Financiero
             const elCardGastosOp = document.getElementById('resumen-card-gastos-tot');
             const elCardCob = document.getElementById('resumen-card-cobertura-tot');
+            const elCardSubCob = document.getElementById('resumen-card-sub-cobertura');
+            const elCardIncTot = document.getElementById('resumen-card-incumplimientos-tot');
+            const elCardSubInc = document.getElementById('resumen-card-sub-incumplimientos');
             const elCardGan = document.getElementById('resumen-card-ganancia-tot');
 
             if (elCardGastosOp) {
@@ -11453,11 +11559,57 @@
             if (elCardCob) {
                 elCardCob.textContent = saldoEscuela > 0 ? `-$ ${saldoEscuela.toLocaleString('es-AR')}` : '$ 0';
             }
-            
-            // Recalcular ganancia neta en la tarjeta de resumen
+            if (elCardSubCob) {
+                elCardSubCob.textContent = `Presup. $ ${presupuestoProductora.toLocaleString('es-AR')} - Bandas $ ${totalBandas.toLocaleString('es-AR')}`;
+            }
+
+            // Calcular ingresos por pago de incumplimientos de entradas
+            const incRes = (typeof calcularIngresosIncumplimientosFestival === 'function')
+                ? calcularIngresosIncumplimientosFestival(eventoActualId)
+                : { cobrado: 0, pendiente: 0, totalDeuda: 0, cantPagosCobrados: 0, cantPagosPendientes: 0, detalleCobrados: [] };
+
+            if (elCardIncTot) {
+                elCardIncTot.textContent = incRes.cobrado > 0 ? `+$ ${incRes.cobrado.toLocaleString('es-AR')}` : '$ 0';
+            }
+            if (elCardSubInc) {
+                if (incRes.cobrado > 0 && incRes.pendiente > 0) {
+                    elCardSubInc.textContent = `${incRes.cantPagosCobrados} cobrado(s) · Pend: $ ${incRes.pendiente.toLocaleString('es-AR')}`;
+                } else if (incRes.cobrado > 0) {
+                    const nombres = incRes.detalleCobrados.map(d => d.nombre).join(', ');
+                    elCardSubInc.textContent = `${incRes.cantPagosCobrados} cobrado(s)${nombres ? ` (${nombres})` : ''} · Al día`;
+                } else if (incRes.pendiente > 0) {
+                    elCardSubInc.textContent = `0 cobrados · Pend: $ ${incRes.pendiente.toLocaleString('es-AR')}`;
+                } else {
+                    elCardSubInc.textContent = 'Sin incumplimientos registrados';
+                }
+            }
+
+            // Sincronizar bloque 3 en pestaña Ingresos del Evento
+            const elIncTotDeuda = document.getElementById('txt-inc-resumen-total-deuda');
+            const elIncSubDeuda = document.getElementById('txt-inc-resumen-sub-deuda');
+            const elIncCobrado = document.getElementById('txt-inc-resumen-cobrado');
+            const elIncSubCobrado = document.getElementById('txt-inc-resumen-sub-cobrado');
+            const elIncPendiente = document.getElementById('txt-inc-resumen-pendiente');
+            const elIncSubPendiente = document.getElementById('txt-inc-resumen-sub-pendiente');
+
+            if (elIncTotDeuda) elIncTotDeuda.textContent = `$ ${incRes.totalDeuda.toLocaleString('es-AR')}`;
+            if (elIncSubDeuda) elIncSubDeuda.textContent = `${incRes.cantPagosCobrados + incRes.cantPagosPendientes} cuota(s) de cupo no cubierto`;
+            if (elIncCobrado) elIncCobrado.textContent = incRes.cobrado > 0 ? `+$ ${incRes.cobrado.toLocaleString('es-AR')}` : '$ 0';
+            if (elIncSubCobrado) {
+                if (incRes.cobrado > 0) {
+                    const detTxt = incRes.detalleCobrados.map(d => `${d.nombre} ($ ${d.monto.toLocaleString('es-AR')})`).join(', ');
+                    elIncSubCobrado.textContent = detTxt || `${incRes.cantPagosCobrados} pago(s) ingresado(s)`;
+                } else {
+                    elIncSubCobrado.textContent = 'Sin pagos registrados aún';
+                }
+            }
+            if (elIncPendiente) elIncPendiente.textContent = `$ ${incRes.pendiente.toLocaleString('es-AR')}`;
+            if (elIncSubPendiente) elIncSubPendiente.textContent = incRes.cantPagosPendientes > 0 ? `${incRes.cantPagosPendientes} pago(s) pendiente(s) de cobro` : '100% cobrado · Al día';
+
+            // Recalcular ganancia neta en la tarjeta de resumen (Ingresos Entradas + Cobros Incumplimientos - Gastos Operativos - Cobertura Escuela)
             const ingBrutoTxt = document.getElementById('resumen-card-ingresos-tot')?.textContent || '0';
             const ingBruto = parseInt(ingBrutoTxt.replace(/[^0-9]/g, '') || '0');
-            const gananciaFinal = ingBruto - totalOperativos - saldoEscuela;
+            const gananciaFinal = ingBruto + incRes.cobrado - totalOperativos - saldoEscuela;
             if (elCardGan) {
                 elCardGan.textContent = `${gananciaFinal >= 0 ? '+$ ' : '-$ '}${Math.abs(gananciaFinal).toLocaleString('es-AR')}`;
                 elCardGan.style.color = gananciaFinal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
@@ -11965,6 +12117,48 @@
         // LISTA CONSOLIDADA Y REAL-TIME DE PARTICIPANTES & CONTRATOS
         // Fuente única de verdad para Cumplimiento, Cobros y Deudas
         // =========================================================
+        function calcularIngresosIncumplimientosFestival(festId = eventoActualId) {
+            const lista = (typeof obtenerListaParticipantesContratoFestival === 'function')
+                ? obtenerListaParticipantesContratoFestival(festId)
+                : ((typeof contratosAlumnosFestivalesDB !== 'undefined' && Array.isArray(contratosAlumnosFestivalesDB[festId])) ? contratosAlumnosFestivalesDB[festId] : []);
+            let cobrado = 0;
+            let pendiente = 0;
+            let totalDeuda = 0;
+            let cantPagosCobrados = 0;
+            let cantPagosPendientes = 0;
+            const detalleCobrados = [];
+
+            lista.forEach(cont => {
+                if (!cont || cont.esSes || cont.excluido) return;
+                const faltantes = Math.max(0, Number(cont.cupo || 0) - Number(cont.vendidas || 0));
+                if (faltantes <= 0 && (!Array.isArray(cont.pagosDeuda) || !cont.pagosDeuda.some(p => p && p.pagada))) return;
+                const pagos = Array.isArray(cont.pagosDeuda) ? cont.pagosDeuda : [];
+                pagos.forEach(p => {
+                    if (!p) return;
+                    const m = Math.max(0, Number(p.monto || 0));
+                    totalDeuda += m;
+                    if (p.pagada) {
+                        cobrado += m;
+                        cantPagosCobrados++;
+                        detalleCobrados.push({ nombre: cont.nombre, banda: cont.banda, monto: m, faltantes });
+                    } else {
+                        pendiente += m;
+                        cantPagosPendientes++;
+                    }
+                });
+            });
+
+            return {
+                cobrado,
+                pendiente,
+                totalDeuda,
+                cantPagosCobrados,
+                cantPagosPendientes,
+                detalleCobrados
+            };
+        }
+        window.calcularIngresosIncumplimientosFestival = calcularIngresosIncumplimientosFestival;
+
         function obtenerListaParticipantesContratoFestival(festId = eventoActualId) {
             const bandas = (typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[festId]) ? participantesFestivalesDB[festId] : [];
             const cuposVigentes = (typeof obtenerCuposContratoVigentes === 'function') ? obtenerCuposContratoVigentes() : { alumno: 5, invitado: 3, jam: 2 };
@@ -11972,6 +12166,14 @@
                 ? entradasFestivales[festId]
                 : ((typeof obtenerEntradasEventoActual === 'function' && festId === eventoActualId) ? obtenerEntradasEventoActual() : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : { general: 8500 }));
             const precioEntrada = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || 8500);
+
+            const festObj = (typeof infoFestivales !== 'undefined' && infoFestivales[festId]) ? infoFestivales[festId] : null;
+            const esFestVol5 = Boolean(
+                (festId && String(festId).toLowerCase().includes('vol5')) ||
+                (festId && String(festId).toLowerCase().includes('vol_5')) ||
+                (festObj && String(festObj.nombre || '').toUpperCase().includes('VOL 5')) ||
+                (festObj && String(festObj.nombre || '').toUpperCase().includes('VOL. 5'))
+            );
 
             const cacheGuardada = (typeof contratosAlumnosFestivalesDB !== 'undefined' && Array.isArray(contratosAlumnosFestivalesDB[festId])) ? contratosAlumnosFestivalesDB[festId] : [];
             const listaConsolidada = [];
@@ -12011,7 +12213,27 @@
 
                     const vendidasInt = (contGuardado && contGuardado.vendidas !== undefined) ? Number(contGuardado.vendidas) : 0;
                     const faltantes = esExcluido ? 0 : Math.max(0, cupoInt - vendidasInt);
-                    const deudaMonto = faltantes * precioEntrada;
+
+                    let precioEntradaManual = (contGuardado && contGuardado.precioEntradaManual !== undefined && contGuardado.precioEntradaManual !== null)
+                        ? Number(contGuardado.precioEntradaManual)
+                        : null;
+                    let deudaMontoManual = (contGuardado && contGuardado.deudaMontoManual !== undefined && contGuardado.deudaMontoManual !== null)
+                        ? Number(contGuardado.deudaMontoManual)
+                        : null;
+
+                    // Valor real abonado por Jacques en 2026 Fest VOL 5 ($ 18.000) si aún no tenía override manual
+                    if (esFestVol5 && String(nom).trim().toLowerCase() === 'jacques' && faltantes > 0 && deudaMontoManual === null && precioEntradaManual === null) {
+                        precioEntradaManual = 18000;
+                        deudaMontoManual = 18000 * faltantes;
+                    }
+
+                    const precioUnitarioReal = (precioEntradaManual !== null && precioEntradaManual > 0) ? precioEntradaManual : precioEntrada;
+                    let deudaMonto = 0;
+                    if (!esExcluido && faltantes > 0) {
+                        deudaMonto = (deudaMontoManual !== null && deudaMontoManual >= 0)
+                            ? deudaMontoManual
+                            : (faltantes * precioUnitarioReal);
+                    }
 
                     let cantCuotas = contGuardado?.cantCuotas || 1;
                     let pagosDeuda = (contGuardado && Array.isArray(contGuardado.pagosDeuda) && contGuardado.pagosDeuda.length > 0)
@@ -12030,10 +12252,12 @@
                                 pagada: false
                             }];
                             cantCuotas = 1;
-                        } else if (pagosDeuda.length === 1 && !pagosDeuda[0].pagada) {
-                            // Sincronizar monto para pago único con deuda real
+                        } else if (pagosDeuda.length === 1) {
+                            // Sincronizar monto para pago único con deuda configurada (incluso si ya figura pagada y se ajustó el monto real)
                             pagosDeuda[0].monto = deudaMonto;
-                            pagosDeuda[0].obs = `Diferencia ${faltantes} entrada/s no cubiertas`;
+                            if (!pagosDeuda[0].obs) {
+                                pagosDeuda[0].obs = `Diferencia ${faltantes} entrada/s no cubiertas`;
+                            }
                         } else {
                             // Si son múltiples cuotas, balancear las cuotas no pagadas
                             const cuotasPendientes = pagosDeuda.filter(p => !p.pagada);
@@ -12059,6 +12283,8 @@
                         vendidas: vendidasInt,
                         faltantes,
                         deudaMonto,
+                        precioEntradaManual,
+                        deudaMontoManual,
                         cantCuotas,
                         pagosDeuda,
                         esSes,
@@ -12167,7 +12393,7 @@
                     tr.setAttribute('data-cupo', cupoInt);
                     tr.setAttribute('data-precio-entrada', precioEntrada);
                     tr.setAttribute('data-excluido', esExcluido ? 'true' : 'false');
-                    tr.style.display = 'none';
+                    tr.style.display = todasLasBandasExpandidas ? '' : 'none';
 
                     let deudaMonto = 0;
                     let celdaEstadoHtml = '';
@@ -12186,7 +12412,9 @@
                         celdaAccionHtml = `<span style="font-size:11px; color:var(--accent-green); font-weight:700;">✓ Al día</span>`;
                     } else {
                         const faltantes = cupoInt - vendidasInt;
-                        deudaMonto = faltantes * precioEntrada;
+                        deudaMonto = (contGuardado && contGuardado.deudaMonto !== undefined)
+                            ? Number(contGuardado.deudaMonto)
+                            : (faltantes * precioEntrada);
                         const pagosDeuda = (contGuardado && Array.isArray(contGuardado.pagosDeuda)) ? contGuardado.pagosDeuda : [];
                         const cuotasPagadas = pagosDeuda.filter(p => p && p.pagada).length;
                         const totalCuotasPlan = pagosDeuda.length;
@@ -12209,6 +12437,13 @@
                         }
                     }
 
+                    tr.setAttribute('data-deuda-monto', deudaMonto);
+
+                    const tieneIncumplimiento = !esExcluido && !esSes && (cupoInt - vendidasInt) > 0;
+                    const celdaDeudaInteriorHtml = tieneIncumplimiento
+                        ? `<input type="text" class="spreadsheet-inp inp-deuda-manual-participante" style="font-family:'Geist Mono'; font-weight:800; color:var(--accent-red); text-align:right; width:100%; border-bottom:1px dashed #fca5a5; cursor:pointer; padding-right:2px;" title="Click para editar el monto real a pagar por incumplimiento de este alumno" value="-$ ${deudaMonto.toLocaleString('es-AR')}" onfocus="enfocarInputDeudaManualParticipante(this, '${idInt}')" onblur="formatearInputDeudaManualParticipante(this, '${idInt}')" onchange="actualizarDeudaManualParticipante('${idInt}', this.value)">`
+                        : (deudaMonto > 0 ? `-$ ${deudaMonto.toLocaleString('es-AR')}` : '$ 0');
+
                     tr.innerHTML = `
                         <td style="padding-left:28px;">
                             ${esExcluido ? '🚫' : (esSes ? '🎷' : '👤')} <strong style="${esExcluido ? 'color:var(--text-muted); text-decoration:line-through;' : ''}">${nom}</strong> ${esSes ? '<span style="font-size:10.5px; color:#0284c7; font-weight:600;">(Sesionista)</span>' : ''}
@@ -12218,7 +12453,7 @@
                             <input type="number" class="spreadsheet-inp inp-entradas-vendidas" style="font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);" value="${vendidasInt}" min="0" ${esExcluido ? 'disabled' : ''} onchange="recalcularFilaContrato(this)">
                         </td>
                         <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; padding:6px 12px; ${deudaMonto > 0 ? 'color:var(--accent-red);' : 'color:var(--accent-green);'}" class="celda-deuda-pesos">
-                            ${deudaMonto > 0 ? `-$ ${deudaMonto.toLocaleString('es-AR')}` : '$ 0'}
+                            ${celdaDeudaInteriorHtml}
                         </td>
                         <td style="text-align:center;" class="celda-estado-cupo">
                             ${celdaEstadoHtml}
@@ -12231,9 +12466,87 @@
                 });
             });
 
+            if (todasLasBandasExpandidas) {
+                document.querySelectorAll('.banda-arrow').forEach(arrow => {
+                    arrow.style.transform = 'rotate(0deg)';
+                });
+            }
+
             actualizarTotalesCabecerasBandas();
         }
         window.renderizarTablaCumplimientoContrato = renderizarTablaCumplimientoContrato;
+
+        function enfocarInputDeudaManualParticipante(inp, idInt) {
+            const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
+            const cont = cacheContratos.find(c => c && c.id === idInt);
+            const m = Math.max(0, Number(cont?.deudaMonto || 0));
+            inp.value = m > 0 ? String(m) : '';
+            setTimeout(() => { try { inp.select(); } catch (_) {} }, 0);
+        }
+        window.enfocarInputDeudaManualParticipante = enfocarInputDeudaManualParticipante;
+
+        function formatearInputDeudaManualParticipante(inp, idInt) {
+            const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
+            const cont = cacheContratos.find(c => c && c.id === idInt);
+            const m = Math.max(0, Number(cont?.deudaMonto || 0));
+            inp.value = m > 0 ? `-$ ${m.toLocaleString('es-AR')}` : '$ 0';
+        }
+        window.formatearInputDeudaManualParticipante = formatearInputDeudaManualParticipante;
+
+        async function actualizarDeudaManualParticipante(idInt, valorRaw) {
+            const limpio = String(valorRaw || '').replace(/[^0-9.]/g, '');
+            const nuevoMonto = Math.max(0, Math.round(parseFloat(limpio || '0') || 0));
+            const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
+            const cont = cacheContratos.find(c => c && c.id === idInt);
+            if (!cont) return;
+
+            const faltantes = Math.max(1, Number(cont.faltantes || 1));
+            cont.deudaMontoManual = nuevoMonto;
+            cont.precioEntradaManual = Math.round(nuevoMonto / faltantes);
+            cont.deudaMonto = nuevoMonto;
+
+            if (!Array.isArray(cont.pagosDeuda) || cont.pagosDeuda.length === 0) {
+                cont.cantCuotas = 1;
+                cont.pagosDeuda = [{
+                    cuota: 1,
+                    monto: nuevoMonto,
+                    fecha: '2026-08-15',
+                    medio: 'Transferencia',
+                    cobradoPor: 'Guido',
+                    obs: `Diferencia ${faltantes} entrada/s no cubiertas`,
+                    pagada: false
+                }];
+            } else if (cont.pagosDeuda.length === 1) {
+                cont.pagosDeuda[0].monto = nuevoMonto;
+            } else {
+                const cuotas = cont.pagosDeuda.length;
+                const montoUnit = Math.round(nuevoMonto / cuotas);
+                cont.pagosDeuda.forEach((p, idx) => {
+                    p.monto = (idx === cuotas - 1) ? (nuevoMonto - montoUnit * (cuotas - 1)) : montoUnit;
+                });
+            }
+
+            contratosAlumnosFestivalesDB[eventoActualId] = cacheContratos;
+            if (typeof persistirCambiosFestivalDirecto === 'function') {
+                await persistirCambiosFestivalDirecto(eventoActualId, { contratosAlumnos: cacheContratos });
+            } else if (typeof autoguardarDetalleFestivalFirestore === 'function') {
+                autoguardarDetalleFestivalFirestore('contratosAlumnos', cacheContratos);
+            }
+
+            const tr = document.querySelector(`.banda-child-row[data-id="${idInt}"]`);
+            if (tr) {
+                tr.setAttribute('data-deuda-monto', nuevoMonto);
+                const inp = tr.querySelector('.inp-deuda-manual-participante');
+                if (inp) inp.value = nuevoMonto > 0 ? `-$ ${nuevoMonto.toLocaleString('es-AR')}` : '$ 0';
+            }
+
+            actualizarTotalesCabecerasBandas();
+            renderizarCobrosContratoUnificado();
+            renderizarGastosFestival(false);
+            if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
+            mostrarToast(`Monto de ${cont.nombre} actualizado a $ ${nuevoMonto.toLocaleString('es-AR')}`, 'success');
+        }
+        window.actualizarDeudaManualParticipante = actualizarDeudaManualParticipante;
 
         function recalcularFilaContrato(input) {
             const row = input.closest('tr');
@@ -12252,6 +12565,7 @@
             let cont = cacheContratos.find(c => c && (c.id === id || c.nombre === nombre));
 
             if (esMusicoSesionista(nombre)) {
+                row.setAttribute('data-deuda-monto', 0);
                 celdaDeuda.textContent = '$ 0';
                 celdaDeuda.style.color = 'var(--accent-green)';
                 celdaEstado.innerHTML = `<span class="pill-status pill-info" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">Sesionista (Exento)</span>`;
@@ -12260,12 +12574,14 @@
                 actualizarTotalesCabecerasBandas();
                 recopilarYAutoguardarContratosAlumnos();
                 if (typeof renderizarCobrosContratoUnificado === 'function') renderizarCobrosContratoUnificado();
+                renderizarGastosFestival(false);
                 if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
                 return;
             }
 
             if (vendidas >= cupo) {
                 // Cupo completo o superado
+                row.setAttribute('data-deuda-monto', 0);
                 celdaDeuda.textContent = '$ 0';
                 celdaDeuda.style.color = 'var(--accent-green)';
                 celdaEstado.innerHTML = `<span class="pill-status pill-success">Cupo Completo</span>`;
@@ -12278,11 +12594,18 @@
                     cont.pagosDeuda = [];
                 }
             } else {
-                // Cupo incumplido: calcula diferencia
+                // Cupo incumplido: calcula diferencia respetando valor unitario manual si existe
                 const faltantes = cupo - vendidas;
-                const deudaPesos = faltantes * precioEntrada;
+                const precioUnit = (cont && cont.precioEntradaManual !== undefined && cont.precioEntradaManual !== null && Number(cont.precioEntradaManual) > 0)
+                    ? Number(cont.precioEntradaManual)
+                    : precioEntrada;
+                const deudaPesos = faltantes * precioUnit;
+                if (cont && cont.deudaMontoManual !== undefined && cont.deudaMontoManual !== null) {
+                    cont.deudaMontoManual = deudaPesos;
+                }
 
-                celdaDeuda.textContent = `-$ ${deudaPesos.toLocaleString('es-AR')}`;
+                row.setAttribute('data-deuda-monto', deudaPesos);
+                celdaDeuda.innerHTML = `<input type="text" class="spreadsheet-inp inp-deuda-manual-participante" style="font-family:'Geist Mono'; font-weight:800; color:var(--accent-red); text-align:right; width:100%; border-bottom:1px dashed #fca5a5; cursor:pointer; padding-right:2px;" title="Click para editar el monto real a pagar por incumplimiento de este alumno" value="-$ ${deudaPesos.toLocaleString('es-AR')}" onfocus="enfocarInputDeudaManualParticipante(this, '${id}')" onblur="formatearInputDeudaManualParticipante(this, '${id}')" onchange="actualizarDeudaManualParticipante('${id}', this.value)">`;
                 celdaDeuda.style.color = 'var(--accent-red)';
                 celdaEstado.innerHTML = `<span class="pill-status pill-danger">Cupo Incumplido</span>`;
                 celdaAccion.innerHTML = `
@@ -12307,7 +12630,7 @@
                             obs: `Diferencia ${faltantes} entrada/s no cubiertas`,
                             pagada: false
                         }];
-                    } else if (cont.pagosDeuda.length === 1 && !cont.pagosDeuda[0].pagada) {
+                    } else if (cont.pagosDeuda.length === 1) {
                         cont.pagosDeuda[0].monto = deudaPesos;
                         cont.pagosDeuda[0].obs = `Diferencia ${faltantes} entrada/s no cubiertas`;
                     }
@@ -12317,6 +12640,7 @@
             actualizarTotalesCabecerasBandas();
             recopilarYAutoguardarContratosAlumnos();
             if (typeof renderizarCobrosContratoUnificado === 'function') renderizarCobrosContratoUnificado();
+            renderizarGastosFestival(false);
             if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
         }
 
@@ -12336,10 +12660,20 @@
                     if (cont) {
                         cont.vendidas = vendidas;
                         cont.faltantes = Math.max(0, cupo - vendidas);
-                        cont.deudaMonto = cont.faltantes * precioEntrada;
-                        if (Array.isArray(cont.pagosDeuda) && cont.pagosDeuda.length === 1 && !cont.pagosDeuda[0].pagada) {
+                        if (cont.faltantes === 0) {
+                            cont.deudaMonto = 0;
+                        } else if (cont.deudaMontoManual !== undefined && cont.deudaMontoManual !== null) {
+                            cont.deudaMonto = Number(cont.deudaMontoManual);
+                        } else if (cont.precioEntradaManual !== undefined && cont.precioEntradaManual !== null && Number(cont.precioEntradaManual) > 0) {
+                            cont.deudaMonto = cont.faltantes * Number(cont.precioEntradaManual);
+                        } else {
+                            cont.deudaMonto = cont.faltantes * precioEntrada;
+                        }
+                        if (Array.isArray(cont.pagosDeuda) && cont.pagosDeuda.length === 1) {
                             cont.pagosDeuda[0].monto = cont.deudaMonto;
-                            cont.pagosDeuda[0].obs = `Diferencia ${cont.faltantes} entrada/s no cubiertas`;
+                            if (!cont.pagosDeuda[0].obs) {
+                                cont.pagosDeuda[0].obs = `Diferencia ${cont.faltantes} entrada/s no cubiertas`;
+                            }
                         }
                     }
                 });
@@ -12380,7 +12714,9 @@
                     vendidasTot += v;
                     if (!esExcluido && v < c && c > 0) {
                         const falt = c - v;
-                        deudaTot += falt * p;
+                        const deudaFilaAttr = f.getAttribute('data-deuda-monto');
+                        const deudaFila = (deudaFilaAttr !== null && deudaFilaAttr !== '') ? Number(deudaFilaAttr) : (falt * p);
+                        deudaTot += deudaFila;
                         grandFaltantesTot += falt;
                     }
                 });
@@ -12459,15 +12795,36 @@
         window.toggleExcluirParticipanteModal = toggleExcluirParticipanteModal;
 
         function configurarCobroCuotas(id, nombre, monto, faltantes) {
-            deudaActualConfig = { id, nombre, monto, faltantes };
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
             const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === nombre));
+            const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
+            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || 8500);
+
+            const faltantesReales = Math.max(1, Number(cont?.faltantes || faltantes || 1));
+            const montoReal = (cont && cont.deudaMonto !== undefined) ? Number(cont.deudaMonto) : Number(monto || 0);
+            const precioUnitReal = (cont && cont.precioEntradaManual !== undefined && cont.precioEntradaManual !== null)
+                ? Number(cont.precioEntradaManual)
+                : Math.round(montoReal / faltantesReales);
+
+            deudaActualConfig = {
+                id,
+                nombre,
+                monto: montoReal,
+                faltantes: faltantesReales,
+                precioUnitarioManual: precioUnitReal,
+                precioOficial
+            };
 
             document.getElementById('modal-deuda-participante-id').value = id;
             document.getElementById('modal-deuda-nombre').textContent = nombre;
-            document.getElementById('modal-deuda-cant').textContent = `${faltantes} entradas`;
-            document.getElementById('modal-deuda-monto').textContent = `$ ${monto.toLocaleString('es-AR')}`;
-            
+            document.getElementById('modal-deuda-cant').textContent = `${faltantesReales} entrada${faltantesReales === 1 ? '' : 's'}`;
+            document.getElementById('modal-deuda-monto').textContent = `$ ${montoReal.toLocaleString('es-AR')}`;
+
+            const inpValEntrada = document.getElementById('modal-deuda-valor-entrada');
+            const inpMontoTotal = document.getElementById('modal-deuda-monto-input');
+            if (inpValEntrada) inpValEntrada.value = precioUnitReal;
+            if (inpMontoTotal) inpMontoTotal.value = montoReal;
+
             const chkExcluir = document.getElementById('modal-deuda-excluir');
             const esExcluido = Boolean(cont && cont.excluido);
             if (chkExcluir) chkExcluir.checked = esExcluido;
@@ -12490,6 +12847,55 @@
             actualizarPrevisualizacionCuotasDeuda();
             document.getElementById('modal-gestionar-deuda').classList.add('active');
         }
+
+        function recalcularMontoDesdeValorEntradaModal(valorUnit) {
+            if (!deudaActualConfig) return;
+            const unit = Math.max(0, Math.round(parseFloat(valorUnit || '0') || 0));
+            const falt = Math.max(1, Number(deudaActualConfig.faltantes || 1));
+            const total = unit * falt;
+            deudaActualConfig.precioUnitarioManual = unit;
+            deudaActualConfig.monto = total;
+            const inpMonto = document.getElementById('modal-deuda-monto-input');
+            if (inpMonto) inpMonto.value = total;
+            const elMontoTxt = document.getElementById('modal-deuda-monto');
+            if (elMontoTxt) elMontoTxt.textContent = `$ ${total.toLocaleString('es-AR')}`;
+            actualizarPrevisualizacionCuotasDeuda();
+        }
+        window.recalcularMontoDesdeValorEntradaModal = recalcularMontoDesdeValorEntradaModal;
+
+        function recalcularValorEntradaDesdeMontoModal(valorTotal) {
+            if (!deudaActualConfig) return;
+            const total = Math.max(0, Math.round(parseFloat(valorTotal || '0') || 0));
+            const falt = Math.max(1, Number(deudaActualConfig.faltantes || 1));
+            const unit = Math.round(total / falt);
+            deudaActualConfig.monto = total;
+            deudaActualConfig.precioUnitarioManual = unit;
+            const inpUnit = document.getElementById('modal-deuda-valor-entrada');
+            if (inpUnit) inpUnit.value = unit;
+            const elMontoTxt = document.getElementById('modal-deuda-monto');
+            if (elMontoTxt) elMontoTxt.textContent = `$ ${total.toLocaleString('es-AR')}`;
+            actualizarPrevisualizacionCuotasDeuda();
+        }
+        window.recalcularValorEntradaDesdeMontoModal = recalcularValorEntradaDesdeMontoModal;
+
+        function restablecerMontoOficialDeudaModal() {
+            if (!deudaActualConfig) return;
+            const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
+            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || 8500);
+            const falt = Math.max(1, Number(deudaActualConfig.faltantes || 1));
+            const total = precioOficial * falt;
+            deudaActualConfig.precioUnitarioManual = null;
+            deudaActualConfig.monto = total;
+            deudaActualConfig._restablecidoOficial = true;
+            const inpUnit = document.getElementById('modal-deuda-valor-entrada');
+            const inpMonto = document.getElementById('modal-deuda-monto-input');
+            if (inpUnit) inpUnit.value = precioOficial;
+            if (inpMonto) inpMonto.value = total;
+            const elMontoTxt = document.getElementById('modal-deuda-monto');
+            if (elMontoTxt) elMontoTxt.textContent = `$ ${total.toLocaleString('es-AR')}`;
+            actualizarPrevisualizacionCuotasDeuda();
+        }
+        window.restablecerMontoOficialDeudaModal = restablecerMontoOficialDeudaModal;
 
         function actualizarPrevisualizacionCuotasDeuda() {
             if (!deudaActualConfig) return;
@@ -12531,6 +12937,8 @@
                 cont.cupo = 0;
                 cont.faltantes = 0;
                 cont.deudaMonto = 0;
+                cont.precioEntradaManual = null;
+                cont.deudaMontoManual = null;
                 cont.pagosDeuda = [];
                 cont.cantCuotas = 1;
             } else {
@@ -12540,6 +12948,10 @@
                 const resp = document.getElementById('modal-deuda-responsable').value || 'Guido';
 
                 const montoTotal = deudaActualConfig.monto;
+                cont.deudaMonto = montoTotal;
+                cont.deudaMontoManual = montoTotal;
+                cont.precioEntradaManual = deudaActualConfig.precioUnitarioManual || Math.round(montoTotal / Math.max(1, deudaActualConfig.faltantes || 1));
+
                 const montoUnitario = Math.round(montoTotal / cuotas);
                 const nuevosPagos = [];
 
@@ -12573,11 +12985,12 @@
             cerrarModales();
             renderizarTablaCumplimientoContrato();
             renderizarCobrosContratoUnificado();
+            renderizarGastosFestival(false);
             if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
             mostrarToast(
                 esExcluido
                     ? `¡${deudaActualConfig.nombre} ha sido excluido del contrato de entradas (exento de deuda)!`
-                    : `¡Plan de deuda generado con éxito para ${deudaActualConfig.nombre}!`,
+                    : `¡Deuda y plan actualizados a $ ${deudaActualConfig.monto.toLocaleString('es-AR')} para ${deudaActualConfig.nombre}!`,
                 'success'
             );
         }
@@ -12679,8 +13092,8 @@
                             <span class="pill-status pill-danger" style="font-size:10.5px;">Faltan ${faltantes} ent.</span>
                             ${badgeCuota}
                         </td>
-                        <td style="text-align:center; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red); font-size:12.5px; font-variant-numeric:tabular-nums;">
-                            ${formatearMonedaAr(p.monto)}
+                        <td style="text-align:center;">
+                            <input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:700; color:var(--accent-red); font-size:12.5px; text-align:center; width:100px; border-bottom:1px dashed #fca5a5; cursor:pointer;" title="Click para editar el monto real de este cobro" value="${formatearMonedaAr(p.monto)}" onfocus="enfocarInputMontoCuotaContrato(this, '${safeId}', ${cIdx})" onblur="formatearInputMontoCuotaContrato(this, '${safeId}', ${cIdx})" onchange="actualizarMontoCuotaContratoAlumno('${safeId}', ${cIdx}, this.value)">
                         </td>
                         <td style="text-align:center;">
                             <input type="date" class="installment-date-inp" value="${p.fecha || '2026-08-15'}" onchange="actualizarDetallePagoContratoAlumno('${safeId}', ${cIdx}, 'fecha', this.value)">
@@ -12741,9 +13154,55 @@
             }
 
             actualizarKpiPendienteTotalCobros();
+            if (typeof renderizarGastosFestival === 'function') renderizarGastosFestival(false);
             if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
         }
         window.renderizarCobrosContratoUnificado = renderizarCobrosContratoUnificado;
+
+        function enfocarInputMontoCuotaContrato(inp, id, idxCuota) {
+            const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
+            const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === id));
+            const m = Math.max(0, Number(cont?.pagosDeuda?.[idxCuota]?.monto || 0));
+            inp.value = m > 0 ? String(m) : '';
+            setTimeout(() => { try { inp.select(); } catch (_) {} }, 0);
+        }
+        window.enfocarInputMontoCuotaContrato = enfocarInputMontoCuotaContrato;
+
+        function formatearInputMontoCuotaContrato(inp, id, idxCuota) {
+            const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
+            const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === id));
+            const m = Math.max(0, Number(cont?.pagosDeuda?.[idxCuota]?.monto || 0));
+            inp.value = formatearMonedaAr(m);
+        }
+        window.formatearInputMontoCuotaContrato = formatearInputMontoCuotaContrato;
+
+        async function actualizarMontoCuotaContratoAlumno(id, idxCuota, valorRaw) {
+            const limpio = String(valorRaw || '').replace(/[^0-9.]/g, '');
+            const nuevoMonto = Math.max(0, Math.round(parseFloat(limpio || '0') || 0));
+            const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
+            const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === id));
+            if (!cont || !Array.isArray(cont.pagosDeuda) || !cont.pagosDeuda[idxCuota]) return;
+
+            cont.pagosDeuda[idxCuota].monto = nuevoMonto;
+            const totalCuotasMonto = cont.pagosDeuda.reduce((acc, p) => acc + Math.max(0, Number(p.monto || 0)), 0);
+            cont.deudaMonto = totalCuotasMonto;
+            cont.deudaMontoManual = totalCuotasMonto;
+            cont.precioEntradaManual = Math.round(totalCuotasMonto / Math.max(1, Number(cont.faltantes || 1)));
+
+            contratosAlumnosFestivalesDB[eventoActualId] = cacheContratos;
+            if (typeof persistirCambiosFestivalDirecto === 'function') {
+                await persistirCambiosFestivalDirecto(eventoActualId, { contratosAlumnos: cacheContratos });
+            } else if (typeof autoguardarDetalleFestivalFirestore === 'function') {
+                autoguardarDetalleFestivalFirestore('contratosAlumnos', cacheContratos);
+            }
+
+            renderizarCobrosContratoUnificado();
+            renderizarTablaCumplimientoContrato();
+            renderizarGastosFestival(false);
+            if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
+            mostrarToast(`Monto actualizado a $ ${nuevoMonto.toLocaleString('es-AR')} para ${cont.nombre}`, 'success');
+        }
+        window.actualizarMontoCuotaContratoAlumno = actualizarMontoCuotaContratoAlumno;
 
         function cambiarEstadoPagoContratoAlumno(id, idxCuota, pagada) {
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
@@ -12759,6 +13218,7 @@
 
             renderizarCobrosContratoUnificado();
             renderizarTablaCumplimientoContrato();
+            renderizarGastosFestival(false);
             if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
             mostrarToast(
                 pagada

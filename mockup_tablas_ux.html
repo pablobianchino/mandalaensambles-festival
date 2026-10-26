@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototipo Interactivo: UX de Tablas Dinámicas Mandala</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@500;700;800&display=swap">
+<style>
+  :root {
+    --bg-main: #fbfaf8;
+    --text-main: #1c1f22;
+    --text-muted: #8a9097;
+    --accent-blue: #1f5491;
+    --accent-teal: #007b8f;
+    --accent-red: #c2563b;
+    --border-color: #cbd5e1;
+  }
+  body { font-family: 'Hanken Grotesk', -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); padding: 28px; line-height: 1.5; }
+  h1 { font-size: 20px; font-weight: 800; color: var(--accent-blue); margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+  .demo-container { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 22px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+  .demo-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .demo-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th { background: #f8fafc; border: 1px solid var(--border-color); padding: 8px 10px; font-size: 11px; text-transform: uppercase; font-weight: 800; color: #475569; }
+  td { border: 1px solid #e2e8f0; padding: 6px 10px; vertical-align: middle; }
+  .btn-pill { display: inline-flex; align-items: center; gap: 4px; background: white; border: 1px solid var(--accent-teal); color: var(--accent-teal); border-radius: 20px; font-size: 11px; font-weight: 700; padding: 3px 10px; cursor: pointer; text-decoration: none; transition: 0.15s; }
+  .btn-pill:hover { background: #f0fdfa; border-color: #0d9488; }
+  .btn-del { background: none; border: none; color: #94a3b8; font-weight: 700; font-size: 13px; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: 0.15s; }
+  .btn-del:hover { color: var(--accent-red); background: #fee2e2; }
+  .ghost-row { border-top: 1px dashed var(--border-color); background: #fafafa; color: var(--accent-teal); cursor: pointer; font-weight: 600; padding: 8px 14px; font-size: 12px; }
+  .ghost-row:hover { background: #f0fdfa; color: #0d9488; }
+  .hover-row .btn-del { opacity: 0; transition: opacity 0.15s; }
+  .hover-row:hover .btn-del { opacity: 1; }
+</style>
+</head>
+<body>
+
+  <h1>🧪 Comparativa de UX: Tablas Dinámicas con Jerarquías</h1>
+  <div class="subtitle">Probá cómo se comportan los 3 patrones para agregar (+) y borrar (✕) elementos padre e hijo.</div>
+
+  <!-- OPCIÓN A: VERTICAL STACK (ACTUAL) -->
+  <div class="demo-container">
+    <div class="demo-title">📌 Opción A: Stack Vertical en Celda Unificada (Implementada)</div>
+    <div class="demo-desc">Nombre arriba con ✕ para borrar la banda; debajo conteo claro en una línea; debajo botón pill ＋ Canción.</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:200px; text-align:left;">BANDA / ARTISTA</th>
+          <th style="width:190px; text-align:left;">CANCIÓN / SETLIST</th>
+          <th>BATERÍA</th>
+          <th>BAJO</th>
+          <th>GTR 1</th>
+          <th>MIC 1</th>
+          <th style="width:40px; text-align:center;">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="2" style="background:#f8fafc; border:1px solid #cbd5e1;">
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="font-size:11px; color:#64748b;">▼</span>
+                  <strong style="color:var(--accent-blue); font-size:13px;">DIVIDIDOS</strong>
+                </div>
+                <button class="btn-del" onclick="alert('Eliminar banda completa')" title="Quitar banda">✕</button>
+              </div>
+              <div style="padding-left:17px; font-size:11.5px; color:#64748b; font-weight:600;">🎵 2 canción(es)</div>
+              <div style="padding-left:17px; margin-top:2px;">
+                <button class="btn-pill" onclick="alert('Agregar canción')">＋ Canción</button>
+              </div>
+            </div>
+          </td>
+          <td><strong>Ala Delta</strong></td>
+          <td>Agustín S.</td>
+          <td>Sergio A.</td>
+          <td>Lucas R.</td>
+          <td>Ricardo M.</td>
+          <td style="text-align:center;"><button class="btn-del" title="Borrar canción">✕</button></td>
+        </tr>
+        <tr>
+          <td><strong>Spaghetti del Rock</strong></td>
+          <td>Agustín S.</td>
+          <td>Sergio A.</td>
+          <td>Lucas R.</td>
+          <td>Ricardo M.</td>
+          <td style="text-align:center;"><button class="btn-del" title="Borrar canción">✕</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- OPCIÓN B: FILA COMPLETA DE GRUPO (ESTILO AIRTABLE / NOTION) -->
+  <div class="demo-container">
+    <div class="demo-title">📌 Opción B: Fila Completa de Grupo (Estilo Notion / Airtable)</div>
+    <div class="demo-desc">La banda tiene su propia barra superior de ancho completo. Despeja 100% el ancho de las columnas de instrumentos.</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:220px; text-align:left;">CANCIÓN / SETLIST</th>
+          <th>BATERÍA</th>
+          <th>BAJO</th>
+          <th>GTR 1</th>
+          <th>MIC 1</th>
+          <th style="width:40px; text-align:center;">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:#f1f5f9; border-top:2px solid #cbd5e1;">
+          <td colspan="5" style="padding:8px 12px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:11px; color:#64748b;">▼</span>
+                <strong style="color:var(--accent-blue); font-size:13.5px;">LOS PERICOS</strong>
+                <span style="background:#e2e8f0; font-size:11px; padding:2px 8px; border-radius:12px; color:#475569; font-weight:600;">2 canciones</span>
+                <button class="btn-pill" style="margin-left:6px;" onclick="alert('Agregar canción')">＋ Canción</button>
+              </div>
+              <button class="btn-del" onclick="alert('Eliminar banda completa')">✕ Quitar Banda</button>
+            </div>
+          </td>
+          <td style="background:#f1f5f9; text-align:center;"></td>
+        </tr>
+        <tr>
+          <td><strong>Pupilas Lejanas</strong></td>
+          <td>Diego B.</td>
+          <td>Marcelo B.</td>
+          <td>Juani C.</td>
+          <td>Bahiano</td>
+          <td style="text-align:center;"><button class="btn-del">✕</button></td>
+        </tr>
+        <tr>
+          <td><strong>Waitin'</strong></td>
+          <td>Diego B.</td>
+          <td>Marcelo B.</td>
+          <td>Juani C.</td>
+          <td>Bahiano</td>
+          <td style="text-align:center;"><button class="btn-del">✕</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- OPCIÓN C: FILA FANTASMA Y HOVER (ESTILO LINEAR) -->
+  <div class="demo-container">
+    <div class="demo-title">📌 Opción C: Fila Fantasma Inferior y Acciones en Hover (Estilo Linear)</div>
+    <div class="demo-desc">La ✕ sólo aparece cuando pasás el mouse sobre la fila correspondiente (evita ruido visual al leer). Fila '+ Agregar' al final.</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:180px; text-align:left;">BANDA</th>
+          <th style="width:200px; text-align:left;">CANCIÓN</th>
+          <th>BATERÍA</th>
+          <th>BAJO</th>
+          <th>GTR 1</th>
+          <th>MIC 1</th>
+          <th style="width:40px; text-align:center;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hover-row">
+          <td rowspan="3" style="background:#f8fafc; border:1px solid #cbd5e1;">
+            <div style="font-weight:800; color:var(--accent-blue);">SODA STEREO</div>
+            <div style="font-size:11px; color:#64748b; margin-top:3px;">🎵 2 temas</div>
+          </td>
+          <td><strong>De Música Ligera</strong></td>
+          <td>Charly A.</td>
+          <td>Zeta B.</td>
+          <td>Gustavo C.</td>
+          <td>Gustavo C.</td>
+          <td style="text-align:center;"><button class="btn-del">✕</button></td>
+        </tr>
+        <tr class="hover-row">
+          <td><strong>Persiana Americana</strong></td>
+          <td>Charly A.</td>
+          <td>Zeta B.</td>
+          <td>Gustavo C.</td>
+          <td>Gustavo C.</td>
+          <td style="text-align:center;"><button class="btn-del">✕</button></td>
+        </tr>
+        <tr>
+          <td colspan="6" class="ghost-row" onclick="alert('Nueva canción agregada')">
+            ＋ Agregar otra canción a Soda Stereo...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Archivos de entorno y credenciales
+.env
+.env.local
+*.log
+
+# Claves de Firebase
+*adminsdk*.json
+serviceAccountKey.json

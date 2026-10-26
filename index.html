@@ -157,7 +157,7 @@
             </ul>
 
             <div class="sidebar-footer">
-                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta1.0</div>
+                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta1.1</div>
             </div>
         </aside>
 
@@ -4815,7 +4815,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta1.0";
+        const APP_VERSION = "beta1.1";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -13156,24 +13156,24 @@
                     const trEscuela = document.createElement('tr');
                     trEscuela.className = 'fila-banda-header';
                     trEscuela.setAttribute('data-banda-clave', claveEscuela);
-                    trEscuela.style.cssText = 'background:#fefce8; border-top:1px solid #fef08a; cursor:pointer;';
+                    trEscuela.style.cssText = 'cursor:pointer;';
                     trEscuela.title = 'Click para desplegar / comprimir';
                     trEscuela.onclick = () => toggleBandaDeudas(claveEscuela);
                     trEscuela.innerHTML = `
-                        <td class="col-chk-deudas"></td>
+                        <td class="col-chk-deudas" style="text-align:center;"></td>
                         <td>
                             <span class="banda-chevron" style="display:inline-block; width:14px; color:#854d0e; font-size:11px; transition:transform .15s; transform:rotate(${colapsadaEscuela ? '-90deg' : '0deg'});">▼</span>
                             <span style="font-size:12.5px; font-weight:700; color:#854d0e;">🏫 MANDALA ENSAMBLES</span>
                             <span style="font-size:11px; color:#713f12; margin-left:4px; font-weight:500;">(${pasivosEscuela.length} ${pasivosEscuela.length === 1 ? 'pendiente' : 'pendientes'})</span>
                         </td>
                         <td></td>
-                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#dc2626; font-size:12.5px; font-variant-numeric:tabular-nums;">
+                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#dc2626; font-size:12.5px; font-variant-numeric:tabular-nums; padding-right:12px;">
                             -$ ${totEscuela.toLocaleString('es-AR')}
                         </td>
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td class="col-accion-deudas"></td>
+                        <td class="col-accion-deudas" style="text-align:center;"></td>
                     `;
                     tbody.appendChild(trEscuela);
 
@@ -13256,24 +13256,24 @@
                     const trBanda = document.createElement('tr');
                     trBanda.className = 'fila-banda-header';
                     trBanda.setAttribute('data-banda-clave', claveBanda);
-                    trBanda.style.cssText = 'background:#fefce8; border-top:1px solid #fef08a; cursor:pointer;';
+                    trBanda.style.cssText = 'cursor:pointer;';
                     trBanda.title = 'Click para desplegar / comprimir';
                     trBanda.onclick = () => toggleBandaDeudas(claveBanda);
                     trBanda.innerHTML = `
-                        <td class="col-chk-deudas"></td>
+                        <td class="col-chk-deudas" style="text-align:center;"></td>
                         <td>
                             <span class="banda-chevron" style="display:inline-block; width:14px; color:#854d0e; font-size:11px; transition:transform .15s; transform:rotate(${colapsada ? '-90deg' : '0deg'});">▼</span>
                             <span style="font-size:12.5px; font-weight:700; color:#854d0e;">🎸 ${bandaNombre.toUpperCase()}</span>
                             <span style="font-size:11px; color:#713f12; margin-left:4px; font-weight:500;">(${itemsBanda.length} ${itemsBanda.length === 1 ? 'pendiente' : 'pendientes'})</span>
                         </td>
                         <td></td>
-                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#059669; font-size:12.5px; font-variant-numeric:tabular-nums;">
+                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#059669; font-size:12.5px; font-variant-numeric:tabular-nums; padding-right:12px;">
                             +$ ${totBanda.toLocaleString('es-AR')}
                         </td>
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td class="col-accion-deudas"></td>
+                        <td class="col-accion-deudas" style="text-align:center;"></td>
                     `;
                     tbody.appendChild(trBanda);
 

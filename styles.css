@@ -1214,6 +1214,73 @@ body {
     background: #fbfbfa;
 }
 
+/* =========================================================
+   TABLA CONSOLIDADA DE DEUDAS - ALINEACIÓN Y GROSOR UNIFICADO
+   ========================================================= */
+#tabla-deudas-consolidada {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+#tabla-deudas-consolidada th {
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+/* Fila de Evento */
+#tabla-deudas-consolidada tr.group-header-row td {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    height: 42px !important;
+    vertical-align: middle !important;
+}
+
+/* Filas de Bandas y Mandala Ensambles: EXACTAMENTE MISMO ALTO/GROSOR Y ANCHO QUE LOS INTEGRANTES */
+#tabla-deudas-consolidada tr.fila-banda-header {
+    height: 42px !important;
+    cursor: pointer;
+}
+
+#tabla-deudas-consolidada tr.fila-banda-header td {
+    background-color: #fefce8 !important;
+    border-top: 1px solid #fef08a !important;
+    border-bottom: 1px solid #fef08a !important;
+    border-left: 1px solid #fef08a !important;
+    border-right: 1px solid #fef08a !important;
+    height: 42px !important;
+    padding: 8px 12px !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
+}
+
+#tabla-deudas-consolidada tr.fila-banda-header:hover td {
+    background-color: #fef9c3 !important;
+}
+
+/* Filas de Integrantes / Hijos */
+#tabla-deudas-consolidada tr.fila-banda-hijo {
+    height: 42px !important;
+}
+
+#tabla-deudas-consolidada tr.fila-banda-hijo td {
+    height: 42px !important;
+    padding: 4px 8px !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+#tabla-deudas-consolidada tr.fila-banda-hijo:hover td {
+    background-color: #f8fafc !important;
+}
+
 .spreadsheet-inp {
     width: 100%;
     height: 100%;

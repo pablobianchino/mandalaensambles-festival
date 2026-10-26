@@ -157,7 +157,7 @@
             </ul>
 
             <div class="sidebar-footer">
-                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta1.2</div>
+                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta1.3</div>
             </div>
         </aside>
 
@@ -307,10 +307,13 @@
                             🎛️ Rider Técnico
                         </button>
                         <button class="segmented-tab-btn" data-tab="entradas" onclick="switchTabEvento('entradas')">
-                            🎟️ Entradas
+                            🏷️ Precios
                         </button>
                         <button class="segmented-tab-btn" data-tab="cobertura" onclick="switchTabEvento('cobertura')">
                             🎬 Cobertura Audiovisual
+                        </button>
+                        <button class="segmented-tab-btn" data-tab="cierre-entradas" onclick="switchTabEvento('cierre-entradas')">
+                            🎟️ Cierre de Entradas
                         </button>
                         <button class="segmented-tab-btn" data-tab="finanzas" onclick="abrirFinanzasFestival(eventoActualId)">
                             💵 Finanzas
@@ -889,6 +892,70 @@
                         </div>
 
                     </div>
+
+                    <!-- Pestaña: Cierre de Entradas (Cumplimiento de Contrato & Entradas de Participantes) -->
+                    <div id="tab-ev-cierre-entradas" class="tab-ev-content" style="display:none;">
+                        <div class="content-card">
+                            <div class="card-header-flex" style="margin-bottom:12px;">
+                                <div>
+                                    <h4 style="margin:0 0 4px 0; font-size:14px; font-weight:800; color:var(--accent-blue);">
+                                        📊 Estado de Cumplimiento de Contrato & Entradas (Detalle Participantes)
+                                    </h4>
+                                    <span style="font-size:12px; color:var(--text-muted);">
+                                        Ingresá las entradas vendidas directamente en la tabla. Si cumple el cupo contractual pasa a <strong>Cupo Completo</strong>; si no, queda en <strong>Cupo Incumplido</strong> y se sincroniza automáticamente con la pestaña de <em>Cobros & Cuotas Alumnos</em> en Finanzas.
+                                    </span>
+                                </div>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="btn-app btn-secondary" onclick="toggleTodasLasBandas()" id="btn-toggle-bandas-todas">
+                                        🔽 Expandir Todo
+                                    </button>
+                                    <button class="btn-app btn-primary" onclick="abrirModalAgregarParticipante()">
+                                        ＋ Agregar Participante
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="spreadsheet-table" id="tabla-cumplimiento-contrato">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:230px; text-align:left;">Banda / Músico</th>
+                                            <th style="width:110px; text-align:center;">Cupo Requerido</th>
+                                            <th style="width:120px; text-align:center;">Entradas Vendidas</th>
+                                            <th style="width:130px; text-align:right;">Deuda Entradas ($)</th>
+                                            <th style="width:130px; text-align:center;">Estado Cupo</th>
+                                            <th style="width:160px; text-align:center;">Acciones / Cobro</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-cumplimiento-contrato">
+                                        <!-- Se renderiza reactivamente vía renderizarTablaCumplimientoContrato() -->
+                                    </tbody>
+                                    <tfoot id="tfoot-cumplimiento-contrato" style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
+                                        <tr>
+                                            <td style="padding:10px 14px; font-size:12.5px; text-transform:uppercase; color:var(--text-main);">
+                                                <strong>📊 TOTAL GENERAL EVENTO</strong>
+                                            </td>
+                                            <td style="text-align:center; font-family:'Geist Mono'; font-size:13.5px; color:var(--text-main);" id="tot-foot-cupo-requerido">
+                                                0 ent.
+                                            </td>
+                                            <td style="text-align:center; font-family:'Geist Mono'; font-size:13.5px; color:var(--accent-teal);" id="tot-foot-entradas-vendidas">
+                                                0 ent.
+                                            </td>
+                                            <td style="text-align:right; font-family:'Geist Mono'; font-size:13.5px; padding-right:12px;" id="tot-foot-deuda-pesos">
+                                                $ 0
+                                            </td>
+                                            <td style="text-align:center;" id="tot-foot-estado-cupo">
+                                                <span class="pill-status pill-info">0 faltantes</span>
+                                            </td>
+                                            <td style="text-align:center; font-size:11.5px; font-weight:700; color:var(--text-muted);" id="tot-foot-progreso">
+                                                0% cubierto
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 
                     <!-- Pestaña: Comunicaciones & Templates de WhatsApp -->
                     <div id="tab-ev-comunicaciones" class="tab-ev-content" style="display:none;">
@@ -1447,7 +1514,7 @@
                                         <table class="spreadsheet-table" style="font-size:11.5px;" id="tabla-ingresos-caja-dinamica">
                                             <thead>
                                                 <tr>
-                                                    <th style="width:75px; text-align:center;">Fecha</th>
+                                                    <th style="width:82px; text-align:center;">Fecha</th>
                                                     <th>Concepto</th>
                                                     <th style="text-align:right; width:115px;">Monto ($)</th>
                                                     <th style="width:34px; text-align:center;"></th>
@@ -1498,7 +1565,7 @@
                                         <table class="spreadsheet-table" style="font-size:11.5px;" id="tabla-gastos-escuela-dinamica">
                                             <thead>
                                                 <tr>
-                                                    <th style="width:75px; text-align:center;">Fecha</th>
+                                                    <th style="width:82px; text-align:center;">Fecha</th>
                                                     <th>Concepto</th>
                                                     <th style="width:115px; text-align:right;">Monto ($)</th>
                                                     <th style="width:34px; text-align:center;"></th>
@@ -1600,67 +1667,6 @@
                                         <div style="font-size:1.6em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-ganancia-tot">+$ 0</div>
                                         <span style="font-size:11px; font-weight:700; color:#15803d;" id="resumen-card-sub-ganancia">Rentabilidad líquida final</span>
                                     </div>
-                                </div>
-                            </div>
-
-                            <div class="content-card">
-                                <div class="card-header-flex" style="margin-bottom:12px;">
-                                    <div>
-                                        <h4 style="margin:0 0 4px 0; font-size:14px; font-weight:800; color:var(--accent-blue);">
-                                            📊 Estado de Cumplimiento de Contrato & Entradas (Detalle Participantes)
-                                        </h4>
-                                        <span style="font-size:12px; color:var(--text-muted);">
-                                            Ingresá las entradas vendidas directamente en la tabla. Si cumple el cupo contractual pasa a <strong>Cupo Completo</strong>; si no, queda en <strong>Cupo Incumplido</strong> y se sincroniza automáticamente con la pestaña de <em>Cobros & Cuotas Alumnos</em>.
-                                        </span>
-                                    </div>
-                                    <div style="display:flex; gap:8px;">
-                                        <button class="btn-app btn-secondary" onclick="toggleTodasLasBandas()" id="btn-toggle-bandas-todas">
-                                            🔽 Expandir Todo
-                                        </button>
-                                        <button class="btn-app btn-primary" onclick="abrirModalAgregarParticipante()">
-                                            ＋ Agregar Participante
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="table-responsive">
-                                    <table class="spreadsheet-table" id="tabla-cumplimiento-contrato">
-                                        <thead>
-                                            <tr>
-                                                <th style="width:230px; text-align:left;">Banda / Músico</th>
-                                                <th style="width:110px; text-align:center;">Cupo Requerido</th>
-                                                <th style="width:120px; text-align:center;">Entradas Vendidas</th>
-                                                <th style="width:130px; text-align:right;">Deuda Entradas ($)</th>
-                                                <th style="width:130px; text-align:center;">Estado Cupo</th>
-                                                <th style="width:160px; text-align:center;">Acciones / Cobro</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tbody-cumplimiento-contrato">
-                                            <!-- Se renderiza reactivamente vÃ­a renderizarTablaCumplimientoContrato() -->
-                                        </tbody>
-                                        <tfoot id="tfoot-cumplimiento-contrato" style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
-                                            <tr>
-                                                <td style="padding:10px 14px; font-size:12.5px; text-transform:uppercase; color:var(--text-main);">
-                                                    <strong>📊 TOTAL GENERAL EVENTO</strong>
-                                                </td>
-                                                <td style="text-align:center; font-family:'Geist Mono'; font-size:13.5px; color:var(--text-main);" id="tot-foot-cupo-requerido">
-                                                    0 ent.
-                                                </td>
-                                                <td style="text-align:center; font-family:'Geist Mono'; font-size:13.5px; color:var(--accent-teal);" id="tot-foot-entradas-vendidas">
-                                                    0 ent.
-                                                </td>
-                                                <td style="text-align:right; font-family:'Geist Mono'; font-size:13.5px; padding-right:12px;" id="tot-foot-deuda-pesos">
-                                                    $ 0
-                                                </td>
-                                                <td style="text-align:center;" id="tot-foot-estado-cupo">
-                                                    <span class="pill-status pill-info">0 faltantes</span>
-                                                </td>
-                                                <td style="text-align:center; font-size:11.5px; font-weight:700; color:var(--text-muted);" id="tot-foot-progreso">
-                                                    0% cubierto
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -2112,6 +2118,9 @@
                                     <option value="todos">🎪 Todos los festivales</option>
                                 </select>
                             </div>
+                            <button type="button" class="btn-app btn-secondary" id="btn-toggle-todas-deudas" onclick="toggleTodasLasBandasDeudas()" style="font-size:12px; padding:6px 12px; font-weight:700; white-space:nowrap;">
+                                🔼 Comprimir Todo
+                            </button>
                         </div>
 
                         <!-- Cabecera Exclusiva de Impresión de Deudas -->
@@ -4882,7 +4891,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta1.2";
+        const APP_VERSION = "beta1.3";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -5290,6 +5299,9 @@
             if (typeof renderizarCoberturaBandasFestival === 'function') {
                 renderizarCoberturaBandasFestival();
             }
+            if (typeof renderizarTablaCumplimientoContrato === 'function') {
+                renderizarTablaCumplimientoContrato();
+            }
 
             switchTabEvento('info');
         }
@@ -5325,6 +5337,9 @@
             if (tabId === 'cobertura') {
                 if (typeof recalcularCoberturaEscuela === 'function') recalcularCoberturaEscuela(false);
                 if (typeof renderizarCoberturaBandasFestival === 'function') renderizarCoberturaBandasFestival();
+            }
+            if (tabId === 'cierre-entradas') {
+                if (typeof renderizarTablaCumplimientoContrato === 'function') renderizarTablaCumplimientoContrato();
             }
             if (tabId === 'comunicaciones') {
                 if (typeof renderizarCentroComunicacionesFestival === 'function') renderizarCentroComunicacionesFestival();
@@ -6104,6 +6119,149 @@
         }
         window.actualizarAnioCaja = actualizarAnioCaja;
 
+        // =========================================================
+        // UTILIDADES DE FECHA Y ORDENAMIENTO CRONOLÓGICO PARA CAJA
+        // =========================================================
+        function parsearFechaCajaObjeto(fechaRaw, anioCaja) {
+            const anioDef = parseInt(anioCaja || anioCajaActual || '2026', 10) || new Date().getFullYear();
+            if (!fechaRaw || typeof fechaRaw !== 'string') return { valid: false };
+            const s = fechaRaw.trim();
+            if (!s || s === 'A definir') return { valid: false };
+
+            // 1. Formato ISO: YYYY-MM-DD
+            let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (m) {
+                return {
+                    year: parseInt(m[1], 10),
+                    month: parseInt(m[2], 10),
+                    day: parseInt(m[3], 10),
+                    valid: true
+                };
+            }
+
+            // 2. Formato DD/MM/YY o DD/MM/YYYY
+            m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+            if (m) {
+                const day = parseInt(m[1], 10);
+                const month = parseInt(m[2], 10);
+                const yStr = m[3];
+                const year = yStr.length === 2 ? (2000 + parseInt(yStr, 10)) : parseInt(yStr, 10);
+                return { year, month, day, valid: true };
+            }
+
+            // 3. Formato DD/MM (sin año explícito -> asume el año de la Caja actual)
+            m = s.match(/^(\d{1,2})\/(\d{1,2})$/);
+            if (m) {
+                return {
+                    year: anioDef,
+                    month: parseInt(m[2], 10),
+                    day: parseInt(m[1], 10),
+                    valid: true
+                };
+            }
+
+            // 4. Formato compacto YYMMDD (ej: 260603)
+            m = s.match(/^(\d{2})(\d{2})(\d{2})$/);
+            if (m) {
+                return {
+                    year: 2000 + parseInt(m[1], 10),
+                    month: parseInt(m[2], 10),
+                    day: parseInt(m[3], 10),
+                    valid: true
+                };
+            }
+
+            return { valid: false };
+        }
+
+        // Muestra siempre dd/mm salvo cuando la fecha pertenece a otro año distinto al de la Caja actual (dd/mm/aa)
+        function formatearFechaVisualCaja(fechaRaw, anioCaja) {
+            const anioDef = parseInt(anioCaja || anioCajaActual || '2026', 10) || new Date().getFullYear();
+            const parsed = parsearFechaCajaObjeto(fechaRaw, anioDef);
+            if (!parsed.valid) return fechaRaw || '';
+            const dd = String(parsed.day).padStart(2, '0');
+            const mm = String(parsed.month).padStart(2, '0');
+            if (parsed.year !== anioDef) {
+                const aa = String(parsed.year).slice(-2);
+                return `${dd}/${mm}/${aa}`;
+            }
+            return `${dd}/${mm}`;
+        }
+        window.formatearFechaVisualCaja = formatearFechaVisualCaja;
+
+        function convertirFechaCajaAIso(fechaRaw, anioCaja) {
+            const anioDef = parseInt(anioCaja || anioCajaActual || '2026', 10) || new Date().getFullYear();
+            const parsed = parsearFechaCajaObjeto(fechaRaw, anioDef);
+            if (parsed.valid) {
+                const yyyy = String(parsed.year).padStart(4, '0');
+                const mm = String(parsed.month).padStart(2, '0');
+                const dd = String(parsed.day).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            }
+            const hoy = new Date();
+            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dd = String(hoy.getDate()).padStart(2, '0');
+            return `${anioDef}-${mm}-${dd}`;
+        }
+        window.convertirFechaCajaAIso = convertirFechaCajaAIso;
+
+        function obtenerTimestampItemCaja(item, anioCaja) {
+            if (!item) return Number.MAX_SAFE_INTEGER;
+            if (item.esSaldoAnterior) return -Infinity;
+            const parsed = parsearFechaCajaObjeto(item.fecha, anioCaja);
+            if (!parsed.valid) return Number.MAX_SAFE_INTEGER - 1;
+            return new Date(parsed.year, parsed.month - 1, parsed.day).getTime();
+        }
+
+        function cambiarFechaCalendarioCaja(tipo, id, isoVal) {
+            if (!isoVal) return;
+            const anio = anioCajaActual || '2026';
+            const fechaFormateada = formatearFechaVisualCaja(isoVal, anio);
+
+            if (tipo === 'gasto') {
+                editarGastoEscuelaCaja(id, 'fecha', fechaFormateada);
+            } else if (tipo === 'ingreso') {
+                editarIngresoManualCaja(id, 'fecha', fechaFormateada);
+            } else if (tipo === 'festival') {
+                const parsed = parsearFechaCajaObjeto(isoVal, anio);
+                if (parsed.valid && typeof infoFestivales === 'object' && infoFestivales[id]) {
+                    const f = infoFestivales[id];
+                    const fechaCompleta = `${String(parsed.day).padStart(2, '0')}/${String(parsed.month).padStart(2, '0')}/${parsed.year}`;
+                    f.fecha = fechaCompleta;
+                    if (window.MandalaApp && window.MandalaApp.festivales && typeof window.MandalaApp.festivales.actualizar === 'function') {
+                        window.MandalaApp.festivales.actualizar(id, { fecha: fechaCompleta }).catch(e => {
+                            console.warn('[Caja Sync] Error actualizando fecha de festival:', e);
+                        });
+                    }
+                    renderizarCajaFestivales();
+                }
+            }
+        }
+        window.cambiarFechaCalendarioCaja = cambiarFechaCalendarioCaja;
+
+        function editarMontoFestivalCaja(festId, nuevoMonto) {
+            const parsed = parsearMontoInput(nuevoMonto);
+            if (typeof infoFestivales === 'object' && infoFestivales[festId]) {
+                infoFestivales[festId].netoEscuela = parsed;
+            }
+            const filaFin = document.querySelector(`#tabla-finanzas-resumen-filas tr[data-fest-id='${festId}']`);
+            if (filaFin) {
+                const celdas = filaFin.querySelectorAll('td');
+                if (celdas.length >= 7) {
+                    celdas[6].textContent = formatearMonedaAr(parsed);
+                }
+            }
+            if (window.MandalaApp && window.MandalaApp.festivales && typeof window.MandalaApp.festivales.actualizar === 'function') {
+                window.MandalaApp.festivales.actualizar(festId, { netoEscuela: parsed }).catch(e => {
+                    console.warn('[Caja Sync] Error actualizando netoEscuela de festival:', e);
+                });
+            }
+            if (!window._estaEditandoCaja) {
+                renderizarCajaFestivales();
+            }
+        }
+        window.editarMontoFestivalCaja = editarMontoFestivalCaja;
+
         // Calcular ingresos provenientes de festivales del año (excluyendo eliminados)
         function obtenerIngresosFestivalesAnio(anio) {
             const ingresos = [];
@@ -6137,12 +6295,13 @@
                     if (neto > 0) {
                         let fechaCorta = 'A definir';
                         if (f.fecha) {
-                            const match = f.fecha.match(/(\d{1,2}\/\d{1,2})/);
-                            if (match) fechaCorta = match[1];
+                            const match = f.fecha.match(/(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/);
+                            if (match) fechaCorta = formatearFechaVisualCaja(match[1], anioStr);
                             else fechaCorta = f.fecha.split(' ')[0] || f.fecha;
                         }
                         ingresos.push({
                             id: 'ing-fest-' + id,
+                            festId: id,
                             fecha: fechaCorta,
                             concepto: f.nombre || 'Festival',
                             monto: neto,
@@ -6176,7 +6335,7 @@
         // VARIABLES DE CONTROL PARA PROTECCIÓN DE FOCO ACTIVO (OPCIÓN A)
         // =======================================================================
         window._estaEditandoCaja = false;
-        window._celdaCajaActiva = null; // { tipo: 'gasto'|'ingreso', id: string, campo: string }
+        window._celdaCajaActiva = null; // { tipo: 'gasto'|'ingreso'|'festival', id: string, campo: string }
         window._cajaPendienteDeActualizar = false;
 
         function renderizarCajaFestivales() {
@@ -6217,6 +6376,9 @@
             const ingManuales = ingresosManualesCajaDB[anio];
             listaIngresos.push(...ingManuales);
 
+            // Ordenar Ingresos por fecha de más antiguo a más nuevo (manteniendo Saldo Anterior arriba)
+            listaIngresos.sort((a, b) => obtenerTimestampItemCaja(a, anio) - obtenerTimestampItemCaja(b, anio));
+
             let totalIngresos = 0;
 
             if (tbodyIngresos) {
@@ -6228,6 +6390,7 @@
                         const montoNum = Number(item.monto) || 0;
                         totalIngresos += montoNum;
                         const tr = document.createElement('tr');
+                        tr.setAttribute('data-item-id', item.id);
                         tr.style.background = item.esSaldoAnterior ? '#fafaf9' : '';
 
                         if (item.esSaldoAnterior) {
@@ -6238,17 +6401,32 @@
                                 <td style="text-align:center; padding:6px;"></td>
                             `;
                         } else if (item.esAutomatico) {
+                            const fechaVisualFest = formatearFechaVisualCaja(item.fecha, anio) || item.fecha;
+                            const isoFest = convertirFechaCajaAIso(item.fecha, anio);
+                            const idFest = item.festId || item.id.replace('ing-fest-', '');
                             tr.innerHTML = `
-                                <td style="text-align:center; font-family:'Geist Mono'; font-weight:500; color:#0f172a; padding:6px;">${item.fecha}</td>
+                                <td style="text-align:center; padding:4px 6px;">
+                                    <div class="caja-date-cell-wrapper" title="Click para seleccionar fecha en el calendario">
+                                        <span class="caja-date-label">${fechaVisualFest}</span>
+                                        <input type="date" class="caja-date-native-input" value="${isoFest}" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}" onchange="cambiarFechaCalendarioCaja('festival', '${idFest}', this.value)">
+                                    </div>
+                                </td>
                                 <td style="font-weight:500; color:#0f172a; padding:6px;">🎪 ${item.concepto}</td>
-                                <td style="text-align:right; font-family:'Geist Mono'; font-weight:500; color:var(--accent-green); padding:6px;">${formatearMonedaAr(montoNum)}</td>
+                                <td style="text-align:right; padding:4px 6px;">
+                                    <span class="cell-caja-editable cell-caja-monto" data-monto="${montoNum}" title="Click para ajustar el ingreso neto del festival" style="font-family:'Geist Mono'; font-weight:500; color:var(--accent-green); width:100%; text-align:right; display:block;" contenteditable="true" onfocus="iniciarEdicionMonto(this, 'festival', '${idFest}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionMonto(this, '${idFest}', 'festival')">${formatearMonedaAr(montoNum)}</span>
+                                </td>
                                 <td style="text-align:center; padding:6px;"></td>
                             `;
                         } else {
-                            // Ingreso manual: editable in-situ con protección de foco activo
+                            // Ingreso manual: fecha con selector de calendario y formato inteligente dd/mm vs dd/mm/aa
+                            const fechaVisualIng = formatearFechaVisualCaja(item.fecha, anio) || item.fecha || '📅';
+                            const isoIng = convertirFechaCajaAIso(item.fecha, anio);
                             tr.innerHTML = `
                                 <td style="text-align:center; padding:4px 6px;">
-                                    <span class="cell-caja-editable" style="font-family:'Geist Mono'; font-weight:500; color:#0f172a; display:inline-block;" contenteditable="true" onfocus="iniciarEdicionCaja('ingreso', '${item.id}', 'fecha', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionCaja('ingreso', '${item.id}', 'fecha', this)">${item.fecha || ''}</span>
+                                    <div class="caja-date-cell-wrapper" title="Click para seleccionar fecha en el calendario">
+                                        <span class="caja-date-label">${fechaVisualIng}</span>
+                                        <input type="date" class="caja-date-native-input" value="${isoIng}" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}" onchange="cambiarFechaCalendarioCaja('ingreso', '${item.id}', this.value)">
+                                    </div>
                                 </td>
                                 <td style="padding:4px 6px;">
                                     <span class="cell-caja-editable cell-concepto" data-placeholder="Nuevo ingreso..." style="font-weight:500; color:#0f172a; width:100%; display:block;" contenteditable="true" onfocus="iniciarEdicionCaja('ingreso', '${item.id}', 'concepto', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="if(this.innerText.trim()===''){this.innerHTML='';} finalizarEdicionCaja('ingreso', '${item.id}', 'concepto', this)">${item.concepto ? item.concepto : ''}</span>
@@ -6271,10 +6449,10 @@
             if (badgeIngresos) badgeIngresos.textContent = formatearMonedaAr(totalIngresos);
             if (pieIngresos) pieIngresos.textContent = formatearMonedaAr(totalIngresos);
 
-            // 2. Renderizar tabla de Gastos (dinámica, editable in-situ con protección de foco activo)
+            // 2. Renderizar tabla de Gastos (dinámica, ordenada de más antiguo a más nuevo y con calendario)
             const tbodyGastos = document.getElementById('tbody-gastos-escuela-filas');
             if (!gastosEscuelaDB[anio]) gastosEscuelaDB[anio] = [];
-            const listaGastos = gastosEscuelaDB[anio];
+            const listaGastos = [...gastosEscuelaDB[anio]].sort((a, b) => obtenerTimestampItemCaja(a, anio) - obtenerTimestampItemCaja(b, anio));
             let totalGastos = 0;
 
             if (tbodyGastos) {
@@ -6285,10 +6463,16 @@
                     listaGastos.forEach((g) => {
                         const montoGasto = Number(g.monto) || 0;
                         totalGastos += montoGasto;
+                        const fechaVisualGasto = formatearFechaVisualCaja(g.fecha, anio) || g.fecha || '📅';
+                        const isoGasto = convertirFechaCajaAIso(g.fecha, anio);
                         const tr = document.createElement('tr');
+                        tr.setAttribute('data-item-id', g.id);
                         tr.innerHTML = `
                             <td style="text-align:center; padding:4px 6px;">
-                                <span class="cell-caja-editable" style="font-family:'Geist Mono'; font-weight:500; color:#0f172a; display:inline-block;" contenteditable="true" onfocus="iniciarEdicionCaja('gasto', '${g.id}', 'fecha', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionCaja('gasto', '${g.id}', 'fecha', this)">${g.fecha || ''}</span>
+                                <div class="caja-date-cell-wrapper" title="Click para seleccionar fecha en el calendario">
+                                    <span class="caja-date-label">${fechaVisualGasto}</span>
+                                    <input type="date" class="caja-date-native-input" value="${isoGasto}" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}" onchange="cambiarFechaCalendarioCaja('gasto', '${g.id}', this.value)">
+                                </div>
                             </td>
                             <td style="padding:4px 6px;">
                                 <span class="cell-caja-editable cell-concepto" data-placeholder="Nuevo gasto..." style="font-weight:500; color:#0f172a; width:100%; display:block;" contenteditable="true" onfocus="iniciarEdicionCaja('gasto', '${g.id}', 'concepto', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="if(this.innerText.trim()===''){this.innerHTML='';} finalizarEdicionCaja('gasto', '${g.id}', 'concepto', this)">${g.concepto ? g.concepto : ''}</span>
@@ -6395,6 +6579,8 @@
                 editarGastoEscuelaCaja(id, 'monto', parsed);
             } else if (tipo === 'ingreso') {
                 editarIngresoManualCaja(id, 'monto', parsed);
+            } else if (tipo === 'festival') {
+                editarMontoFestivalCaja(id, parsed);
             }
             window._estaEditandoCaja = false;
             window._celdaCajaActiva = null;
@@ -6417,7 +6603,7 @@
             const fechaStr = String(hoy.getDate()).padStart(2, '0') + '/' + String(hoy.getMonth() + 1).padStart(2, '0');
 
             // Concepto vacío para que active el placeholder nativo sin tener que borrar texto literal
-            gastosEscuelaDB[anio].unshift({
+            gastosEscuelaDB[anio].push({
                 id: nuevoId,
                 fecha: fechaStr,
                 concepto: '',
@@ -6426,12 +6612,13 @@
             guardarGastosEscuelaStorage();
             renderizarCajaFestivales();
 
-            // Auto-focus inmediato en la celda de concepto vacía para tipear directo
+            // Auto-focus inmediato en la celda de concepto vacía de la fila recién creada
             setTimeout(() => {
-                const primerConcepto = document.querySelector('#tbody-gastos-escuela-filas tr:first-child .cell-concepto');
-                if (primerConcepto) {
-                    iniciarEdicionCaja('gasto', nuevoId, 'concepto', primerConcepto);
-                    primerConcepto.focus();
+                const celdaConcepto = document.querySelector(`#tbody-gastos-escuela-filas tr[data-item-id="${nuevoId}"] .cell-concepto`);
+                if (celdaConcepto) {
+                    celdaConcepto.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    iniciarEdicionCaja('gasto', nuevoId, 'concepto', celdaConcepto);
+                    celdaConcepto.focus();
                 }
             }, 40);
         }
@@ -6454,6 +6641,8 @@
 
             if (campo === 'monto') {
                 gasto.monto = parsearMontoInput(valor);
+            } else if (campo === 'fecha') {
+                gasto.fecha = formatearFechaVisualCaja(String(valor).trim(), anio);
             } else {
                 gasto[campo] = String(valor).trim();
             }
@@ -6472,7 +6661,7 @@
             const hoy = new Date();
             const fechaStr = String(hoy.getDate()).padStart(2, '0') + '/' + String(hoy.getMonth() + 1).padStart(2, '0');
 
-            ingresosManualesCajaDB[anio].unshift({
+            ingresosManualesCajaDB[anio].push({
                 id: nuevoId,
                 fecha: fechaStr,
                 concepto: '',
@@ -6482,10 +6671,11 @@
             renderizarCajaFestivales();
 
             setTimeout(() => {
-                const primerConcepto = document.querySelector('#tbody-ingresos-caja-filas tr:first-child .cell-concepto');
-                if (primerConcepto) {
-                    iniciarEdicionCaja('ingreso', nuevoId, 'concepto', primerConcepto);
-                    primerConcepto.focus();
+                const celdaConcepto = document.querySelector(`#tbody-ingresos-caja-filas tr[data-item-id="${nuevoId}"] .cell-concepto`);
+                if (celdaConcepto) {
+                    celdaConcepto.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    iniciarEdicionCaja('ingreso', nuevoId, 'concepto', celdaConcepto);
+                    celdaConcepto.focus();
                 }
             }, 40);
         }
@@ -6508,6 +6698,8 @@
 
             if (campo === 'monto') {
                 ingreso.monto = parsearMontoInput(valor);
+            } else if (campo === 'fecha') {
+                ingreso.fecha = formatearFechaVisualCaja(String(valor).trim(), anio);
             } else {
                 ingreso[campo] = String(valor).trim();
             }
@@ -6769,7 +6961,7 @@
                 if (!gastosEscuelaDB[anio]) gastosEscuelaDB[anio] = [];
                 gastosEscuelaDB[anio].push({
                     id: g.id,
-                    fecha: g.fecha,
+                    fecha: formatearFechaVisualCaja(g.fecha, anio),
                     concepto: g.concepto,
                     monto: g.monto
                 });
@@ -10842,7 +11034,7 @@
                     const tr = document.createElement('tr');
                     const etiquetaCuota = cantCuotas > 1
                         ? `<span class="pill-status" style="background:#eff6ff; color:#1d4ed8; font-size:10.5px; margin-left:4px;">Cuota ${cIdx + 1}/${cantCuotas}</span>`
-                        : `<span style="font-size:11px; color:var(--text-muted); margin-left:4px;">(1 pago)</span>`;
+                        : '';
 
                     let celdaQuienPagaHtml = '';
                     if (tipo === 'invitado') {
@@ -13074,7 +13266,7 @@
                     const safeNombre = nombre.replace(/'/g, "\\'");
                     const badgeCuota = cantCuotas > 1
                         ? `<span class="pill-status" style="background:#eff6ff; color:#1d4ed8; font-size:10.5px; margin-left:4px;">Cuota ${cIdx + 1}/${cantCuotas}</span>`
-                        : `<span style="font-size:11px; color:var(--text-muted); margin-left:4px;">(1 pago)</span>`;
+                        : '';
 
                     const tr = document.createElement('tr');
                     if (!p.pagada) {
@@ -13584,13 +13776,13 @@
                 // Cabecera agrupada de festival (8 columnas)
                 const trHeader = document.createElement('tr');
                 trHeader.className = 'group-header-row';
-                trHeader.style.cssText = 'background:#f1f5f9; border-top:2px solid #cbd5e1; cursor:pointer;';
+                trHeader.style.cssText = 'background:#f1f5f9; border-top:2px solid #cbd5e1;';
                 trHeader.innerHTML = `
                     <td class="col-chk-deudas" style="text-align:center;"></td>
                     <td colspan="3" style="padding:10px 14px;">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span style="font-size:14px;">🎪</span>
-                            <strong style="color:var(--accent-blue); font-size:13.5px;">${grupo.festNombre.toUpperCase()}</strong>
+                            <strong onclick="irAFestivalDesdeDeudas('${grupo.festId}', event)" title="Ir a la ficha del evento ${grupo.festNombre}" style="color:var(--accent-blue); font-size:13.5px; cursor:pointer; text-decoration:underline; text-underline-offset:3px;">${grupo.festNombre.toUpperCase()}</strong>
                             <span style="font-size:11.5px; color:var(--text-muted);">(${grupo.festFecha})</span>
                             <span class="group-count-badge" style="background:#e2e8f0; color:#334155; font-size:11px;">${grupo.items.length} pendientes</span>
                         </div>
@@ -13805,8 +13997,19 @@
 
             actualizarTotalesVisiblesDeudas(sumVisiblesEscuela, sumVisiblesCobros);
             actualizarEstadoBotonSeleccionadosDeudas();
+            actualizarTextoBotonToggleTodasDeudas();
         }
         window.filtrarTablaDeudas = filtrarTablaDeudas;
+
+        function irAFestivalDesdeDeudas(festId, ev) {
+            if (ev) ev.stopPropagation();
+            if (!festId) return;
+            document.querySelectorAll('#sidebar .nav-item').forEach(it => it.classList.remove('active'));
+            const navEv = document.querySelector('#sidebar .nav-item[data-view="eventos"]');
+            if (navEv) navEv.classList.add('active');
+            abrirDetalleEvento(festId, true);
+        }
+        window.irAFestivalDesdeDeudas = irAFestivalDesdeDeudas;
 
         // Estado de bandas comprimidas en la tabla de deudas (persiste entre re-renders)
         const bandasDeudasColapsadas = new Set();
@@ -13822,8 +14025,47 @@
                     if (chev) chev.style.transform = colapsar ? 'rotate(-90deg)' : 'rotate(0deg)';
                 }
             });
+            actualizarTextoBotonToggleTodasDeudas();
         }
         window.toggleBandaDeudas = toggleBandaDeudas;
+
+        function toggleTodasLasBandasDeudas() {
+            const headers = Array.from(document.querySelectorAll('#tbody-deudas-filas tr.fila-banda-header[data-banda-clave]'));
+            if (headers.length === 0) return;
+            const clavesVisibles = headers.map(h => h.getAttribute('data-banda-clave')).filter(Boolean);
+            const todasColapsadas = clavesVisibles.every(c => bandasDeudasColapsadas.has(c));
+            const colapsar = !todasColapsadas;
+
+            clavesVisibles.forEach(c => {
+                if (colapsar) bandasDeudasColapsadas.add(c);
+                else bandasDeudasColapsadas.delete(c);
+            });
+
+            document.querySelectorAll('#tbody-deudas-filas tr[data-banda-clave]').forEach(tr => {
+                if (tr.classList.contains('fila-banda-hijo')) {
+                    tr.style.display = colapsar ? 'none' : '';
+                } else {
+                    const chev = tr.querySelector('.banda-chevron');
+                    if (chev) chev.style.transform = colapsar ? 'rotate(-90deg)' : 'rotate(0deg)';
+                }
+            });
+            actualizarTextoBotonToggleTodasDeudas();
+        }
+        window.toggleTodasLasBandasDeudas = toggleTodasLasBandasDeudas;
+
+        function actualizarTextoBotonToggleTodasDeudas() {
+            const btn = document.getElementById('btn-toggle-todas-deudas');
+            if (!btn) return;
+            const headers = Array.from(document.querySelectorAll('#tbody-deudas-filas tr.fila-banda-header[data-banda-clave]'));
+            if (headers.length === 0) {
+                btn.textContent = '🔼 Comprimir Todo';
+                return;
+            }
+            const clavesVisibles = headers.map(h => h.getAttribute('data-banda-clave')).filter(Boolean);
+            const todasColapsadas = clavesVisibles.length > 0 && clavesVisibles.every(c => bandasDeudasColapsadas.has(c));
+            btn.textContent = todasColapsadas ? '🔽 Expandir Todo' : '🔼 Comprimir Todo';
+        }
+        window.actualizarTextoBotonToggleTodasDeudas = actualizarTextoBotonToggleTodasDeudas;
 
         function actualizarTotalesVisiblesDeudas(sumEscuela, sumCobros) {
             const elTot = document.getElementById('td-tot-visibles-deudas');

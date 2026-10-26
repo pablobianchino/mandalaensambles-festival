@@ -2337,6 +2337,43 @@ tr.drag-over {
     pointer-events: none;
 }
 
+.caja-date-cell-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s ease, outline 0.15s ease;
+    min-width: 56px;
+}
+
+.caja-date-cell-wrapper:hover {
+    background: #f1f5f9;
+    outline: 1px dashed #94a3b8;
+}
+
+.caja-date-label {
+    font-family: 'Geist Mono', monospace;
+    font-weight: 500;
+    color: #0f172a;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.caja-date-native-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
 /* =======================================================================
    MULTI-SELECT INSTRUMENTOS DROPDOWN (SESIONISTAS & MANDALA)
    ======================================================================= */

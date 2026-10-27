@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=beta1.4">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -157,7 +157,7 @@
             </ul>
 
             <div class="sidebar-footer">
-                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta1.3</div>
+                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta1.4</div>
             </div>
         </aside>
 
@@ -294,11 +294,38 @@
                      SECCIÓN: DETALLE DEL EVENTO SELECCIONADO
                      ===================================================== -->
                 <section id="panel-evento-detalle" style="display:none;">
+
+                    <!-- CABECERA MAESTRA COMPARTIDA EVENTO ⇄ FINANZAS -->
+                    <div class="festival-master-header">
+                        <div class="festival-header-left">
+                            <div>
+                                <div class="festival-title-block">
+                                    <h3>
+                                        <span id="ev-master-titulo">🎪 GREGÓN FESTIVAL</span>
+                                        <span class="pill-status estado-encurso" id="ev-master-estado-pill" style="font-size:11px;">En Curso</span>
+                                    </h3>
+                                </div>
+                                <div class="festival-meta-sub" id="ev-master-sub">
+                                    <strong>Fecha:</strong> 24/09/2026 · <strong>Venue:</strong> Gregón Bar · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="mode-switch-pill">
+                                <button type="button" class="mode-switch-btn active-evento" onclick="abrirDetalleEvento(eventoActualId, false)">
+                                    <span>🎪</span> <span>Producción del Evento</span>
+                                </button>
+                                <button type="button" class="mode-switch-btn" onclick="abrirFinanzasFestival(eventoActualId)">
+                                    <span>💵</span> <span>Finanzas & Liquidación</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <!-- Pestañas internas del Evento en el orden solicitado -->
+                    <!-- Pestañas internas operativas del Evento (6 pestañas limpias) -->
                     <div class="segmented-tabs-bar">
                         <button class="segmented-tab-btn active" data-tab="info" onclick="switchTabEvento('info')">
-                            📋 Información General
+                            📋 Info & Artistas
                         </button>
                         <button class="segmented-tab-btn" data-tab="cronograma" onclick="switchTabEvento('cronograma')">
                             ⏱️ Cronograma
@@ -306,17 +333,11 @@
                         <button class="segmented-tab-btn" data-tab="rider" onclick="switchTabEvento('rider')">
                             🎛️ Rider Técnico
                         </button>
-                        <button class="segmented-tab-btn" data-tab="entradas" onclick="switchTabEvento('entradas')">
-                            🏷️ Precios
-                        </button>
                         <button class="segmented-tab-btn" data-tab="cobertura" onclick="switchTabEvento('cobertura')">
                             🎬 Cobertura Audiovisual
                         </button>
                         <button class="segmented-tab-btn" data-tab="cierre-entradas" onclick="switchTabEvento('cierre-entradas')">
                             🎟️ Cierre de Entradas
-                        </button>
-                        <button class="segmented-tab-btn" data-tab="finanzas" onclick="abrirFinanzasFestival(eventoActualId)">
-                            💵 Finanzas
                         </button>
                         <button class="segmented-tab-btn" data-tab="comunicaciones" onclick="switchTabEvento('comunicaciones')">
                             💬 Comunicaciones
@@ -389,7 +410,7 @@
                         <div class="content-card" style="margin-top:20px;">
                             <div class="card-header-flex">
                                 <div>
-                                    <h3 class="card-title">Artistas Participantes del Festival</h3>
+                                    <h3 class="card-title">Participantes del Festival</h3>
                                 </div>
                                 <div style="display:flex; gap:8px;">
                                     <button class="btn-table-pill" id="btn-toggle-todos-ensambles" onclick="toggleTodosLosEnsambles()" title="Comprimir o descomprimir todos los ensambles">
@@ -616,9 +637,24 @@
                                                 <th class="col-drag-header" style="width:36px;">⠿</th>
                                                 <th style="width:36%; text-align:left;">Ítem / Instrumento</th>
                                                 <th style="width:14%; text-align:left;">Origen</th>
-                                                <th style="width:10%; text-align:center;">Preparado</th>
-                                                <th style="width:12%; text-align:center;">Listo para Salir</th>
-                                                <th style="width:10%; text-align:center;">De Regreso</th>
+                                                <th style="width:10%; text-align:center;">
+                                                    <label style="display:inline-flex; align-items:center; justify-content:center; gap:5px; cursor:pointer; margin:0;" title="Tildar o destildar todos en Preparado">
+                                                        <input type="checkbox" id="chk-col-checklist-0" class="no-print" style="cursor:pointer;" onchange="toggleColumnaChecklist(0, this.checked)">
+                                                        <span>Preparado</span>
+                                                    </label>
+                                                </th>
+                                                <th style="width:12%; text-align:center;">
+                                                    <label style="display:inline-flex; align-items:center; justify-content:center; gap:5px; cursor:pointer; margin:0;" title="Tildar o destildar todos en Listo para Salir">
+                                                        <input type="checkbox" id="chk-col-checklist-1" class="no-print" style="cursor:pointer;" onchange="toggleColumnaChecklist(1, this.checked)">
+                                                        <span>Listo para Salir</span>
+                                                    </label>
+                                                </th>
+                                                <th style="width:10%; text-align:center;">
+                                                    <label style="display:inline-flex; align-items:center; justify-content:center; gap:5px; cursor:pointer; margin:0;" title="Tildar o destildar todos en De Regreso">
+                                                        <input type="checkbox" id="chk-col-checklist-2" class="no-print" style="cursor:pointer;" onchange="toggleColumnaChecklist(2, this.checked)">
+                                                        <span>De Regreso</span>
+                                                    </label>
+                                                </th>
                                                 <th style="width:18%; text-align:left;">Notas</th>
                                                 <th class="col-accion-header" style="width:40px; text-align:center;" title="Acciones">⚙️</th>
                                             </tr>
@@ -662,124 +698,33 @@
                     </div>
 
 
-                    <!-- Pestaña: Entradas del Festival (Tarifas Congeladas por Evento) -->
-                    <div id="tab-ev-entradas" class="tab-ev-content" style="display:none;">
-                        <div class="content-card">
-                            <div class="card-header-flex">
-                                <div>
-                                    <h3 class="card-title">🎟️ Valores de Entradas del Festival</h3>
-                                    <span style="font-size:12px; color:var(--text-muted);" id="subtitulo-congelado-entradas">
-                                        Tarifas fijadas específicamente para este festival. Podés editarlas libremente si este evento requiere valores diferenciales sin afectar la configuración general.
-                                    </span>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span class="pill-status pill-success" id="badge-congelado-entradas" title="Precios de entradas congelados al crear el festival">
-                                        🔒 Entradas Congeladas
-                                    </span>
-                                    <button class="btn-app btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="restablecerEntradasFestivalADefecto()" title="Restablecer a los valores por defecto de la Configuración General">
-                                        🔄 Restablecer a Valores por Defecto
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="table-responsive" style="margin-top:14px; max-width:540px;">
-                                <table class="spreadsheet-table" id="tabla-entradas-festival" style="width:100%;">
-                                    <thead>
-                                        <tr>
-                                            <th style="text-align:left;">Concepto / Categoría</th>
-                                            <th style="width:180px; text-align:right;">Precio</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tbody-entradas-festival">
-                                        <!-- Renderizado dinámico vía renderizarTablaEntradasFestival() -->
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div style="margin-top:16px; padding:12px 16px; background:var(--hover-bg); border-radius:10px; border:1px solid var(--border-color); font-size:12.5px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    💡 <strong>Nota operativa:</strong> Las entradas no vendidas de alumnos y artistas se liquidan en el contrato de cumplimiento al valor de <strong>Entrada General</strong> establecido en esta tabla.
-                                </div>
-                                <div>
-                                    <span class="pill-status pill-info" style="font-size:11px;">Edición en Tiempo Real</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Configuración del Canon SADAIC del Evento -->
-                        <div class="content-card" style="margin-top:16px;">
-                            <div class="card-header-flex">
-                                <div>
-                                    <h3 class="card-title" style="display:flex; align-items:center; gap:8px;">
-                                        <span>🎶 Canon SADAIC del Festival</span>
-                                        <span class="pill-status pill-info" id="badge-sadaic-modo" style="font-size:11px;">Por Cantidad de Entradas</span>
-                                    </h3>
-                                    <span style="font-size:12px; color:var(--text-muted);">
-                                        Configurá el modo de liquidación del canon SADAIC para este evento. Se descuenta automáticamente de la recaudación por taquilla.
-                                    </span>
-                                </div>
-                                <div style="text-align:right;">
-                                    <span style="font-size:10.5px; font-weight:800; color:#9f1239; text-transform:uppercase; display:block;">Monto SADAIC</span>
-                                    <div style="font-family:'Geist Mono'; font-weight:800; font-size:15px; color:var(--accent-red);" id="txt-sadaic-monto-resumen">-$ 25.500</div>
-                                </div>
-                            </div>
-
-                            <div style="margin-top:14px; padding:16px 18px; background:var(--hover-bg); border-radius:12px; border:1px solid var(--border-color);">
-                                <div style="display:flex; align-items:center; gap:24px; margin-bottom:14px; flex-wrap:wrap;">
-                                    <label style="font-size:13px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                                        <input type="radio" name="opt-sadaic-tipo" id="opt-sadaic-tipo-entradas" value="entradas" onchange="cambiarModoSadaicFestival('entradas')" checked style="cursor:pointer; transform:scale(1.15);">
-                                        <span>🎟️ Por Cantidad de Entradas</span>
-                                    </label>
-                                    <label style="font-size:13px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                                        <input type="radio" name="opt-sadaic-tipo" id="opt-sadaic-tipo-porcentaje" value="porcentaje" onchange="cambiarModoSadaicFestival('porcentaje')" style="cursor:pointer; transform:scale(1.15);">
-                                        <span>📊 Por Porcentaje (%)</span>
-                                    </label>
-                                </div>
-
-                                <!-- Modo 1: Cantidad de Entradas -->
-                                <div id="box-sadaic-ctrls-entradas" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                                    <div style="display:flex; align-items:center; gap:8px;">
-                                        <label style="font-size:12px; font-weight:700; color:var(--text-muted);">Cantidad de Entradas:</label>
-                                        <input type="number" id="inp-sadaic-cantidad" class="form-control" style="width:75px; font-family:'Geist Mono'; font-weight:700; text-align:center;" value="3" min="0" step="1" oninput="actualizarConfigSadaicFestival()">
-                                    </div>
-                                    <div style="display:flex; align-items:center; gap:8px;">
-                                        <label style="font-size:12px; font-weight:700; color:var(--text-muted);">Precio de Referencia:</label>
-                                        <select id="sel-sadaic-base-entrada" class="form-control" style="width:200px; font-size:12.5px; font-weight:600;" onchange="actualizarConfigSadaicFestival()">
-                                            <option value="general" selected>🎫 Entrada General</option>
-                                            <option value="preventa">🎟️ Entrada Preventa</option>
-                                        </select>
-                                    </div>
-                                    <div style="font-size:12px; color:var(--text-muted);" id="txt-sadaic-detalle-entradas">
-                                        Cálculo: <strong>3 × $ 8.500</strong> = <strong style="color:var(--accent-red);">$ 25.500</strong>
-                                    </div>
-                                </div>
-
-                                <!-- Modo 2: Porcentaje -->
-                                <div id="box-sadaic-ctrls-porcentaje" style="display:none; align-items:center; gap:16px; flex-wrap:wrap;">
-                                    <div style="display:flex; align-items:center; gap:8px;">
-                                        <label style="font-size:12px; font-weight:700; color:var(--text-muted);">Porcentaje sobre Taquilla:</label>
-                                        <div style="display:flex; align-items:center; gap:6px;">
-                                            <input type="number" id="inp-sadaic-porcentaje" class="form-control" style="width:80px; font-family:'Geist Mono'; font-weight:700; text-align:center;" value="3" min="0" max="100" step="0.5" oninput="actualizarConfigSadaicFestival()">
-                                            <span style="font-weight:700; font-size:13px; color:var(--text-main);">%</span>
-                                        </div>
-                                    </div>
-                                    <div style="font-size:12px; color:var(--text-muted);" id="txt-sadaic-detalle-porcentaje">
-                                        Se descuenta el <strong>3%</strong> de la recaudación bruta por venta de entradas en taquilla.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Contenedor oculto de respaldo para compatibilidad legacy de tbody-entradas-festival (unificado ahora en Finanzas -> Ventas) -->
+                    <div id="tab-ev-entradas" class="tab-ev-content" style="display:none !important;">
+                        <span id="subtitulo-congelado-entradas" style="display:none;"></span>
+                        <table><tbody id="tbody-entradas-festival"></tbody></table>
                     </div>
 
 
                     <!-- Pestaña 4: Cobertura Audiovisual (Anteúltima) -->
                     <div id="tab-ev-cobertura" class="tab-ev-content" style="display:none;">
                         
+                        <div class="numbered-cards-toolbar no-print">
+                            <span class="numbered-cards-hint">💡 Hacé click en cada sección numerada para expandir o comprimir su detalle</span>
+                            <div style="display:flex; gap:8px;">
+                                <button type="button" class="btn-table-pill" onclick="toggleTodosBloquesNumerados('tab-ev-cobertura', true)">
+                                    🔽 Expandir Todo
+                                </button>
+                                <button type="button" class="btn-table-pill" onclick="toggleTodosBloquesNumerados('tab-ev-cobertura', false)">
+                                    🔼 Colapsar Todo
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- 1. Cobertura de la Escuela -->
-                        <div class="content-card">
-                            <div class="card-header-flex">
+                        <div class="content-card collapsible-numbered-card collapsed">
+                            <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                 <div>
-                                    <h3 class="card-title">🎬 1. Cobertura Institucional de la Escuela</h3>
+                                    <h3 class="card-title"><span class="collapsible-chevron">▼</span>🎬 1. Cobertura Institucional de la Escuela</h3>
                                     <span style="font-size:12px; color:var(--text-muted);" id="subtitulo-preset-cobertura">
                                         Tarifas fijadas y congeladas al momento de la creación del evento. No se modifican con futuros cambios en la productora.
                                     </span>
@@ -794,34 +739,36 @@
                                 </div>
                             </div>
 
-                            <div class="form-grid" style="align-items:center;">
-                                <div style="background:var(--hover-bg); padding:14px; border-radius:12px; border:1px solid var(--border-color);">
-                                    <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Grabación Video & Fotos Escuela</span>
-                                    <div style="font-size:1.25em; font-weight:800; color:var(--text-main); margin:4px 0;">Video + Fotos Base</div>
-                                    <span style="font-size:12px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);" id="costo-base-escuela-txt">$ 200.000</span>
-                                </div>
-                                <div class="form-group">
-                                    <label>Reels Institucionales a Realizar</label>
-                                    <div style="display:flex; align-items:center; gap:10px;">
-                                        <input type="number" id="cant-reels-escuela" class="form-control" style="width:100px; font-weight:700;" value="3" min="0" oninput="recalcularCoberturaEscuela(true)">
-                                        <span style="font-size:12.5px; color:var(--text-muted);" id="txt-costo-reel-escuela-unit">reels ($ 20.000 c/u)</span>
+                            <div class="collapsible-card-body">
+                                <div class="form-grid" style="align-items:center;">
+                                    <div style="background:var(--hover-bg); padding:14px; border-radius:12px; border:1px solid var(--border-color);">
+                                        <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Grabación Video & Fotos Escuela</span>
+                                        <div style="font-size:1.25em; font-weight:800; color:var(--text-main); margin:4px 0;">Video + Fotos Base</div>
+                                        <span style="font-size:12px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);" id="costo-base-escuela-txt">$ 200.000</span>
                                     </div>
-                                </div>
-                                <div style="background:#f0fdf4; padding:14px; border-radius:12px; border:1px solid #bbf7d0;">
-                                    <span style="font-size:11px; font-weight:800; color:#166534; text-transform:uppercase;">Costo de cobertura para la escuela</span>
-                                    <div style="font-size:1.5em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:4px 0;" id="total-cobertura-escuela-txt">
-                                        $ 260.000
+                                    <div class="form-group">
+                                        <label>Reels Institucionales a Realizar</label>
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <input type="number" id="cant-reels-escuela" class="form-control" style="width:100px; font-weight:700;" value="3" min="0" oninput="recalcularCoberturaEscuela(true)">
+                                            <span style="font-size:12.5px; color:var(--text-muted);" id="txt-costo-reel-escuela-unit">reels ($ 20.000 c/u)</span>
+                                        </div>
                                     </div>
-                                    <span style="font-size:11.5px; color:#166534;">Base institucional + Reels Mandala</span>
+                                    <div style="background:#f0fdf4; padding:14px; border-radius:12px; border:1px solid #bbf7d0;">
+                                        <span style="font-size:11px; font-weight:800; color:#166534; text-transform:uppercase;">Costo de cobertura para la escuela</span>
+                                        <div style="font-size:1.5em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:4px 0;" id="total-cobertura-escuela-txt">
+                                            $ 260.000
+                                        </div>
+                                        <span style="font-size:11.5px; color:#166534;">Base institucional + Reels Mandala</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 2. Cobertura para Artistas / Bandas -->
-                        <div class="content-card">
-                            <div class="card-header-flex">
+                        <div class="content-card collapsible-numbered-card collapsed">
+                            <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                 <div>
-                                    <h3 class="card-title">🌟 2. Cobertura de Artistas & Bandas Participantes</h3>
+                                    <h3 class="card-title"><span class="collapsible-chevron">▼</span>🌟 2. Cobertura de Artistas & Bandas Participantes</h3>
                                     <span style="font-size:12px; color:var(--text-muted);">
                                         Agrupá por banda y seleccioná el plan (Fotos, Reel o Ambas). Por defecto 1 reel por banda. El sistema calcula según la tarifa predefinida.
                                     </span>
@@ -831,61 +778,63 @@
                                 </div>
                             </div>
 
-                            <div class="table-responsive">
-                                <table class="spreadsheet-table" id="tabla-cobertura-bandas">
-                                    <thead>
-                                        <tr>
-                                            <th style="width:200px; text-align:left;">BANDA / ARTISTA</th>
-                                            <th style="width:160px; text-align:left;">PLAN DE COBERTURA</th>
-                                            <th style="width:90px; text-align:center;">CANT. REELS</th>
-                                            <th style="width:140px; text-align:left;">FORMA DE COBRO</th>
-                                            <th style="width:130px; text-align:right;">PRECIO COBRADO</th>
-                                            <th style="width:130px; text-align:center;">ESTADO COBRO</th>
-                                            <th class="col-accion-header" style="width:40px; text-align:center;" title="Acciones">⚙️</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tbody-cobertura-bandas">
-                                        <!-- Se renderiza reactivamente vía renderizarCoberturaBandasFestival() -->
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- 3 Cajas de Resumen Financiero de Cobertura -->
-                            <div style="margin-top:18px; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px;">
-                                <!-- Caja Azul: Total Recaudado por Bandas -->
-                                <div style="background:#eff6ff; padding:14px; border-radius:12px; border:1px solid #bfdbfe; display:flex; flex-direction:column; justify-content:space-between;">
-                                    <div>
-                                        <span style="font-size:11px; font-weight:800; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px;">Total Recaudado por Bandas</span>
-                                        <div style="font-size:1.55em; font-weight:800; color:#1d4ed8; font-family:'Geist Mono'; margin:4px 0;" id="txt-recaudacion-bandas">
-                                            $ 0
-                                        </div>
-                                    </div>
-                                    <span style="font-size:11.5px; color:#1e40af;">Cobranza total a bandas por cobertura</span>
+                            <div class="collapsible-card-body">
+                                <div class="table-responsive">
+                                    <table class="spreadsheet-table" id="tabla-cobertura-bandas">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:200px; text-align:left;">BANDA / ARTISTA</th>
+                                                <th style="width:160px; text-align:left;">PLAN DE COBERTURA</th>
+                                                <th style="width:90px; text-align:center;">CANT. REELS</th>
+                                                <th style="width:140px; text-align:left;">FORMA DE COBRO</th>
+                                                <th style="width:130px; text-align:right;">PRECIO COBRADO</th>
+                                                <th style="width:130px; text-align:center;">ESTADO COBRO</th>
+                                                <th class="col-accion-header" style="width:40px; text-align:center;" title="Acciones">⚙️</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-cobertura-bandas">
+                                            <!-- Se renderiza reactivamente vía renderizarCoberturaBandasFestival() -->
+                                        </tbody>
+                                    </table>
                                 </div>
 
-                                <!-- Caja Roja: Presupuesto Total de la Productora + Desglose de ítems -->
-                                <div style="background:#fef2f2; padding:14px; border-radius:12px; border:1px solid #fecaca; display:flex; flex-direction:column; justify-content:space-between;">
-                                    <div>
-                                        <span style="font-size:11px; font-weight:800; color:#991b1b; text-transform:uppercase; letter-spacing:0.5px;">Presupuesto Total Productora</span>
-                                        <div style="font-size:1.55em; font-weight:800; color:#dc2626; font-family:'Geist Mono'; margin:4px 0;" id="txt-presupuesto-productora-resumen">
-                                            $ 0
+                                <!-- 3 Cajas de Resumen Financiero de Cobertura -->
+                                <div style="margin-top:18px; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px;">
+                                    <!-- Caja Azul: Total Recaudado por Bandas -->
+                                    <div style="background:#eff6ff; padding:14px; border-radius:12px; border:1px solid #bfdbfe; display:flex; flex-direction:column; justify-content:space-between;">
+                                        <div>
+                                            <span style="font-size:11px; font-weight:800; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px;">Total Recaudado por Bandas</span>
+                                            <div style="font-size:1.55em; font-weight:800; color:#1d4ed8; font-family:'Geist Mono'; margin:4px 0;" id="txt-recaudacion-bandas">
+                                                $ 0
+                                            </div>
                                         </div>
+                                        <span style="font-size:11.5px; color:#1e40af;">Cobranza total a bandas por cobertura</span>
                                     </div>
-                                    <div style="font-size:11px; color:#991b1b; font-family:'Geist Mono'; line-height:1.4; margin-top:4px;" id="txt-desglose-presupuesto-productora">
-                                        Fotos + Video + Reels
-                                    </div>
-                                </div>
 
-                                <!-- Caja Amarilla: Saldo a cubrir por la Escuela + Desglose de resta -->
-                                <div style="background:#fefce8; padding:14px; border-radius:12px; border:1px solid #fef08a; display:flex; flex-direction:column; justify-content:space-between;">
-                                    <div>
-                                        <span style="font-size:11px; font-weight:800; color:#854d0e; text-transform:uppercase; letter-spacing:0.5px;">Saldo a cubrir por la escuela</span>
-                                        <div style="font-size:1.55em; font-weight:800; color:#b45309; font-family:'Geist Mono'; margin:4px 0;" id="txt-saldo-productora-escuela">
-                                            $ 0
+                                    <!-- Caja Roja: Presupuesto Total de la Productora + Desglose de ítems -->
+                                    <div style="background:#fef2f2; padding:14px; border-radius:12px; border:1px solid #fecaca; display:flex; flex-direction:column; justify-content:space-between;">
+                                        <div>
+                                            <span style="font-size:11px; font-weight:800; color:#991b1b; text-transform:uppercase; letter-spacing:0.5px;">Presupuesto Total Productora</span>
+                                            <div style="font-size:1.55em; font-weight:800; color:#dc2626; font-family:'Geist Mono'; margin:4px 0;" id="txt-presupuesto-productora-resumen">
+                                                $ 0
+                                            </div>
+                                        </div>
+                                        <div style="font-size:11px; color:#991b1b; font-family:'Geist Mono'; line-height:1.4; margin-top:4px;" id="txt-desglose-presupuesto-productora">
+                                            Fotos + Video + Reels
                                         </div>
                                     </div>
-                                    <div style="font-size:11px; color:#854d0e; font-family:'Geist Mono'; line-height:1.4; margin-top:4px;" id="txt-desglose-saldo-escuela">
-                                        Presupuesto - Recaudado Bandas = Saldo
+
+                                    <!-- Caja Amarilla: Saldo a cubrir por la Escuela + Desglose de resta -->
+                                    <div style="background:#fefce8; padding:14px; border-radius:12px; border:1px solid #fef08a; display:flex; flex-direction:column; justify-content:space-between;">
+                                        <div>
+                                            <span style="font-size:11px; font-weight:800; color:#854d0e; text-transform:uppercase; letter-spacing:0.5px;">Saldo a cubrir por la escuela</span>
+                                            <div style="font-size:1.55em; font-weight:800; color:#b45309; font-family:'Geist Mono'; margin:4px 0;" id="txt-saldo-productora-escuela">
+                                                $ 0
+                                            </div>
+                                        </div>
+                                        <div style="font-size:11px; color:#854d0e; font-family:'Geist Mono'; line-height:1.4; margin-top:4px;" id="txt-desglose-saldo-escuela">
+                                            Presupuesto - Recaudado Bandas = Saldo
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -905,7 +854,10 @@
                                         Ingresá las entradas vendidas directamente en la tabla. Si cumple el cupo contractual pasa a <strong>Cupo Completo</strong>; si no, queda en <strong>Cupo Incumplido</strong> y se sincroniza automáticamente con la pestaña de <em>Cobros & Cuotas Alumnos</em> en Finanzas.
                                     </span>
                                 </div>
-                                <div style="display:flex; gap:8px;">
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                    <button type="button" class="btn-app btn-secondary" onclick="irACobrosDesdeCierreEntradas()" title="Saltar directamente a Cobros & Cuotas Alumnos en Finanzas">
+                                        💳 Ir a Cobros & Cuotas →
+                                    </button>
                                     <button class="btn-app btn-secondary" onclick="toggleTodasLasBandas()" id="btn-toggle-bandas-todas">
                                         🔽 Expandir Todo
                                     </button>
@@ -1391,7 +1343,7 @@
                                 <div>
                                     <h3 class="card-title">💵 Finanzas</h3>
                                     <span style="font-size:12px; color:var(--text-muted);">
-                                        Resumen financiero de cada evento. Hacé click en <strong style="color:var(--accent-blue);">[+]</strong> para expandir el detalle in-situ de gastos y cobertura, o hacé click en la fila para acceder a la ficha completa.
+                                        Resumen financiero de cada evento. Hacé click en <strong style="color:var(--accent-blue);">[+]</strong> para expandir el <strong>Detalle</strong> en el lugar, o hacé click en la fila para acceder a la ficha completa.
                                     </span>
                                 </div>
                             </div>
@@ -1421,7 +1373,7 @@
                                 </div>
                             </div>
 
-                            <!-- TABLA DE FESTIVALES CON COLUMNA DE ACORDEÓN -->
+                            <!-- TABLA DE FESTIVALES SIMPLIFICADA CON ACORDEÓN DE DETALLE -->
                             <div class="table-responsive">
                                 <table class="app-table" id="tabla-finanzas-resumen-filas">
                                     <thead>
@@ -1429,16 +1381,13 @@
                                             <th style="width:38px; text-align:center;">Det.</th>
                                             <th>Fecha</th>
                                             <th>Festival</th>
-                                            <th style="text-align:right;">Recaudación Neta (70%)</th>
-                                            <th style="text-align:right;">Gastos Operativos</th>
-                                            <th style="text-align:right;">Gastos de Cobertura</th>
-                                            <th style="text-align:right;">Ganancia Escuela</th>
+                                            <th style="text-align:right;">Ganancia Real de la Escuela</th>
                                             <th style="text-align:center;">Estado</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tbody-finanzas-eventos-dinamicos">
                                         <tr id="fila-estado-carga-finanzas">
-                                            <td colspan="8" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+                                            <td colspan="5" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
                                                 <span style="display:inline-block; font-size:18px; margin-bottom:8px;">⏳</span>
                                                 <div>Cargando balances...</div>
                                             </td>
@@ -1595,25 +1544,85 @@
                      ===================================================== -->
                 <section id="panel-finanzas-detalle" style="display:none;">
                     <div id="finanzas-festival-container">
-                        <!-- Título del festival actual en vista de finanzas -->
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                            <div>
-                                <h3 style="margin:0; font-size:1.35em; font-weight:800; color:var(--accent-blue);" id="finanzas-fest-titulo">
-                                    💵 Finanzas: GREGÓN FESTIVAL
-                                </h3>
-                                <span style="font-size:12px; color:var(--text-muted);" id="finanzas-fest-sub">
-                                    <strong>Fecha:</strong> 24/09/2026 · <strong>Venue:</strong> Gregón Bar · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue
-                                </span>
+                        <!-- CABECERA MAESTRA COMPARTIDA EVENTO ⇄ FINANZAS -->
+                        <div class="festival-master-header">
+                            <div class="festival-header-left">
+                                <div>
+                                    <div class="festival-title-block">
+                                        <h3>
+                                            <span id="finanzas-fest-titulo">💵 Finanzas: GREGÓN FESTIVAL</span>
+                                            <span class="pill-status estado-encurso" id="fin-master-estado-pill" style="font-size:11px;">En Curso</span>
+                                        </h3>
+                                    </div>
+                                    <div class="festival-meta-sub" id="finanzas-fest-sub">
+                                        <strong>Fecha:</strong> 24/09/2026 · <strong>Venue:</strong> Gregón Bar · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="mode-switch-pill">
+                                    <button type="button" class="mode-switch-btn" onclick="abrirDetalleEvento(eventoActualId, true)">
+                                        <span>🎪</span> <span>Producción del Evento</span>
+                                    </button>
+                                    <button type="button" class="mode-switch-btn active-finanzas" onclick="abrirFinanzasFestival(eventoActualId)">
+                                        <span>💵</span> <span>Finanzas & Liquidación</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- PESTAÑAS DE FINANZAS: RESUMEN / INGRESOS / GASTOS / COBROS -->
+                        <!-- BANNER FIJO SUPERIOR: RESUMEN FINANCIERO EN VIVO (SIEMPRE VISIBLE) -->
+                        <div class="finanzas-sticky-summary">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <h4 style="margin:0; font-size:13.5px; font-weight:800; color:var(--accent-blue); text-transform:uppercase; letter-spacing:0.3px;">
+                                        📊 Resumen: Liquidación y Ganancia Real del Festival
+                                    </h4>
+                                </div>
+                            </div>
+
+                            <div class="finanzas-kpi-strip">
+                                <!-- 1. Ingresos Netos Festival -->
+                                <div class="fin-kpi-box">
+                                    <span style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">1. Ingresos Netos de Ventas</span>
+                                    <div style="font-size:1.38em; font-weight:800; color:var(--accent-teal); font-family:'Geist Mono'; margin:3px 0;" id="resumen-card-ingresos-tot">+$ 0</div>
+                                    <span style="font-size:10.5px; color:var(--text-muted);" id="resumen-card-sub-ingresos">Taquilla ($ 0) + Ventas Esp. ($ 0)</span>
+                                </div>
+
+                                <!-- 2. Ingresos por Incumplimientos de Entradas -->
+                                <div class="fin-kpi-box">
+                                    <span style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">2. Cobros de Incumplimientos</span>
+                                    <div style="font-size:1.38em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin:3px 0;" id="resumen-card-incumplimientos-tot">+$ 0</div>
+                                    <span style="font-size:10.5px; color:var(--text-muted);" id="resumen-card-sub-incumplimientos">Pagos de cupo entradas alumnos</span>
+                                </div>
+
+                                <!-- 3. Gastos Operativos -->
+                                <div class="fin-kpi-box">
+                                    <span style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">3. Gastos Operativos</span>
+                                    <div style="font-size:1.38em; font-weight:800; color:var(--accent-red); font-family:'Geist Mono'; margin:3px 0;" id="resumen-card-gastos-tot">-$ 0</div>
+                                    <span style="font-size:10.5px; color:var(--text-muted);">Fletes, sonido extra, staff</span>
+                                </div>
+
+                                <!-- 4. Cobertura Neta a Pagar -->
+                                <div class="fin-kpi-box">
+                                    <span style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">4. Cobertura Neta de la Escuela</span>
+                                    <div style="font-size:1.38em; font-weight:800; color:var(--accent-amber); font-family:'Geist Mono'; margin:3px 0;" id="resumen-card-cobertura-tot">-$ 0</div>
+                                    <span style="font-size:10.5px; color:var(--text-muted);" id="resumen-card-sub-cobertura">Presupuesto prod. - aporte bandas</span>
+                                </div>
+
+                                <!-- 5. Ganancia Real Neta -->
+                                <div class="fin-kpi-box highlight-ganancia">
+                                    <span style="font-size:10px; font-weight:800; color:#166534; text-transform:uppercase;">5. Ganancia Real de la Escuela</span>
+                                    <div style="font-size:1.5em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:3px 0;" id="resumen-card-ganancia-tot">+$ 0</div>
+                                    <span style="font-size:10.5px; font-weight:700; color:#15803d;" id="resumen-card-sub-ganancia">Rentabilidad líquida final</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PESTAÑAS DE FINANZAS: VENTAS / GASTOS / COBROS -->
                         <div class="segmented-tabs-bar" style="margin-bottom:16px;">
-                            <button class="segmented-tab-btn active" id="btn-tab-fin-resumen" onclick="switchFinanzasTab('resumen')">
-                                📊 Resumen Financiero
-                            </button>
-                            <button class="segmented-tab-btn" id="btn-tab-fin-ingresos" onclick="switchFinanzasTab('ingresos')">
-                                🎟️ Ingresos del Evento
+                            <button class="segmented-tab-btn active" id="btn-tab-fin-ingresos" onclick="switchFinanzasTab('ingresos')">
+                                🎟️ Ventas
                             </button>
                             <button class="segmented-tab-btn" id="btn-tab-fin-gastos" onclick="switchFinanzasTab('gastos')">
                                 🧾 Gastos del Evento
@@ -1623,67 +1632,40 @@
                             </button>
                         </div>
 
-                        <!-- SUB-PESTAÑA 1: RESUMEN FINANCIERO -->
-                        <div id="tab-fin-resumen" class="tab-fin-content">
+                        <!-- Contenedor oculto para compatibilidad de referencias a tab-fin-resumen -->
+                        <div id="tab-fin-resumen" class="tab-fin-content" style="display:none !important;"></div>
+
+                        <!-- SUB-PESTAÑA 1: VENTAS DEL EVENTO (TAQUILLA, PRECIOS UNITARIOS, SADAIC Y VENTAS ESPECIALES) -->
+                        <div id="tab-fin-ingresos" class="tab-fin-content" style="display:block;">
                             
-                            <!-- ESTRUCTURA FINANCIERA ESTRATÉGICA DEL FESTIVAL -->
-                            <div class="content-card" style="background:#f8fafc; border:1px solid #cbd5e1; margin-bottom:20px;">
-                                <h4 style="margin:0 0 12px 0; font-size:14px; font-weight:800; color:var(--accent-blue);">
-                                    💡 Liquidación y Ganancia Real del Festival
-                                </h4>
-                                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap:12px;">
-                                    
-                                    <!-- 1. Ingresos Netos Festival -->
-                                    <div style="background:#ffffff; padding:14px; border-radius:12px; border:1px solid var(--border-color);">
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">1. Ingresos Netos Entradas</span>
-                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-teal); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-ingresos-tot">+$ 0</div>
-                                        <span style="font-size:11px; color:var(--text-muted);" id="resumen-card-sub-ingresos">Taquilla ($ 0) + Ventas Esp. ($ 0)</span>
-                                    </div>
-
-                                    <!-- 2. Ingresos por Incumplimientos de Entradas -->
-                                    <div style="background:#ffffff; padding:14px; border-radius:12px; border:1px solid var(--border-color);">
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">2. Cobros Incumplimientos</span>
-                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-incumplimientos-tot">+$ 0</div>
-                                        <span style="font-size:11px; color:var(--text-muted);" id="resumen-card-sub-incumplimientos">Pagos de cupo entradas alumnos</span>
-                                    </div>
-
-                                    <!-- 3. Gastos Operativos -->
-                                    <div style="background:#ffffff; padding:14px; border-radius:12px; border:1px solid var(--border-color);">
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">3. Gastos Operativos</span>
-                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-red); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-gastos-tot">-$ 0</div>
-                                        <span style="font-size:11px; color:var(--text-muted);">Fletes, sonido extra, staff</span>
-                                    </div>
-
-                                    <!-- 4. Cobertura Neta a Pagar -->
-                                    <div style="background:#ffffff; padding:14px; border-radius:12px; border:1px solid var(--border-color);">
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">4. Cobertura Neta Escuela</span>
-                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-amber); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-cobertura-tot">-$ 0</div>
-                                        <span style="font-size:11px; color:var(--text-muted);" id="resumen-card-sub-cobertura">Presupuesto prod. - aporte bandas</span>
-                                    </div>
-
-                                    <!-- 5. Ganancia Real Neta -->
-                                    <div style="background:#f0fdf4; padding:14px; border-radius:12px; border:2px solid #86efac;">
-                                        <span style="font-size:10.5px; font-weight:800; color:#166534; text-transform:uppercase;">5. Ganancia Real Escuela</span>
-                                        <div style="font-size:1.6em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:4px 0;" id="resumen-card-ganancia-tot">+$ 0</div>
-                                        <span style="font-size:11px; font-weight:700; color:#15803d;" id="resumen-card-sub-ganancia">Rentabilidad líquida final</span>
-                                    </div>
+                            <div class="numbered-cards-toolbar no-print">
+                                <span class="numbered-cards-hint">💡 Hacé click en cada sección numerada para expandir o comprimir su detalle</span>
+                                <div style="display:flex; gap:8px;">
+                                    <button type="button" class="btn-table-pill" onclick="toggleTodosBloquesNumerados('tab-fin-ingresos', true)">
+                                        🔽 Expandir Todo
+                                    </button>
+                                    <button type="button" class="btn-table-pill" onclick="toggleTodosBloquesNumerados('tab-fin-ingresos', false)">
+                                        🔼 Colapsar Todo
+                                    </button>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- SUB-PESTAÑA 2: INGRESOS DEL EVENTO (TAQUILLA POR TIPO DE ENTRADA Y VENTAS ESPECIALES) -->
-                        <div id="tab-fin-ingresos" class="tab-fin-content" style="display:none;">
-                            
-                            <!-- 1. LIQUIDACIÓN VENTA TAQUILLA POR TIPO DE ENTRADA -->
-                            <div class="content-card">
-                                <div class="card-header-flex">
+                            <!-- 1. LIQUIDACIÓN VENTA TAQUILLA POR TIPO DE ENTRADA + PRECIOS UNITARIOS + SADAIC -->
+                            <div class="content-card collapsible-numbered-card collapsed">
+                                <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                     <div>
-                                        <h3 class="card-title">🌐 1. Liquidación de Entradas por Taquilla (Preventa, General y Puerta)</h3>
+                                        <h3 class="card-title"><span class="collapsible-chevron">▼</span>🌐 1. Liquidación de Entradas</h3>
                                         <span style="font-size:12px; color:var(--text-muted);">
-                                            Ingresá la cantidad de entradas vendidas en cada categoría. Los precios se toman automáticamente de la configuración del festival. El canon SADAIC descuenta el valor fijo de <strong>3 entradas generales</strong>.
+                                            Editá en un solo lugar el <strong>Precio Unitario ($)</strong> y la <strong>Cantidad Vendida</strong> de cada categoría, junto con la regla de descuento SADAIC y el porcentaje de participación de la escuela.
                                         </span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                        <span class="pill-status pill-success" id="badge-congelado-entradas" style="font-size:11px;" title="Precios de entradas fijados para este festival">
+                                            🔒 Entradas Congeladas
+                                        </span>
+                                        <button type="button" class="btn-table-pill" onclick="restablecerEntradasFestivalADefecto()" title="Restablecer precios unitarios a los valores por defecto de Configuración General">
+                                            🔄 Restablecer Precios
+                                        </button>
                                         <button type="button" class="btn-table-pill" onclick="agregarTipoEntradaExtraTaquilla()" title="Agregar otra categoría o tanda de entradas">
                                             ＋ Agregar Tipo de Entrada
                                         </button>
@@ -1691,74 +1673,128 @@
                                     </div>
                                 </div>
 
-                                <div class="table-responsive" style="margin-bottom:16px;">
-                                    <table class="spreadsheet-table" id="tabla-taquilla-tipos">
-                                        <thead>
-                                            <tr>
-                                                <th style="width:260px; text-align:left;">Tipo de Entrada</th>
-                                                <th style="width:170px; text-align:right;">Precio Unitario ($)</th>
-                                                <th style="width:150px; text-align:center;">Cant. Vendida</th>
-                                                <th style="width:180px; text-align:right;">Subtotal Bruto ($)</th>
-                                                <th class="col-accion-header" style="width:50px; text-align:center;" title="Acciones">⚙️</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tbody-taquilla-tipos">
-                                            <!-- Se renderiza reactivamente con Preventa, General, Puerta + Categorías Extra -->
-                                        </tbody>
-                                        <tfoot>
-                                            <tr style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
-                                                <td colspan="2" style="text-align:right; padding:10px 14px; font-size:12.5px; text-transform:uppercase; color:var(--text-main);">
-                                                    Subtotal Taquilla (Preventa + General + Puerta):
-                                                </td>
-                                                <td style="text-align:center; font-family:'Geist Mono'; font-size:13.5px; color:var(--accent-blue);" id="txt-taquilla-cant-total">0 ent.</td>
-                                                <td style="text-align:right; padding:10px 14px; font-family:'Geist Mono'; font-size:14px; color:var(--accent-blue);" id="txt-taquilla-bruto-total">$ 0</td>
-                                                <td></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-
-                                <div class="form-grid" style="align-items:stretch;">
-                                    <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Recaudación Bruta Taquilla</span>
-                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin:4px 0;" id="txt-calc-bruto-taquilla">
-                                            $ 0
+                                <div class="collapsible-card-body">
+                                    <!-- BARRA INTEGRADA DE CONFIGURACIÓN DEL CANON SADAIC -->
+                                    <div class="sadaic-inline-bar">
+                                        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                                            <span style="font-size:12px; font-weight:800; color:#92400e; display:flex; align-items:center; gap:6px;">
+                                                <span>🎶 Canon SADAIC:</span>
+                                                <span class="pill-status pill-info" id="badge-sadaic-modo" style="font-size:10.5px;">Por Cantidad de Entradas</span>
+                                            </span>
+                                            <label style="font-size:12.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:5px; cursor:pointer;">
+                                                <input type="radio" name="opt-sadaic-tipo" id="opt-sadaic-tipo-entradas" value="entradas" onchange="cambiarModoSadaicFestival('entradas')" checked style="cursor:pointer;">
+                                                <span>🎟️ Por Cant. de Entradas</span>
+                                            </label>
+                                            <label style="font-size:12.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:5px; cursor:pointer;">
+                                                <input type="radio" name="opt-sadaic-tipo" id="opt-sadaic-tipo-porcentaje" value="porcentaje" onchange="cambiarModoSadaicFestival('porcentaje')" style="cursor:pointer;">
+                                                <span>📊 Por Porcentaje (%)</span>
+                                            </label>
                                         </div>
-                                        <span style="font-size:11px; color:var(--text-muted);" id="txt-calc-tickets-taquilla">0 entradas vendidas por taquilla</span>
+
+                                        <!-- Modo 1: Cantidad de Entradas -->
+                                        <div id="box-sadaic-ctrls-entradas" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                            <div style="display:flex; align-items:center; gap:6px;">
+                                                <label style="font-size:12px; font-weight:700; color:#78350f;">Cantidad:</label>
+                                                <input type="number" id="inp-sadaic-cantidad" class="form-control" style="width:65px; padding:4px 8px; font-family:'Geist Mono'; font-weight:700; text-align:center;" value="3" min="0" step="1" oninput="actualizarConfigSadaicFestival()">
+                                            </div>
+                                            <div style="display:flex; align-items:center; gap:6px;">
+                                                <label style="font-size:12px; font-weight:700; color:#78350f;">Referencia:</label>
+                                                <select id="sel-sadaic-base-entrada" class="form-control" style="width:175px; padding:4px 8px; font-size:12px; font-weight:600;" onchange="actualizarConfigSadaicFestival()">
+                                                    <option value="general" selected>🎫 Entrada General</option>
+                                                    <option value="preventa">🎟️ Entrada Preventa</option>
+                                                </select>
+                                            </div>
+                                            <div style="font-size:12px; color:#78350f;" id="txt-sadaic-detalle-entradas">
+                                                Cálculo: <strong>3 × $ 8.500</strong> = <strong style="color:var(--accent-red);">$ 25.500</strong>
+                                            </div>
+                                        </div>
+
+                                        <!-- Modo 2: Porcentaje -->
+                                        <div id="box-sadaic-ctrls-porcentaje" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
+                                            <div style="display:flex; align-items:center; gap:6px;">
+                                                <label style="font-size:12px; font-weight:700; color:#78350f;">% sobre Taquilla:</label>
+                                                <div style="display:flex; align-items:center; gap:5px;">
+                                                    <input type="number" id="inp-sadaic-porcentaje" class="form-control" style="width:70px; padding:4px 8px; font-family:'Geist Mono'; font-weight:700; text-align:center;" value="3" min="0" max="100" step="0.5" oninput="actualizarConfigSadaicFestival()">
+                                                    <span style="font-weight:700; font-size:12.5px; color:var(--text-main);">%</span>
+                                                </div>
+                                            </div>
+                                            <div style="font-size:12px; color:#78350f;" id="txt-sadaic-detalle-porcentaje">
+                                                Se descuenta el <strong>3%</strong> de la recaudación bruta por taquilla.
+                                            </div>
+                                        </div>
+
+                                        <div style="display:none;" id="txt-sadaic-monto-resumen">-$ 25.500</div>
                                     </div>
 
-                                    <div style="background:#fff1f2; padding:14px; border-radius:12px; border:1px solid #fecdd3; display:flex; flex-direction:column; justify-content:space-between;">
-                                        <span style="font-size:10.5px; font-weight:800; color:#9f1239; text-transform:uppercase;">Canon SADAIC (3 Entradas Generales)</span>
-                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-red); font-family:'Geist Mono'; margin:4px 0;" id="txt-calc-monto-sadaic">
-                                            -$ 25.500
-                                        </div>
-                                        <span style="font-size:11px; color:#be123c;" id="txt-calc-detalle-sadaic">Fijo: 3 × $ 8.500 (Valor Entrada General)</span>
+                                    <div class="table-responsive" style="margin-bottom:16px;">
+                                        <table class="spreadsheet-table" id="tabla-taquilla-tipos">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:260px; text-align:left;">Tipo de Entrada</th>
+                                                    <th style="width:170px; text-align:right;">Precio Unitario ($) ✏️</th>
+                                                    <th style="width:150px; text-align:center;">Cant. Vendida ✏️</th>
+                                                    <th style="width:180px; text-align:right;">Subtotal Bruto ($)</th>
+                                                    <th id="th-accion-taquilla" class="col-accion-header" style="width:50px; text-align:center; display:none;" title="Acciones">⚙️</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody-taquilla-tipos">
+                                                <!-- Se renderiza reactivamente con Preventa, General, Puerta + Categorías Extra -->
+                                            </tbody>
+                                            <tfoot>
+                                                <tr style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
+                                                    <td colspan="2" style="text-align:right; padding:10px 14px; font-size:12.5px; text-transform:uppercase; color:var(--text-main);">
+                                                        Subtotal Taquilla (Preventa + General + Puerta):
+                                                    </td>
+                                                    <td style="text-align:center; font-family:'Geist Mono'; font-size:13.5px; color:var(--accent-blue);" id="txt-taquilla-cant-total">0 ent.</td>
+                                                    <td style="text-align:right; padding:10px 14px; font-family:'Geist Mono'; font-size:14px; color:var(--accent-blue);" id="txt-taquilla-bruto-total">$ 0</td>
+                                                    <td id="td-foot-accion-taquilla" style="display:none;"></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
                                     </div>
 
-                                    <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
-                                        <label style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">% Participación Escuela (Mandala)</label>
-                                        <div style="display:flex; align-items:center; gap:8px;">
-                                            <input type="number" id="inp-ingresos-porc-escuela" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:85px;" value="70" min="0" max="100" oninput="recalcularIngresosFestival(true)">
-                                            <span style="font-size:12px; font-weight:700; color:var(--text-muted);">% Escuela</span>
+                                    <div class="form-grid" style="align-items:stretch;">
+                                        <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
+                                            <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Recaudación Bruta Taquilla</span>
+                                            <div style="font-size:1.45em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin:4px 0;" id="txt-calc-bruto-taquilla">
+                                                $ 0
+                                            </div>
+                                            <span style="font-size:11px; color:var(--text-muted);" id="txt-calc-tickets-taquilla">0 entradas vendidas por taquilla</span>
                                         </div>
-                                        <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:6px;">Saldo post-SADAIC: <strong id="txt-calc-base-post-sadaic" style="color:var(--text-main);">$ 0</strong></span>
-                                    </div>
 
-                                    <div style="background:#f0fdf4; padding:14px; border-radius:12px; border:1px solid #86efac; display:flex; flex-direction:column; justify-content:space-between;">
-                                        <span style="font-size:10.5px; font-weight:800; color:#166534; text-transform:uppercase;">Ingreso Neto Escuela (Taquilla)</span>
-                                        <div style="font-size:1.55em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:4px 0;" id="txt-calc-neto-escuela">
-                                            $ 0
+                                        <div style="background:#fff1f2; padding:14px; border-radius:12px; border:1px solid #fecdd3; display:flex; flex-direction:column; justify-content:space-between;">
+                                            <span style="font-size:10.5px; font-weight:800; color:#9f1239; text-transform:uppercase;">Canon SADAIC (3 Entradas Generales)</span>
+                                            <div style="font-size:1.45em; font-weight:800; color:var(--accent-red); font-family:'Geist Mono'; margin:4px 0;" id="txt-calc-monto-sadaic">
+                                                -$ 25.500
+                                            </div>
+                                            <span style="font-size:11px; color:#be123c;" id="txt-calc-detalle-sadaic">Fijo: 3 × $ 8.500 (Valor Entrada General)</span>
                                         </div>
-                                        <span style="font-size:11px; color:#15803d;" id="txt-calc-sub-neto-escuela">70% del saldo posterior a SADAIC</span>
+
+                                        <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
+                                            <label style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">% Participación Escuela (Mandala)</label>
+                                            <div style="display:flex; align-items:center; gap:8px;">
+                                                <input type="number" id="inp-ingresos-porc-escuela" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:85px;" value="70" min="0" max="100" oninput="recalcularIngresosFestival(true)">
+                                                <span style="font-size:12px; font-weight:700; color:var(--text-muted);">% Escuela</span>
+                                            </div>
+                                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:6px;">Saldo post-SADAIC: <strong id="txt-calc-base-post-sadaic" style="color:var(--text-main);">$ 0</strong></span>
+                                        </div>
+
+                                        <div style="background:#f0fdf4; padding:14px; border-radius:12px; border:1px solid #86efac; display:flex; flex-direction:column; justify-content:space-between;">
+                                            <span style="font-size:10.5px; font-weight:800; color:#166534; text-transform:uppercase;">Ingreso Neto Escuela (Taquilla)</span>
+                                            <div style="font-size:1.55em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:4px 0;" id="txt-calc-neto-escuela">
+                                                $ 0
+                                            </div>
+                                            <span style="font-size:11px; color:#15803d;" id="txt-calc-sub-neto-escuela">70% del saldo posterior a SADAIC</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- 2. VENTAS ESPECIALES FUERA DE VENTA ONLINE (PROMOS 2X1 / INVITADO / BENEFICIO AMIGO) -->
-                            <div class="content-card" style="margin-top:20px;">
-                                <div class="card-header-flex">
+                            <div class="content-card collapsible-numbered-card collapsed" style="margin-top:20px;">
+                                <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                     <div>
-                                        <h3 class="card-title">🎟️ 2. Ventas Especiales & Promos Internas (Se suman al final)</h3>
+                                        <h3 class="card-title"><span class="collapsible-chevron">▼</span>🎟️ 2. Ventas Especiales & Promos Internas (Se suman al final)</h3>
                                         <span style="font-size:12px; color:var(--text-muted);">
                                             Promos 2x1, Invitados o Beneficio Amigo gestionadas directamente por la escuela. Se contabilizan en el total de entradas vendidas del festival y su recaudación ingresa 100% a la escuela.
                                         </span>
@@ -1766,49 +1802,51 @@
                                     <button class="btn-app btn-primary" onclick="agregarFilaVentaEspecial()">＋ Registrar Venta Especial</button>
                                 </div>
 
-                                <div class="table-responsive">
-                                    <table class="spreadsheet-table" id="tabla-ventas-especiales">
-                                        <thead>
-                                            <tr>
-                                                <th style="width:170px; text-align:left;">Nombre Comprador</th>
-                                                <th style="width:180px; text-align:left;">Entradas a Nombre De</th>
-                                                <th style="width:155px; text-align:left;">Tipo de Venta</th>
-                                                <th style="width:110px; text-align:center;">Cant. Entradas</th>
-                                                <th style="width:135px; text-align:left;">Método de Pago</th>
-                                                <th style="width:130px; text-align:right;">Valor Total ($)</th>
-                                                <th style="width:140px; text-align:left;">Cobrado Por</th>
-                                                <th class="col-accion-header" style="width:45px; text-align:center;" title="Acciones">⚙️</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tbody-ventas-especiales">
-                                            <!-- Filas dinámicas generadas reactivamente -->
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div style="margin-top:14px; padding:12px 16px; background:var(--hover-bg); border-radius:10px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                                    <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
-                                        <span style="font-size:12.5px; font-weight:700; color:var(--text-muted);">
-                                            Entradas Ventas Especiales: <strong style="font-family:'Geist Mono'; color:var(--accent-blue);" id="txt-cant-ventas-especiales">0 ent.</strong>
-                                        </span>
-                                        <span style="font-size:12.5px; font-weight:800; color:var(--text-main); background:#e0f2fe; padding:4px 10px; border-radius:8px; border:1px solid #bae6fd;">
-                                            🎟️ Total General Entradas Vendidas (Taquilla + Especiales): <strong style="font-family:'Geist Mono'; color:#0369a1;" id="txt-total-general-entradas-evento">0 ent.</strong>
-                                        </span>
+                                <div class="collapsible-card-body">
+                                    <div class="table-responsive">
+                                        <table class="spreadsheet-table" id="tabla-ventas-especiales">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:170px; text-align:left;">Nombre Comprador</th>
+                                                    <th style="width:180px; text-align:left;">Entradas a Nombre De</th>
+                                                    <th style="width:155px; text-align:left;">Tipo de Venta</th>
+                                                    <th style="width:110px; text-align:center;">Cant. Entradas</th>
+                                                    <th style="width:135px; text-align:left;">Método de Pago</th>
+                                                    <th style="width:130px; text-align:right;">Valor Total ($)</th>
+                                                    <th style="width:140px; text-align:left;">Cobrado Por</th>
+                                                    <th class="col-accion-header" style="width:45px; text-align:center;" title="Acciones">⚙️</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody-ventas-especiales">
+                                                <!-- Filas dinámicas generadas reactivamente -->
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <div>
-                                        <span style="font-size:12.5px; font-weight:700; color:var(--text-muted); margin-right:6px;">
-                                            Total $ Ventas Especiales (100% Escuela):
-                                        </span>
-                                        <strong style="font-family:'Geist Mono'; font-size:1.3em; color:var(--accent-teal);" id="txt-total-ventas-especiales">$ 0</strong>
+
+                                    <div style="margin-top:14px; padding:12px 16px; background:var(--hover-bg); border-radius:10px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                                        <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+                                            <span style="font-size:12.5px; font-weight:700; color:var(--text-muted);">
+                                                Entradas Ventas Especiales: <strong style="font-family:'Geist Mono'; color:var(--accent-blue);" id="txt-cant-ventas-especiales">0 ent.</strong>
+                                            </span>
+                                            <span style="font-size:12.5px; font-weight:800; color:var(--text-main); background:#e0f2fe; padding:4px 10px; border-radius:8px; border:1px solid #bae6fd;">
+                                                🎟️ Total General Entradas Vendidas (Taquilla + Especiales): <strong style="font-family:'Geist Mono'; color:#0369a1;" id="txt-total-general-entradas-evento">0 ent.</strong>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span style="font-size:12.5px; font-weight:700; color:var(--text-muted); margin-right:6px;">
+                                                Total $ Ventas Especiales (100% Escuela):
+                                            </span>
+                                            <strong style="font-family:'Geist Mono'; font-size:1.3em; color:var(--accent-teal);" id="txt-total-ventas-especiales">$ 0</strong>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- 3. RESUMEN DE INGRESOS POR PAGO DE INCUMPLIMIENTOS DE ENTRADAS -->
-                            <div class="content-card" style="margin-top:20px;">
-                                <div class="card-header-flex">
+                            <div class="content-card collapsible-numbered-card collapsed" style="margin-top:20px;">
+                                <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                     <div>
-                                        <h3 class="card-title">💳 3. Ingresos por Pago de Incumplimientos de Entradas (Alumnos / Bandas)</h3>
+                                        <h3 class="card-title"><span class="collapsible-chevron">▼</span>💳 3. Ingresos por Pago de Incumplimientos de Entradas (Alumnos / Bandas)</h3>
                                         <span style="font-size:12px; color:var(--text-muted);">
                                             Resumen automático de los cobros registrados por cupos de entradas no cubiertos. Estos montos ingresan 100% a la escuela y se suman a la ganancia real del festival.
                                         </span>
@@ -1818,23 +1856,25 @@
                                     </button>
                                 </div>
 
-                                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-top:10px;">
-                                    <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0;">
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Total Deuda Generada (Incumplimientos)</span>
-                                        <div style="font-size:1.4em; font-weight:800; color:var(--text-main); font-family:'Geist Mono'; margin:4px 0;" id="txt-inc-resumen-total-deuda">$ 0</div>
-                                        <span style="font-size:11px; color:var(--text-muted);" id="txt-inc-resumen-sub-deuda">Diferencia de cupos contractuales</span>
-                                    </div>
+                                <div class="collapsible-card-body">
+                                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-top:4px;">
+                                        <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0;">
+                                            <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Total Deuda Generada (Incumplimientos)</span>
+                                            <div style="font-size:1.4em; font-weight:800; color:var(--text-main); font-family:'Geist Mono'; margin:4px 0;" id="txt-inc-resumen-total-deuda">$ 0</div>
+                                            <span style="font-size:11px; color:var(--text-muted);" id="txt-inc-resumen-sub-deuda">Diferencia de cupos contractuales</span>
+                                        </div>
 
-                                    <div style="background:#eff6ff; padding:14px; border-radius:12px; border:1px solid #bfdbfe;">
-                                        <span style="font-size:10.5px; font-weight:800; color:#1e40af; text-transform:uppercase;">Cobrado por Incumplimientos (Ingresa a Caja)</span>
-                                        <div style="font-size:1.45em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin:4px 0;" id="txt-inc-resumen-cobrado">+$ 0</div>
-                                        <span style="font-size:11px; color:#1d4ed8; font-weight:600;" id="txt-inc-resumen-sub-cobrado">Sin pagos registrados aún</span>
-                                    </div>
+                                        <div style="background:#eff6ff; padding:14px; border-radius:12px; border:1px solid #bfdbfe;">
+                                            <span style="font-size:10.5px; font-weight:800; color:#1e40af; text-transform:uppercase;">Cobrado por Incumplimientos (Ingresa a Caja)</span>
+                                            <div style="font-size:1.45em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin:4px 0;" id="txt-inc-resumen-cobrado">+$ 0</div>
+                                            <span style="font-size:11px; color:#1d4ed8; font-weight:600;" id="txt-inc-resumen-sub-cobrado">Sin pagos registrados aún</span>
+                                        </div>
 
-                                    <div style="background:#fffbeb; padding:14px; border-radius:12px; border:1px solid #fde68a;">
-                                        <span style="font-size:10.5px; font-weight:800; color:#92400e; text-transform:uppercase;">Pendiente de Cobro (Incumplimientos)</span>
-                                        <div style="font-size:1.4em; font-weight:800; color:var(--accent-amber); font-family:'Geist Mono'; margin:4px 0;" id="txt-inc-resumen-pendiente">$ 0</div>
-                                        <span style="font-size:11px; color:#b45309;" id="txt-inc-resumen-sub-pendiente">Saldos pendientes de alumnos</span>
+                                        <div style="background:#fffbeb; padding:14px; border-radius:12px; border:1px solid #fde68a;">
+                                            <span style="font-size:10.5px; font-weight:800; color:#92400e; text-transform:uppercase;">Pendiente de Cobro (Incumplimientos)</span>
+                                            <div style="font-size:1.4em; font-weight:800; color:var(--accent-amber); font-family:'Geist Mono'; margin:4px 0;" id="txt-inc-resumen-pendiente">$ 0</div>
+                                            <span style="font-size:11px; color:#b45309;" id="txt-inc-resumen-sub-pendiente">Saldos pendientes de alumnos</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1845,7 +1885,7 @@
                             <div class="content-card">
                                 <div class="card-header-flex">
                                     <div>
-                                        <h3 class="card-title">🧾 Detalle de Gastos & Egresos del Festival</h3>
+                                        <h3 class="card-title">🧾 Detalle de Gastos del Festival</h3>
                                         <span style="font-size:12px; color:var(--text-muted);">
                                             Cargá los gastos reales asociados a este festival (fletes, sonido extra, staff, sesionistas) y marcá su estado como <strong>Pagado</strong> o <strong>Pendiente</strong>. La cobertura a cargo de la escuela se sincroniza automáticamente.
                                         </span>
@@ -1864,7 +1904,7 @@
                                                 <th style="width:130px; text-align:center;">Método Pago</th>
                                                 <th style="width:120px; text-align:center;">Pagado Por</th>
                                                 <th style="width:165px; text-align:center;">Estado de Pago</th>
-                                                <th style="width:45px; text-align:center;" title="Acciones">⚙️</th>
+                                                <th id="th-accion-gastos-fest" style="width:45px; text-align:center;" title="Acciones">⚙️</th>
                                             </tr>
                                         </thead>
                                         <tbody id="tbody-gastos-festival-operativos">
@@ -1876,12 +1916,12 @@
                                                 <td style="text-align:center; font-family:'Geist Mono'; font-weight:700;" id="gasto-prod-fecha">24/09/2026</td>
                                                 <td>
                                                     <div style="font-weight:700; color:var(--text-main); font-size:13px; display:flex; align-items:center; gap:6px;">
-                                                        🎬 <span id="txt-titulo-cobertura-escuela-gastos">Cobertura Audiovisual Escuela</span>
+                                                        🎬 <span id="txt-titulo-cobertura-escuela-gastos">Cobertura Audiovisual Escuela:</span>
                                                     </div>
-                                                    <div style="margin-top:5px; font-size:11.5px; color:var(--text-muted); background:#ffffff; padding:5px 10px; border-radius:8px; border:1px solid #e9d5ff; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                                                        <span><strong>Presupuesto Total:</strong> <span id="gasto-prod-real-txt" style="font-family:'Geist Mono'; font-weight:700; color:var(--text-main);">$ 0</span></span>
-                                                        <span>• <strong>Aportado Bandas:</strong> <span id="gasto-prod-participantes-txt" style="font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);">-$ 0</span></span>
-                                                        <span>• <strong>Saldo Escuela:</strong> <span id="gasto-prod-diferencia-txt" style="font-family:'Geist Mono'; font-weight:800; color:var(--accent-purple);">$ 0</span></span>
+                                                    <div style="margin-top:4px; padding-left:18px; font-size:11.5px; color:var(--text-muted); display:flex; flex-direction:column; gap:2px;">
+                                                        <div>• <strong>Presupuesto Total:</strong> <span id="gasto-prod-real-txt" style="font-family:'Geist Mono'; font-weight:700; color:var(--text-main);">$ 0</span></div>
+                                                        <div>• <strong>Aportado Bandas:</strong> <span id="gasto-prod-participantes-txt" style="font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);">-$ 0</span></div>
+                                                        <div>• <strong>Saldo Escuela:</strong> <span id="gasto-prod-diferencia-txt" style="font-family:'Geist Mono'; font-weight:800; color:var(--accent-purple);">$ 0</span></div>
                                                     </div>
                                                 </td>
                                                 <td style="font-weight:600; color:var(--text-main);" id="txt-proveedor-cobertura-escuela">Jodida Productora</td>
@@ -1905,13 +1945,13 @@
                                                     <button type="button" id="btn-gasto-prod-pagado" class="btn-pill-pay unpaid" onclick="cambiarEstadoPagoCoberturaEscuela(true)">Marcar Pagado</button>
                                                     <button type="button" class="btn-pill-pending" onclick="cambiarEstadoPagoCoberturaEscuela(false)">Pendiente</button>
                                                 </td>
-                                                <td style="text-align:center; color:var(--text-muted); font-size:11px;" title="Sincronizado con pestaña Cobertura">🔒</td>
+                                                <td id="td-accion-cobertura-escuela" style="text-align:center; color:var(--text-muted); font-size:11px;" title="Sincronizado con pestaña Cobertura">🔒</td>
                                             </tr>
                                         </tbody>
                                         <tfoot>
                                             <tr style="background:var(--hover-bg); font-weight:800; border-top:2px solid var(--border-color);">
                                                 <td colspan="3" style="text-align:right; font-size:12.5px; text-transform:uppercase; padding:12px 16px;">
-                                                    Total Egresos Festival (Gastos Operativos + Cobertura Escuela):
+                                                    Total (Gastos Operativos + Cobertura Escuela):
                                                 </td>
                                                 <td style="font-family:'Geist Mono'; font-size:15px; font-weight:800; color:var(--accent-red); text-align:right; padding:12px 12px;" id="total-egresos-festival-tabla">
                                                     -$ 0
@@ -1932,7 +1972,7 @@
                             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-bottom:18px;">
                                 <div style="background:#ffffff; padding:14px 16px; border-radius:12px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
                                     <div>
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">1. Cobros Cumplimiento Contrato (Entradas)</span>
+                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">1. Cobros por Incumplimiento de Contrato</span>
                                         <div style="font-size:1.35em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin-top:4px;" id="kpi-cobros-contrato-txt">$ 0 / $ 0</div>
                                         <span style="font-size:11px; color:var(--text-muted);" id="kpi-cobros-contrato-sub">0 pendientes de cobro</span>
                                     </div>
@@ -1940,7 +1980,7 @@
                                 </div>
                                 <div style="background:#ffffff; padding:14px 16px; border-radius:12px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
                                     <div>
-                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">2. Cobros Cobertura Audiovisual (Bandas)</span>
+                                        <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">2. Cobros de Cobertura Audiovisual (Bandas)</span>
                                         <div style="font-size:1.35em; font-weight:800; color:var(--accent-teal); font-family:'Geist Mono'; margin-top:4px;" id="total-cobros-cobertura-txt">$ 0 / $ 0</div>
                                         <span style="font-size:11px; color:var(--text-muted);" id="kpi-cobros-cobertura-sub">Sincronizado con Cobertura</span>
                                     </div>
@@ -1956,16 +1996,31 @@
                                 </div>
                             </div>
 
+                            <div class="numbered-cards-toolbar no-print">
+                                <span class="numbered-cards-hint">💡 Hacé click en cada sección numerada para expandir o comprimir su detalle</span>
+                                <div style="display:flex; gap:8px;">
+                                    <button type="button" class="btn-table-pill" onclick="toggleTodosBloquesNumerados('tab-fin-cobros', true)">
+                                        🔽 Expandir Todo
+                                    </button>
+                                    <button type="button" class="btn-table-pill" onclick="toggleTodosBloquesNumerados('tab-fin-cobros', false)">
+                                        🔼 Colapsar Todo
+                                    </button>
+                                </div>
+                            </div>
+
                             <!-- BLOQUE 1: COBROS DE CUMPLIMIENTO DE CONTRATO & ENTRADAS DE ALUMNOS / BANDAS -->
-                            <div class="content-card" style="margin-bottom:20px;">
-                                <div class="card-header-flex">
+                            <div class="content-card collapsible-numbered-card collapsed" style="margin-bottom:20px;">
+                                <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                     <div>
-                                        <h3 class="card-title">🎟️ 1. Cobros por Cumplimiento de Contrato & Entradas (Alumnos y Bandas)</h3>
+                                        <h3 class="card-title"><span class="collapsible-chevron">▼</span>🎟️ 1. Cobros por Incumplimiento de Contrato</h3>
                                         <span style="font-size:12px; color:var(--text-muted);">
                                             Sincronizado en vivo con la tabla de <strong>Cumplimiento de Contrato</strong>. Acá figuran los alumnos y músicos con entradas pendientes de cubrir para registrar su pago (en 1 pago o en cuotas) y marcarlo como <strong>Pagada</strong> o <strong>Pendiente</strong>.
                                         </span>
                                     </div>
-                                    <div style="display:flex; align-items:center; gap:8px;">
+                                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                        <button type="button" class="btn-app btn-secondary" style="font-size:11.5px; padding:5px 10px;" onclick="irACierreDeEntradasDesdeCobros()" title="Volver a la pestaña Cierre de Entradas en Producción del Evento">
+                                            🎟️ Ir a Cierre de Entradas →
+                                        </button>
                                         <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:flex; align-items:center; gap:6px; cursor:pointer; background:#f8fafc; padding:5px 10px; border-radius:8px; border:1px solid #cbd5e1;">
                                             <input type="checkbox" id="chk-mostrar-todos-cobros-contrato" onchange="renderizarCobrosContratoUnificado()">
                                             <span>Mostrar también alumnos con cupo completo (0 deuda)</span>
@@ -1973,57 +2028,61 @@
                                     </div>
                                 </div>
 
-                                <div class="table-responsive">
-                                    <table class="spreadsheet-table" id="tabla-cobros-contrato-unificado">
-                                        <thead>
-                                            <tr>
-                                                <th style="width:165px; text-align:left;">Banda / Ensamble</th>
-                                                <th style="width:175px; text-align:left;">Alumno / Músico</th>
-                                                <th style="width:145px; text-align:center;">Estado Cupo / Plan</th>
-                                                <th style="width:125px; text-align:center;">Monto a Cobrar</th>
-                                                <th style="width:125px; text-align:center;">Fecha Pago</th>
-                                                <th style="width:120px; text-align:center;">Medio Pago</th>
-                                                <th style="width:105px; text-align:center;">Cobró</th>
-                                                <th style="text-align:left;">Observaciones</th>
-                                                <th style="width:190px; text-align:center;">Registro de Cobro</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tbody-cobros-contrato-unificado">
-                                            <!-- Se renderiza dinámicamente vía renderizarCobrosContratoUnificado() -->
-                                        </tbody>
-                                    </table>
+                                <div class="collapsible-card-body">
+                                    <div class="table-responsive">
+                                        <table class="spreadsheet-table" id="tabla-cobros-contrato-unificado">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:165px; text-align:left;">Banda / Ensamble</th>
+                                                    <th style="width:175px; text-align:left;">Alumno / Músico</th>
+                                                    <th style="width:145px; text-align:center;">Estado Cupo / Plan</th>
+                                                    <th style="width:125px; text-align:center;">Monto a Cobrar</th>
+                                                    <th style="width:125px; text-align:center;">Fecha Pago</th>
+                                                    <th style="width:120px; text-align:center;">Medio Pago</th>
+                                                    <th style="width:105px; text-align:center;">Cobró</th>
+                                                    <th style="text-align:left;">Observaciones</th>
+                                                    <th style="width:190px; text-align:center;">Registro de Cobro</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody-cobros-contrato-unificado">
+                                                <!-- Se renderiza dinámicamente vía renderizarCobrosContratoUnificado() -->
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- BLOQUE 2: COBROS DE COBERTURA AUDIOVISUAL POR BANDA / ARTISTAS INVITADOS -->
-                            <div class="content-card">
-                                <div class="card-header-flex">
+                            <div class="content-card collapsible-numbered-card collapsed">
+                                <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                     <div>
-                                        <h3 class="card-title">🎬 2. Cobros de Cobertura Audiovisual por Banda / Artista Invitado</h3>
+                                        <h3 class="card-title"><span class="collapsible-chevron">▼</span>🎬 2. Cobros de Cobertura Audiovisual por Banda / Artista Invitado</h3>
                                         <span style="font-size:12px; color:var(--text-muted);">
                                             Se listan las bandas con cobertura contratada (en <strong>1 pago</strong> o en <strong>cuotas</strong> según lo elegido en la pestaña Cobertura). Al completar todos los pagos acá, el estado en Cobertura pasa automáticamente a <strong>🟢 Pagado</strong>.
                                         </span>
                                     </div>
                                 </div>
 
-                                <div class="table-responsive">
-                                    <table class="spreadsheet-table" id="tabla-cobros-cobertura-bandas">
-                                        <thead>
-                                            <tr>
-                                                <th style="width:180px; text-align:left;">Banda / Artista</th>
-                                                <th style="width:115px; text-align:left;">Tipo</th>
-                                                <th style="width:145px; text-align:left;">Plan / Cuota</th>
-                                                <th style="width:125px; text-align:center;">Monto</th>
-                                                <th style="width:195px; text-align:left;">¿Quién realiza el pago?</th>
-                                                <th style="width:120px; text-align:center;">Medio Pago</th>
-                                                <th style="width:110px; text-align:center;">Cobró</th>
-                                                <th style="width:155px; text-align:center;">Registro de Cobro</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tbody-cobros-cobertura-finanzas">
-                                            <!-- Se renderiza dinámicamente vía renderizarCobrosCoberturaFinanzas() -->
-                                        </tbody>
-                                    </table>
+                                <div class="collapsible-card-body">
+                                    <div class="table-responsive">
+                                        <table class="spreadsheet-table" id="tabla-cobros-cobertura-bandas">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:180px; text-align:left;">Banda / Artista</th>
+                                                    <th style="width:115px; text-align:left;">Tipo</th>
+                                                    <th style="width:145px; text-align:left;">Plan / Cuota</th>
+                                                    <th style="width:125px; text-align:center;">Monto</th>
+                                                    <th style="width:195px; text-align:left;">¿Quién realiza el pago?</th>
+                                                    <th style="width:120px; text-align:center;">Medio Pago</th>
+                                                    <th style="width:110px; text-align:center;">Cobró</th>
+                                                    <th style="width:155px; text-align:center;">Registro de Cobro</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody-cobros-cobertura-finanzas">
+                                                <!-- Se renderiza dinámicamente vía renderizarCobrosCoberturaFinanzas() -->
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4891,7 +4950,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta1.3";
+        const APP_VERSION = "beta1.4";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -5283,6 +5342,10 @@
                 }
             }
 
+            if (typeof sincronizarCabeceraMaestraFestival === 'function') {
+                sincronizarCabeceraMaestraFestival(id);
+            }
+
             const festNombre = fInfo?.nombre || 'Festival';
             const elTitleRider = document.getElementById('print-title-rider');
             if (elTitleRider) elTitleRider.textContent = `Rider Técnico para ${festNombre}`;
@@ -5311,6 +5374,10 @@
         }
 
         function switchTabEvento(tabId) {
+            if (tabId === 'entradas' || tabId === 'finanzas') {
+                abrirFinanzasFestival(eventoActualId);
+                return;
+            }
             document.querySelectorAll('.tab-ev-content').forEach(c => c.style.display = 'none');
             document.querySelectorAll('#panel-evento-detalle > .segmented-tabs-bar .segmented-tab-btn').forEach(b => b.classList.remove('active'));
 
@@ -5620,6 +5687,79 @@
             mostrarToast('¡Valores de entradas restablecidos a los predeterminados!', 'success');
         }
 
+        // Sincronizar la cabecera maestra compartida entre Producción del Evento y Finanzas & Liquidación
+        function sincronizarCabeceraMaestraFestival(festId) {
+            const id = festId || eventoActualId || 'fest-1';
+            const nombres = {
+                'fest-1': { tit: 'GREGÓN FESTIVAL', sub: '<strong>Fecha:</strong> 24/09/2026 · <strong>Venue:</strong> Gregón Bar · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue' },
+                'fest-2': { tit: 'THE ROXY LIVE ENSAMBLES', sub: '<strong>Fecha:</strong> 17/10/2026 · <strong>Venue:</strong> The Roxy Live · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue' },
+                'fest-3': { tit: 'FESTIVAL PRIMAVERA LUCILLE', sub: '<strong>Fecha:</strong> 20/11/2026 · <strong>Venue:</strong> Club Lucille · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue' }
+            };
+
+            const fInfo = (typeof infoFestivales !== 'undefined') ? infoFestivales[id] : null;
+            const tit = fInfo && fInfo.nombre ? fInfo.nombre.toUpperCase() : (nombres[id]?.tit || 'FESTIVAL MANDALA');
+            const fecha = fInfo && fInfo.fecha ? fInfo.fecha : 'A definir';
+            const venue = fInfo && fInfo.venue ? fInfo.venue : 'A definir';
+            const estado = (fInfo && fInfo.estado) ? fInfo.estado : 'Programado';
+            const porcEsc = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[id] && ingresosFestivalesDB[id].porcEscuela !== undefined)
+                ? Number(ingresosFestivalesDB[id].porcEscuela)
+                : 70;
+            const sub = `<strong>Fecha:</strong> ${fecha} &nbsp;·&nbsp; <strong>Venue:</strong> ${venue} &nbsp;·&nbsp; <strong>Acuerdo:</strong> ${porcEsc}% Escuela / ${100 - porcEsc}% Venue`;
+
+            let claseEstado = 'estado-programado';
+            if (estado === 'Lapiz') claseEstado = 'estado-lapiz';
+            else if (estado === 'En Curso') claseEstado = 'estado-encurso';
+            else if (estado === 'Finalizado') claseEstado = 'estado-finalizado';
+
+            // 1. Cabecera maestra en Producción del Evento
+            const evTitEl = document.getElementById('ev-master-titulo');
+            if (evTitEl) evTitEl.textContent = '🎪 ' + tit;
+            const evSubEl = document.getElementById('ev-master-sub');
+            if (evSubEl) evSubEl.innerHTML = sub;
+            const evPillEl = document.getElementById('ev-master-estado-pill');
+            if (evPillEl) {
+                evPillEl.textContent = estado;
+                evPillEl.className = `pill-status ${claseEstado}`;
+            }
+
+            // 2. Cabecera maestra en Finanzas & Liquidación
+            const finTitEl = document.getElementById('finanzas-fest-titulo');
+            if (finTitEl) finTitEl.textContent = '💵 Finanzas: ' + tit;
+            const finSubEl = document.getElementById('finanzas-fest-sub');
+            if (finSubEl) finSubEl.innerHTML = sub;
+            const finPillEl = document.getElementById('fin-master-estado-pill');
+            if (finPillEl) {
+                finPillEl.textContent = estado;
+                finPillEl.className = `pill-status ${claseEstado}`;
+            }
+        }
+        window.sincronizarCabeceraMaestraFestival = sincronizarCabeceraMaestraFestival;
+
+        // Navegación cruzada directa: Cierre de Entradas ⇄ Cobros & Cuotas Alumnos
+        function irACobrosDesdeCierreEntradas(partId) {
+            abrirDetalleFinanzasFestival(eventoActualId, true);
+            switchFinanzasTab('cobros');
+            if (partId) {
+                setTimeout(() => {
+                    const fila = document.querySelector(`#tbody-cobros-contrato-unificado tr[data-part-id="${partId}"]`);
+                    if (fila) {
+                        fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const bgOriginal = fila.style.background;
+                        fila.style.transition = 'background 0.4s ease';
+                        fila.style.background = '#dbeafe';
+                        setTimeout(() => { fila.style.background = bgOriginal; }, 1800);
+                    }
+                }, 120);
+            }
+        }
+        window.irACobrosDesdeCierreEntradas = irACobrosDesdeCierreEntradas;
+
+        function irACierreDeEntradasDesdeCobros() {
+            abrirDetalleEvento(eventoActualId, true);
+            switchTabEvento('cierre-entradas');
+        }
+        window.irACierreDeEntradasDesdeCobros = irACierreDeEntradasDesdeCobros;
+
         // Navegación a la vista dedicada de Finanzas del festival (Hoja independiente)
         function abrirDetalleFinanzasFestival(festId, registrar = true) {
             eventoActualId = festId || eventoActualId || 'fest-1';
@@ -5643,10 +5783,9 @@
             document.getElementById('topbar-titulo').textContent = 'Finanzas';
             actualizarBotonVolverTopbar();
 
-
-            // Actualizar textos e información específica del festival
+            // Actualizar textos e información específica del festival y abrir por defecto en Ventas
             cambiarFestivalFinanzas(eventoActualId);
-            switchFinanzasTab('resumen');
+            switchFinanzasTab('ingresos');
         }
 
         // Navegación a la vista de Finanzas del festival desde la pestaña interna del evento
@@ -5654,24 +5793,28 @@
             abrirDetalleFinanzasFestival(festId, true);
         }
 
-        // Cambio de pestaña interna de finanzas (Resumen / Ingresos / Gastos / Cobros)
+        // Cambio de pestaña interna de finanzas (Ventas / Gastos / Cobros; 'resumen' y 'ventas' son alias de 'ingresos')
         function switchFinanzasTab(tabKey) {
+            const key = (tabKey === 'resumen' || tabKey === 'ventas' || !tabKey) ? 'ingresos' : tabKey;
             document.querySelectorAll('.tab-fin-content').forEach(c => c.style.display = 'none');
-            document.getElementById('btn-tab-fin-resumen')?.classList.toggle('active', tabKey === 'resumen');
-            document.getElementById('btn-tab-fin-ingresos')?.classList.toggle('active', tabKey === 'ingresos');
-            document.getElementById('btn-tab-fin-gastos')?.classList.toggle('active', tabKey === 'gastos');
-            document.getElementById('btn-tab-fin-cobros')?.classList.toggle('active', tabKey === 'cobros');
+            document.getElementById('btn-tab-fin-resumen')?.classList.toggle('active', false);
+            document.getElementById('btn-tab-fin-ingresos')?.classList.toggle('active', key === 'ingresos');
+            document.getElementById('btn-tab-fin-gastos')?.classList.toggle('active', key === 'gastos');
+            document.getElementById('btn-tab-fin-cobros')?.classList.toggle('active', key === 'cobros');
 
-            const target = document.getElementById('tab-fin-' + tabKey);
+            const target = document.getElementById('tab-fin-' + key);
             if (target) target.style.display = 'block';
 
-            if (tabKey === 'ingresos') renderizarIngresosFestival();
-            if (tabKey === 'gastos') renderizarGastosFestival();
-            if (tabKey === 'cobros') {
+            if (key === 'ingresos') {
+                renderizarTablaEntradasFestival();
+                renderizarIngresosFestival();
+            }
+            if (key === 'gastos') renderizarGastosFestival();
+            if (key === 'cobros') {
                 if (typeof renderizarCobrosContratoUnificado === 'function') renderizarCobrosContratoUnificado();
                 if (typeof renderizarCobrosCoberturaFinanzas === 'function') renderizarCobrosCoberturaFinanzas();
             }
-            if (tabKey === 'resumen' && typeof renderizarTablaCumplimientoContrato === 'function') {
+            if (typeof renderizarTablaCumplimientoContrato === 'function') {
                 renderizarTablaCumplimientoContrato();
             }
         }
@@ -5682,24 +5825,10 @@
             const select = document.getElementById('select-festival-finanzas');
             if (select) select.value = festId;
 
-            const nombres = {
-                'fest-1': { tit: 'GREGÓN FESTIVAL', sub: '<strong>Fecha:</strong> 24/09/2026 · <strong>Venue:</strong> Gregón Bar · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue' },
-                'fest-2': { tit: 'THE ROXY LIVE ENSAMBLES', sub: '<strong>Fecha:</strong> 17/10/2026 · <strong>Venue:</strong> The Roxy Live · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue' },
-                'fest-3': { tit: 'FESTIVAL PRIMAVERA LUCILLE', sub: '<strong>Fecha:</strong> 20/11/2026 · <strong>Venue:</strong> Club Lucille · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue' }
-            };
+            sincronizarCabeceraMaestraFestival(eventoActualId);
 
-            const fInfo = (typeof infoFestivales !== 'undefined') ? infoFestivales[festId] : null;
-            let tit = fInfo && fInfo.nombre ? fInfo.nombre.toUpperCase() : (nombres[festId]?.tit || 'FESTIVAL MANDALA');
-            let fecha = fInfo && fInfo.fecha ? fInfo.fecha : 'A definir';
-            let venue = fInfo && fInfo.venue ? fInfo.venue : 'A definir';
-            let sub = `<strong>Fecha:</strong> ${fecha} · <strong>Venue:</strong> ${venue} · <strong>Acuerdo:</strong> 70% Escuela / 30% Venue`;
-
-            const titEl = document.getElementById('finanzas-fest-titulo');
-            if (titEl) titEl.textContent = '💵 Finanzas: ' + tit;
-            const subEl = document.getElementById('finanzas-fest-sub');
-            if (subEl) subEl.innerHTML = sub;
-
-            // Refrescar inputs y cálculos de ingresos, gastos y cobros del evento seleccionado
+            // Refrescar inputs y cálculos de ventas, precios/SADAIC, gastos y cobros del evento seleccionado
+            renderizarTablaEntradasFestival();
             renderizarIngresosFestival();
             renderizarGastosFestival();
             if (typeof renderizarTablaCumplimientoContrato === 'function') {
@@ -6246,9 +6375,12 @@
             }
             const filaFin = document.querySelector(`#tabla-finanzas-resumen-filas tr[data-fest-id='${festId}']`);
             if (filaFin) {
-                const celdas = filaFin.querySelectorAll('td');
-                if (celdas.length >= 7) {
-                    celdas[6].textContent = formatearMonedaAr(parsed);
+                const celdaGan = filaFin.querySelector('.celda-fin-ganancia');
+                if (celdaGan) {
+                    celdaGan.textContent = formatearMonedaAr(parsed);
+                } else {
+                    const celdas = filaFin.querySelectorAll('td');
+                    if (celdas.length >= 2) celdas[celdas.length - 2].textContent = formatearMonedaAr(parsed);
                 }
             }
             if (window.MandalaApp && window.MandalaApp.festivales && typeof window.MandalaApp.festivales.actualizar === 'function') {
@@ -6285,9 +6417,14 @@
                         // Buscar en la fila visual de Finanzas si ya calculó ganancia
                         const filaFin = document.querySelector(`#tabla-finanzas-resumen-filas tr[data-fest-id='${id}']`);
                         if (filaFin) {
-                            const celdas = filaFin.querySelectorAll('td');
-                            if (celdas.length >= 7) {
-                                neto = parsearMontoInput(celdas[6].innerText);
+                            const celdaGan = filaFin.querySelector('.celda-fin-ganancia');
+                            if (celdaGan) {
+                                neto = parsearMontoInput(celdaGan.innerText);
+                            } else {
+                                const celdas = filaFin.querySelectorAll('td');
+                                if (celdas.length >= 2) {
+                                    neto = parsearMontoInput(celdas[celdas.length - 2].innerText);
+                                }
                             }
                         }
                     }
@@ -7168,6 +7305,10 @@
             festInfo.capacidad = capVenue;
             festInfo.anio = anio;
 
+            if (typeof sincronizarCabeceraMaestraFestival === 'function') {
+                sincronizarCabeceraMaestraFestival(eventoActualId);
+            }
+
             // 3. Sincronizar inmediatamente la fila en la tabla de Eventos del cronograma
             const filaEv = document.querySelector(`#tbody-eventos-dinamicos tr[data-fest-id='${eventoActualId}']`) || document.querySelector(`#tabla-eventos-filas tr[data-fest-id='${eventoActualId}']`);
             if (filaEv) {
@@ -7188,7 +7329,8 @@
                 const tdsFin = filaFin.querySelectorAll('td');
                 if (tdsFin[1]) tdsFin[1].textContent = fechaInp;
                 if (tdsFin[2]) tdsFin[2].innerHTML = `<strong style="color:var(--accent-blue); font-size:13.5px;">${nombre.toUpperCase()}</strong>`;
-                if (tdsFin[7]) tdsFin[7].innerHTML = `<span class="pill-status ${estadoClass}">${nuevoEstado}</span>`;
+                const celdaEst = filaFin.querySelector('.celda-fin-estado') || tdsFin[tdsFin.length - 1];
+                if (celdaEst) celdaEst.innerHTML = `<span class="pill-status ${estadoClass}">${nuevoEstado}</span>`;
             }
 
             actualizarOpcionesFiltroAnio(anio);
@@ -7843,21 +7985,42 @@
                     tr.setAttribute('data-fest-id', fId);
                     tr.onclick = () => abrirDetalleEvento(fId);
 
+                    const estActualMenu = fest.estado || 'Programado';
                     tr.innerHTML = `
                         <td style="font-family:'Geist Mono'; font-weight:700; color:#0f172a;">${fechaDisplay}</td>
                         <td><strong style="color:var(--accent-blue); font-size:13.5px;">${(fest.nombre || 'FESTIVAL').toUpperCase()}</strong></td>
                         <td>${fest.venue || 'Venue'}</td>
-                        <td><span class="pill-status ${estadoClass}">${fest.estado || 'Programado'}</span></td>
+                        <td class="celda-ev-estado"><span class="pill-status ${estadoClass}">${estActualMenu}</span></td>
                         <td style="text-align:center; position:relative;" onclick="event.stopPropagation()">
                             <button type="button" class="btn-icon-dots" onclick="toggleMenuAccionesEvento(event, '${fId}')" title="Opciones">⋮</button>
-                            <div class="dropdown-menu-popover" id="menu-acciones-${fId}" style="display:none;">
+                            <div class="dropdown-menu-popover" id="menu-acciones-${fId}" style="display:none; min-width:195px;">
                                 <button type="button" class="dropdown-item" onclick="abrirDetalleFinanzasFestival('${fId}')">
                                     💵 Ver Finanzas
                                 </button>
                                 <button type="button" class="dropdown-item" onclick="duplicarEvento(event, '${fId}', '${(fest.nombre || 'Festival').replace(/'/g, "\\'")}', '${(fest.venue || 'Venue').replace(/'/g, "\\'")}')">
                                     📋 Duplicar Festival
                                 </button>
-                                <div style="border-top:1px solid #f1f5f9; margin:3px 0;"></div>
+                                <div style="border-top:1px solid #f1f5f9; margin:4px 0;"></div>
+                                <div style="padding:4px 10px 2px 10px; font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.4px; text-align:left;">
+                                    🏷️ Cambiar Estado
+                                </div>
+                                <button type="button" class="dropdown-item item-estado-rapido" data-estado-opt="En Curso" onclick="cambiarEstadoRapidoFestival(event, '${fId}', 'En Curso')" style="justify-content:space-between;">
+                                    <span>🟢 En Curso</span>
+                                    <span class="chk-est" style="font-weight:900; color:var(--accent-green);">${estActualMenu === 'En Curso' ? '✓' : ''}</span>
+                                </button>
+                                <button type="button" class="dropdown-item item-estado-rapido" data-estado-opt="Programado" onclick="cambiarEstadoRapidoFestival(event, '${fId}', 'Programado')" style="justify-content:space-between;">
+                                    <span>🔵 Programado</span>
+                                    <span class="chk-est" style="font-weight:900; color:var(--accent-blue);">${estActualMenu === 'Programado' ? '✓' : ''}</span>
+                                </button>
+                                <button type="button" class="dropdown-item item-estado-rapido" data-estado-opt="Lapiz" onclick="cambiarEstadoRapidoFestival(event, '${fId}', 'Lapiz')" style="justify-content:space-between;">
+                                    <span>🟡 Lápiz</span>
+                                    <span class="chk-est" style="font-weight:900; color:var(--accent-amber);">${estActualMenu === 'Lapiz' ? '✓' : ''}</span>
+                                </button>
+                                <button type="button" class="dropdown-item item-estado-rapido" data-estado-opt="Finalizado" onclick="cambiarEstadoRapidoFestival(event, '${fId}', 'Finalizado')" style="justify-content:space-between;">
+                                    <span>⚪ Finalizado</span>
+                                    <span class="chk-est" style="font-weight:900; color:var(--text-muted);">${estActualMenu === 'Finalizado' ? '✓' : ''}</span>
+                                </button>
+                                <div style="border-top:1px solid #f1f5f9; margin:4px 0;"></div>
                                 <button type="button" class="dropdown-item danger" onclick="eliminarEventoFestival(event, '${fId}', '${(fest.nombre || 'Festival').replace(/'/g, "\\'")}')">
                                     🗑️ Eliminar Festival
                                 </button>
@@ -7893,15 +8056,12 @@
 
                     trFin.innerHTML = `
                         <td style="text-align:center; padding:6px;">
-                            <button type="button" class="expand-btn-finanzas" id="btn-exp-fin-${fId}" onclick="toggleDetalleFilaFinanzas('${fId}', event)" title="Ver desglose in-situ">＋</button>
+                            <button type="button" class="expand-btn-finanzas" id="btn-exp-fin-${fId}" onclick="toggleDetalleFilaFinanzas('${fId}', event)" title="Ver detalle">＋</button>
                         </td>
                         <td style="font-family:'Geist Mono'; font-weight:700; color:#0f172a;" onclick="abrirDetalleFinanzasFestival('${fId}')">${fechaDisplay}</td>
                         <td onclick="abrirDetalleFinanzasFestival('${fId}')"><strong style="color:var(--accent-blue); font-size:13.5px;">${(fest.nombre || 'FESTIVAL').toUpperCase()}</strong></td>
-                        <td style="font-family:'Geist Mono'; font-weight:600; color:var(--accent-teal); text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">$ ${neta70.toLocaleString('es-AR')}</td>
-                        <td style="font-family:'Geist Mono'; font-weight:500; color:var(--accent-red); text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">${gastosOp > 0 ? `-$ ${gastosOp.toLocaleString('es-AR')}` : '$ 0'}</td>
-                        <td style="font-family:'Geist Mono'; font-weight:500; color:${gastosCob > 0 ? 'var(--accent-purple)' : 'var(--accent-muted)'}; text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">${gastosCob > 0 ? `-$ ${gastosCob.toLocaleString('es-AR')}` : '$ 0'}</td>
-                        <td style="font-family:'Geist Mono'; font-weight:700; color:${colorGanancia}; font-size:13.5px; text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">${signoGanancia}${Math.abs(neto).toLocaleString('es-AR')}</td>
-                        <td style="text-align:center;" onclick="abrirDetalleFinanzasFestival('${fId}')"><span class="pill-status ${estadoClass}">${fest.estado || 'Finalizado'}</span></td>
+                        <td class="celda-fin-ganancia" style="font-family:'Geist Mono'; font-weight:700; color:${colorGanancia}; font-size:13.5px; text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">${signoGanancia}${Math.abs(neto).toLocaleString('es-AR')}</td>
+                        <td class="celda-fin-estado" style="text-align:center;" onclick="abrirDetalleFinanzasFestival('${fId}')"><span class="pill-status ${estadoClass}">${fest.estado || 'Finalizado'}</span></td>
                     `;
                     tbodyFin.appendChild(trFin);
 
@@ -7911,11 +8071,11 @@
                     trSubfila.style.display = 'none';
                     trSubfila.setAttribute('data-fest-id', fId);
                     trSubfila.innerHTML = `
-                        <td colspan="8">
+                        <td colspan="5">
                             <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:12px 16px; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:6px; border-bottom:1px dashed #e2e8f0;">
                                     <span style="font-size:11.5px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
-                                        🔍 Desglose In-Situ — ${fest.nombre || 'Festival'} (${fest.venue || 'Venue'})
+                                        🔍 Detalle — ${fest.nombre || 'Festival'} (${fest.venue || 'Venue'})
                                     </span>
                                     <button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 10px;" onclick="abrirDetalleFinanzasFestival('${fId}')">
                                         Abrir Ficha Completa →
@@ -7923,23 +8083,23 @@
                                 </div>
                                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;">
                                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
-                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Ingresos Netos Entradas</div>
+                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">1. Ingresos Netos de Ventas</div>
                                         <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal); margin-top:2px;" class="sub-fin-ingresos">+$ ${ingEntradas.toLocaleString('es-AR')}</div>
                                     </div>
                                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
-                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Cobros Incumplimientos</div>
+                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">2. Cobros de Incumplimientos</div>
                                         <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-blue); margin-top:2px;" class="sub-fin-incumplimientos">${ingIncumplimientos > 0 ? `+$ ${ingIncumplimientos.toLocaleString('es-AR')}` : '$ 0'}</div>
                                     </div>
                                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
-                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Gastos Operativos</div>
+                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">3. Gastos Operativos</div>
                                         <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red); margin-top:2px;" class="sub-fin-gastos-op">${gastosOp > 0 ? `-$ ${gastosOp.toLocaleString('es-AR')}` : '$ 0'}</div>
                                     </div>
                                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
-                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Gastos Cobertura Escuela</div>
+                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">4. Cobertura Neta de la Escuela</div>
                                         <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:var(--accent-purple); margin-top:2px;" class="sub-fin-gastos-cob">${gastosCob > 0 ? `-$ ${gastosCob.toLocaleString('es-AR')}` : '$ 0'}</div>
                                     </div>
                                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
-                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Ganancia Neta Escuela</div>
+                                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">5. Ganancia Real de la Escuela</div>
                                         <div style="font-size:15px; font-family:'Geist Mono'; font-weight:700; color:${colorGanancia}; margin-top:2px;" class="sub-fin-ganancia">${signoGanancia}${Math.abs(neto).toLocaleString('es-AR')}</div>
                                     </div>
                                 </div>
@@ -7983,6 +8143,81 @@
             window.open(url.toString(), '_blank', 'noopener');
         }
         window.abrirEventoEnNuevaPestana = abrirEventoEnNuevaPestana;
+
+        // Cambio rápido de estado desde el menú de 3 puntos del listado de eventos
+        async function cambiarEstadoRapidoFestival(e, festId, nuevoEstado) {
+            if (e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            if (!festId || !nuevoEstado) return;
+
+            const menu = document.getElementById('menu-acciones-' + festId);
+            if (menu) menu.style.display = 'none';
+
+            let estadoClass = 'estado-programado';
+            if (nuevoEstado === 'Lapiz') estadoClass = 'estado-lapiz';
+            else if (nuevoEstado === 'En Curso') estadoClass = 'estado-encurso';
+            else if (nuevoEstado === 'Finalizado') estadoClass = 'estado-finalizado';
+
+            if (!infoFestivales[festId]) infoFestivales[festId] = { id: festId };
+            infoFestivales[festId].estado = nuevoEstado;
+            const nomFestival = infoFestivales[festId].nombre || 'Festival';
+
+            // 1. Actualizar fila en tabla de Eventos
+            const filaEv = document.querySelector(`#tbody-eventos-dinamicos tr[data-fest-id='${festId}']`) || document.querySelector(`#tabla-eventos-filas tr[data-fest-id='${festId}']`);
+            if (filaEv) {
+                filaEv.setAttribute('data-estado', nuevoEstado);
+                const celdaEstEv = filaEv.querySelector('.celda-ev-estado') || filaEv.querySelectorAll('td')[3];
+                if (celdaEstEv) {
+                    celdaEstEv.innerHTML = `<span class="pill-status ${estadoClass}">${nuevoEstado}</span>`;
+                }
+                filaEv.querySelectorAll('.item-estado-rapido').forEach(btn => {
+                    const opt = btn.getAttribute('data-estado-opt');
+                    const chk = btn.querySelector('.chk-est');
+                    if (chk) chk.textContent = (opt === nuevoEstado) ? '✓' : '';
+                });
+            }
+
+            // 2. Actualizar fila en tabla de Finanzas
+            const filaFin = document.querySelector(`#tbody-finanzas-eventos-dinamicos tr[data-fest-id='${festId}']`) || document.querySelector(`#tabla-finanzas-resumen-filas tr[data-fest-id='${festId}']`);
+            if (filaFin) {
+                filaFin.setAttribute('data-estado', nuevoEstado);
+                const celdaEstFin = filaFin.querySelector('.celda-fin-estado') || filaFin.querySelectorAll('td')[4];
+                if (celdaEstFin) {
+                    celdaEstFin.innerHTML = `<span class="pill-status ${estadoClass}">${nuevoEstado}</span>`;
+                }
+            }
+
+            // 3. Si es el evento abierto actualmente en detalle, sincronizar pills y cabecera maestra
+            if (eventoActualId === festId) {
+                const pill = document.getElementById('det-ev-estado-pill');
+                if (pill) {
+                    pill.textContent = nuevoEstado;
+                    pill.className = `pill-status ${estadoClass}`;
+                }
+                if (typeof sincronizarCabeceraMaestraFestival === 'function') {
+                    sincronizarCabeceraMaestraFestival(festId);
+                }
+            }
+
+            aplicarFiltrosEventos();
+            aplicarFiltrosFinanzas();
+            actualizarBadgeEventosSidebar();
+            if (typeof renderizarPanelDeudas === 'function') renderizarPanelDeudas();
+
+            // 4. Persistir en Firestore
+            if (window.MandalaApp && window.MandalaApp.festivales && typeof window.MandalaApp.festivales.actualizarCampos === 'function') {
+                try {
+                    await window.MandalaApp.festivales.actualizarCampos(festId, { estado: nuevoEstado });
+                } catch (err) {
+                    console.warn('[Mandala Festivales] Error al cambiar estado rápido en Firestore:', err);
+                }
+            }
+
+            mostrarToast(`Estado de "${nomFestival}" actualizado a ${nuevoEstado === 'Lapiz' ? 'Lápiz' : nuevoEstado}`, 'success');
+        }
+        window.cambiarEstadoRapidoFestival = cambiarEstadoRapidoFestival;
 
         function calcularBalanceGeneralFestival(fId, fest = null) {
             const fin = ingresosFestivalesDB[fId] || (fest && fest.finanzas) || null;
@@ -8082,18 +8317,30 @@
 
             const trFin = document.querySelector(`#tbody-finanzas-eventos-dinamicos tr.finanzas-row-item[data-fest-id='${fId}']`);
             if (trFin) {
-                const tds = trFin.querySelectorAll('td');
+                const ingEntradas = metricas.recaudacionEntradas !== undefined ? metricas.recaudacionEntradas : metricas.recaudacionNeta;
+                const ingInc = metricas.ingresosIncumplimientos || 0;
                 const colorGanancia = metricas.gananciaEscuela >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
                 const signoGanancia = metricas.gananciaEscuela < 0 ? '-$ ' : '$ ';
-                if (tds[3]) tds[3].textContent = `$ ${metricas.recaudacionNeta.toLocaleString('es-AR')}`;
-                if (tds[4]) tds[4].textContent = metricas.gastosOperativos > 0 ? `-$ ${metricas.gastosOperativos.toLocaleString('es-AR')}` : '$ 0';
-                if (tds[5]) {
-                    tds[5].textContent = metricas.gastosCobertura > 0 ? `-$ ${metricas.gastosCobertura.toLocaleString('es-AR')}` : '$ 0';
-                    tds[5].style.color = metricas.gastosCobertura > 0 ? 'var(--accent-purple)' : 'var(--accent-muted)';
+
+                const cVentas = trFin.querySelector('.celda-fin-ventas');
+                const cInc = trFin.querySelector('.celda-fin-incumplimientos');
+                const cGop = trFin.querySelector('.celda-fin-gastos-op');
+                const cCob = trFin.querySelector('.celda-fin-cobertura');
+                const cGan = trFin.querySelector('.celda-fin-ganancia');
+
+                if (cVentas) cVentas.textContent = ingEntradas > 0 ? `+$ ${ingEntradas.toLocaleString('es-AR')}` : '$ 0';
+                if (cInc) {
+                    cInc.textContent = ingInc > 0 ? `+$ ${ingInc.toLocaleString('es-AR')}` : '$ 0';
+                    cInc.style.color = ingInc > 0 ? 'var(--accent-blue)' : 'var(--text-muted)';
                 }
-                if (tds[6]) {
-                    tds[6].textContent = `${signoGanancia}${Math.abs(metricas.gananciaEscuela).toLocaleString('es-AR')}`;
-                    tds[6].style.color = colorGanancia;
+                if (cGop) cGop.textContent = metricas.gastosOperativos > 0 ? `-$ ${metricas.gastosOperativos.toLocaleString('es-AR')}` : '$ 0';
+                if (cCob) {
+                    cCob.textContent = metricas.gastosCobertura > 0 ? `-$ ${metricas.gastosCobertura.toLocaleString('es-AR')}` : '$ 0';
+                    cCob.style.color = metricas.gastosCobertura > 0 ? 'var(--accent-purple)' : 'var(--accent-muted)';
+                }
+                if (cGan) {
+                    cGan.textContent = `${signoGanancia}${Math.abs(metricas.gananciaEscuela).toLocaleString('es-AR')}`;
+                    cGan.style.color = colorGanancia;
                 }
             }
 
@@ -10533,7 +10780,47 @@
                     autoguardarDetalleFestivalFirestore('checklist', items);
                 }
             }
+            sincronizarHeadersChecklist();
         }
+
+        function toggleColumnaChecklist(colIdx, checked) {
+            const tbody = document.getElementById('tbody-checklist-filas');
+            if (!tbody) return;
+            const filas = tbody.querySelectorAll('tr');
+            filas.forEach(tr => {
+                const chks = tr.querySelectorAll('input[type="checkbox"]');
+                if (chks[colIdx]) {
+                    chks[colIdx].checked = Boolean(checked);
+                }
+            });
+            guardarChecklistAutomatico();
+            const nombresCols = ['Preparado', 'Listo para Salir', 'De Regreso'];
+            mostrarToast(`${nombresCols[colIdx] || 'Columna'}: ${checked ? 'todos tildados' : 'todos destildados'}`, 'info');
+        }
+        window.toggleColumnaChecklist = toggleColumnaChecklist;
+
+        function sincronizarHeadersChecklist() {
+            const tbody = document.getElementById('tbody-checklist-filas');
+            if (!tbody) return;
+            const filas = Array.from(tbody.querySelectorAll('tr'));
+            [0, 1, 2].forEach(colIdx => {
+                const chkHeader = document.getElementById(`chk-col-checklist-${colIdx}`);
+                if (!chkHeader) return;
+                if (filas.length === 0) {
+                    chkHeader.checked = false;
+                    chkHeader.indeterminate = false;
+                    return;
+                }
+                let marcados = 0;
+                filas.forEach(tr => {
+                    const chks = tr.querySelectorAll('input[type="checkbox"]');
+                    if (chks[colIdx]?.checked) marcados++;
+                });
+                chkHeader.checked = (marcados === filas.length);
+                chkHeader.indeterminate = (marcados > 0 && marcados < filas.length);
+            });
+        }
+        window.sincronizarHeadersChecklist = sincronizarHeadersChecklist;
 
         function renderizarChecklistFestival(items) {
             const tbody = document.getElementById('tbody-checklist-filas');
@@ -10575,6 +10862,7 @@
             });
 
             inicializarDragAndDrop();
+            sincronizarHeadersChecklist();
         }
 
         function agregarFilaChecklist() {
@@ -11499,11 +11787,19 @@
 
             const datos = obtenerDatosIngresosEventoActual();
             const gastos = datos.gastosOperativos || [];
+            const tieneOperativos = gastos.length > 0;
 
-            if (gastos.length === 0) {
+            const thAccion = document.getElementById('th-accion-gastos-fest');
+            const tdAccionCob = document.getElementById('td-accion-cobertura-escuela');
+            const tdFootSub = document.getElementById('subtexto-estado-egresos-festival');
+            if (thAccion) thAccion.style.display = tieneOperativos ? '' : 'none';
+            if (tdAccionCob) tdAccionCob.style.display = tieneOperativos ? '' : 'none';
+            if (tdFootSub) tdFootSub.colSpan = tieneOperativos ? 4 : 3;
+
+            if (!tieneOperativos) {
                 tbody.innerHTML = `
                     <tr class="empty-row">
-                        <td colspan="8" style="text-align:center; padding:18px; color:var(--text-muted); font-size:12px;">
+                        <td colspan="7" style="text-align:center; padding:18px; color:var(--text-muted); font-size:12px;">
                             No hay gastos operativos cargados en este festival. Hacé click en <strong>＋ Registrar Gasto</strong> para agregar fletes, sonido extra, staff o sesionistas.
                         </td>
                     </tr>
@@ -11690,7 +11986,7 @@
             if (elProvCob) elProvCob.textContent = nomProductora;
 
             const elTitCob = document.getElementById('txt-titulo-cobertura-escuela-gastos');
-            if (elTitCob) elTitCob.textContent = `Cobertura Audiovisual Escuela (${nomProductora})`;
+            if (elTitCob) elTitCob.textContent = 'Cobertura Audiovisual Escuela:';
 
             const elReal = document.getElementById('gasto-prod-real-txt');
             const elPart = document.getElementById('gasto-prod-participantes-txt');
@@ -11734,7 +12030,7 @@
             if (elSubEgresos) {
                 elSubEgresos.innerHTML = totalPendientePagarEscuela > 0
                     ? `<span style="color:var(--accent-red); font-weight:700;">⏳ Pendiente de pago por la escuela: $ ${totalPendientePagarEscuela.toLocaleString('es-AR')}</span>`
-                    : `<span style="color:var(--accent-green); font-weight:700;">🟢 Todos los egresos del festival están pagados</span>`;
+                    : `<span style="color:var(--accent-green); font-weight:700;">🟢 Todos los gastos del festival ya se encuentran saldados</span>`;
             }
 
             // Sincronizar tarjetas de Resumen Financiero
@@ -11852,11 +12148,17 @@
 
             const datos = obtenerDatosIngresosEventoActual();
             const ent = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : preciosEntradasPorDefecto;
+            const tieneExtras = Array.isArray(datos.categoriasExtra) && datos.categoriasExtra.length > 0;
+
+            const thAccionTaq = document.getElementById('th-accion-taquilla');
+            const tdFootAccionTaq = document.getElementById('td-foot-accion-taquilla');
+            if (thAccionTaq) thAccionTaq.style.display = tieneExtras ? '' : 'none';
+            if (tdFootAccionTaq) tdFootAccionTaq.style.display = tieneExtras ? '' : 'none';
 
             const filasBase = [
-                { key: 'cantPreventa', icono: '🎟️', nombre: 'Entrada Preventa', precio: Number(ent.preventa) || 0, cantidad: Number(datos.cantPreventa) || 0 },
-                { key: 'cantGeneral', icono: '🎫', nombre: 'Entrada General', precio: Number(ent.general) || 0, cantidad: Number(datos.cantGeneral) || 0 },
-                { key: 'cantPuerta', icono: '🚪', nombre: 'Entrada en Puerta', precio: Number(ent.puerta) || 0, cantidad: Number(datos.cantPuerta) || 0 }
+                { key: 'cantPreventa', campoPrecio: 'preventa', icono: '🎟️', nombre: 'Entrada Preventa', nota: '', precio: Number(ent.preventa) || 0, cantidad: Number(datos.cantPreventa) || 0 },
+                { key: 'cantGeneral', campoPrecio: 'general', icono: '🎫', nombre: 'Entrada General', nota: '(Valor Contrato)', precio: Number(ent.general) || 0, cantidad: Number(datos.cantGeneral) || 0 },
+                { key: 'cantPuerta', campoPrecio: 'puerta', icono: '🚪', nombre: 'Entrada en Puerta', nota: '', precio: Number(ent.puerta) || 0, cantidad: Number(datos.cantPuerta) || 0 }
             ];
 
             filasBase.forEach(f => {
@@ -11865,10 +12167,10 @@
                 tr.innerHTML = `
                     <td style="font-weight:700; color:var(--text-main); padding:8px 12px;">
                         ${f.icono} ${f.nombre}
-                        <span style="font-size:10.5px; color:var(--text-muted); font-weight:500; margin-left:4px;">(Config.)</span>
+                        ${f.nota ? `<span style="font-size:10.5px; color:var(--text-muted); font-weight:600; margin-left:4px;">${f.nota}</span>` : ''}
                     </td>
-                    <td style="text-align:right; padding:8px 12px; font-family:'Geist Mono'; font-weight:700; color:var(--text-main);">
-                        ${formatearMonedaAr(f.precio)}
+                    <td style="text-align:right; padding:6px 10px;">
+                        <input type="number" class="input-inline-price" value="${f.precio}" min="0" step="500" title="Editar precio unitario para este festival" oninput="previsualizarPrecioBaseDesdeTaquilla('${f.campoPrecio}', '${f.key}', this.value)" onchange="actualizarPrecioBaseDesdeTaquilla('${f.campoPrecio}', '${f.key}', this.value)">
                     </td>
                     <td style="text-align:center; padding:6px 10px;">
                         <input type="number" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:800; text-align:center; width:90px; color:var(--accent-blue); background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:4px 6px;" value="${f.cantidad}" min="0" step="1" oninput="actualizarCantidadTaquilla('${f.key}', this.value)">
@@ -11876,7 +12178,7 @@
                     <td style="text-align:right; padding:8px 12px; font-family:'Geist Mono'; font-weight:800; color:var(--accent-teal);" id="sub-taq-${f.key}">
                         ${formatearMonedaAr(sub)}
                     </td>
-                    <td style="text-align:center; color:var(--text-muted); font-size:11px;" title="Categoría fija de configuración">🔒</td>
+                    ${tieneExtras ? `<td style="text-align:center; color:var(--text-muted); font-size:11px;" title="Categoría base del festival">🔒</td>` : ''}
                 `;
                 tbody.appendChild(tr);
             });
@@ -11892,7 +12194,7 @@
                         <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${ext.nombre || ''}" placeholder="Ej: Tanda Especial / VIP..." oninput="actualizarEntradaExtraTaquilla(${idx}, 'nombre', this.value)">
                     </td>
                     <td style="padding:6px 10px; text-align:right;">
-                        <input type="number" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:700; text-align:right; width:115px;" value="${precioExt}" min="0" step="500" oninput="actualizarEntradaExtraTaquilla(${idx}, 'precio', this.value)">
+                        <input type="number" class="input-inline-price" value="${precioExt}" min="0" step="500" oninput="actualizarEntradaExtraTaquilla(${idx}, 'precio', this.value)">
                     </td>
                     <td style="text-align:center; padding:6px 10px;">
                         <input type="number" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:800; text-align:center; width:90px; color:var(--accent-blue); background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:4px 6px;" value="${cantExt}" min="0" step="1" oninput="actualizarEntradaExtraTaquilla(${idx}, 'cantidad', this.value)">
@@ -11908,6 +12210,49 @@
             });
         }
         window.renderizarTablaTaquillaTipos = renderizarTablaTaquillaTipos;
+
+        function previsualizarPrecioBaseDesdeTaquilla(campoPrecio, keyCant, valor) {
+            const num = Math.max(0, parseFloat(valor || '0') || 0);
+            const ent = obtenerEntradasEventoActual();
+            ent[campoPrecio] = num;
+
+            const datos = obtenerDatosIngresosEventoActual();
+            const cant = Math.max(0, parseInt(datos[keyCant] || '0') || 0);
+            const elSub = document.getElementById(`sub-taq-${keyCant}`);
+            if (elSub) elSub.textContent = formatearMonedaAr(num * cant);
+
+            renderizarTablaEntradasFestival();
+            recalcularIngresosFestival(false);
+        }
+        window.previsualizarPrecioBaseDesdeTaquilla = previsualizarPrecioBaseDesdeTaquilla;
+
+        function actualizarPrecioBaseDesdeTaquilla(campoPrecio, keyCant, valor) {
+            const num = Math.max(0, parseFloat(valor || '0') || 0);
+            const ent = obtenerEntradasEventoActual();
+            ent[campoPrecio] = num;
+
+            const datos = obtenerDatosIngresosEventoActual();
+            const cant = Math.max(0, parseInt(datos[keyCant] || '0') || 0);
+            const elSub = document.getElementById(`sub-taq-${keyCant}`);
+            if (elSub) elSub.textContent = formatearMonedaAr(num * cant);
+
+            renderizarTablaEntradasFestival();
+            recalcularIngresosFestival(true);
+            if (typeof renderizarTablaCumplimientoContrato === 'function') {
+                renderizarTablaCumplimientoContrato();
+            }
+            if (typeof renderizarContratosAlumnosFestival === 'function') {
+                renderizarContratosAlumnosFestival();
+            }
+            if (typeof renderizarCobrosContratoUnificado === 'function') {
+                renderizarCobrosContratoUnificado();
+            }
+            if (typeof autoguardarDetalleFestivalFirestore === 'function') {
+                autoguardarDetalleFestivalFirestore('entradasCongeladas', ent);
+            }
+            mostrarToast(`Precio unitario actualizado: ${formatearMonedaAr(num)}`, 'success');
+        }
+        window.actualizarPrecioBaseDesdeTaquilla = actualizarPrecioBaseDesdeTaquilla;
 
         function actualizarCantidadTaquilla(key, valor) {
             const datos = obtenerDatosIngresosEventoActual();
@@ -11975,6 +12320,9 @@
             const badgeAcuerdo = document.getElementById('badge-acuerdo-ingresos');
             if (badgeAcuerdo) badgeAcuerdo.textContent = `Acuerdo: ${datos.porcEscuela}% Escuela / ${100 - datos.porcEscuela}% Venue`;
 
+            if (typeof renderizarTablaEntradasFestival === 'function') {
+                renderizarTablaEntradasFestival();
+            }
             renderizarTablaTaquillaTipos();
             renderizarTablaVentasEspeciales();
             recalcularIngresosFestival(false);
@@ -12613,17 +12961,22 @@
 
                         if (totalCuotasPlan > 0 && cuotasPagadas === totalCuotasPlan) {
                             celdaEstadoHtml = `<span class="pill-status pill-success" title="Deuda saldada en Finanzas → Cobros">🟢 Pagado (${cuotasPagadas}/${totalCuotasPlan})</span>`;
-                            celdaAccionHtml = `<button class="btn-app btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', ${deudaMonto}, ${faltantes})">⚙️ Ver Plan</button>`;
+                            celdaAccionHtml = `<div style="display:inline-flex; gap:5px; align-items:center; justify-content:center; flex-wrap:wrap;"><button class="btn-app btn-secondary" style="padding:3px 7px; font-size:11px;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', ${deudaMonto}, ${faltantes})">⚙️ Plan</button><button type="button" class="link-jump-pill" onclick="irACobrosDesdeCierreEntradas('${idInt}')" title="Ver pago en Finanzas → Cobros & Cuotas Alumnos">💳 Cobros →</button></div>`;
                         } else if (totalCuotasPlan > 0 && cuotasPagadas > 0) {
                             celdaEstadoHtml = `<span class="pill-status pill-warning" title="Pago parcial en Finanzas → Cobros">🟠 Parcial (${cuotasPagadas}/${totalCuotasPlan})</span>`;
-                            celdaAccionHtml = `<button class="btn-app btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', ${deudaMonto}, ${faltantes})">⚙️ Plan (${cuotasPagadas}/${totalCuotasPlan})</button>`;
+                            celdaAccionHtml = `<div style="display:inline-flex; gap:5px; align-items:center; justify-content:center; flex-wrap:wrap;"><button class="btn-app btn-secondary" style="padding:3px 7px; font-size:11px;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', ${deudaMonto}, ${faltantes})">⚙️ Plan (${cuotasPagadas}/${totalCuotasPlan})</button><button type="button" class="link-jump-pill" onclick="irACobrosDesdeCierreEntradas('${idInt}')" title="Ir a cobrar cuota en Finanzas → Cobros & Cuotas Alumnos">💳 Cobros →</button></div>`;
                             tr.style.background = '#fffbeb';
                         } else {
                             celdaEstadoHtml = `<span class="pill-status pill-danger">Cupo Incumplido</span>`;
                             celdaAccionHtml = `
-                                <button class="btn-app btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', ${deudaMonto}, ${faltantes})">
-                                    ⚙️ Gestionar Deuda
-                                </button>
+                                <div style="display:inline-flex; gap:5px; align-items:center; justify-content:center; flex-wrap:wrap;">
+                                    <button class="btn-app btn-secondary" style="padding:3px 7px; font-size:11px;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', ${deudaMonto}, ${faltantes})">
+                                        ⚙️ Plan
+                                    </button>
+                                    <button type="button" class="link-jump-pill" onclick="irACobrosDesdeCierreEntradas('${idInt}')" title="Ir a registrar cobro en Finanzas → Cobros & Cuotas Alumnos">
+                                        💳 Cobrar →
+                                    </button>
+                                </div>
                             `;
                             tr.style.background = '#fffbeb';
                         }
@@ -12801,9 +13154,14 @@
                 celdaDeuda.style.color = 'var(--accent-red)';
                 celdaEstado.innerHTML = `<span class="pill-status pill-danger">Cupo Incumplido</span>`;
                 celdaAccion.innerHTML = `
-                    <button class="btn-app btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="configurarCobroCuotas('${id}', '${nombre.replace(/'/g, "\\'")}', ${deudaPesos}, ${faltantes})">
-                        ⚙️ Gestionar Deuda
-                    </button>
+                    <div style="display:inline-flex; gap:5px; align-items:center; justify-content:center; flex-wrap:wrap;">
+                        <button class="btn-app btn-secondary" style="padding:3px 7px; font-size:11px;" onclick="configurarCobroCuotas('${id}', '${nombre.replace(/'/g, "\\'")}', ${deudaPesos}, ${faltantes})">
+                            ⚙️ Plan
+                        </button>
+                        <button type="button" class="link-jump-pill" onclick="irACobrosDesdeCierreEntradas('${id}')" title="Ir a registrar cobro en Finanzas → Cobros & Cuotas Alumnos">
+                            💳 Cobrar →
+                        </button>
+                    </div>
                 `;
                 row.style.background = '#fffbeb';
 
@@ -13269,6 +13627,7 @@
                         : '';
 
                     const tr = document.createElement('tr');
+                    tr.setAttribute('data-part-id', safeId);
                     if (!p.pagada) {
                         tr.style.background = '#fffbeb';
                     }
@@ -14916,6 +15275,46 @@
             }
         }
         window.mostrarDetalleCircularFestival = mostrarDetalleCircularFestival;
+
+        // =========================================================
+        // ACORDEÓN DE BLOQUES NUMERADOS EN PESTAÑAS CON MÚLTIPLES ÍTEMS
+        // =========================================================
+        function toggleBloqueNumerado(headerEl, ev) {
+            if (!headerEl) return;
+            const card = headerEl.closest('.collapsible-numbered-card');
+            if (!card) return;
+
+            if (ev && ev.target) {
+                const interactiveEl = ev.target.closest('button, input, label, select, a');
+                if (interactiveEl && headerEl.contains(interactiveEl)) {
+                    // Si el usuario hace click en un botón o control de acción del encabezado mientras el bloque está colapsado,
+                    // lo expandimos automáticamente para que vea el resultado (salvo que sea un botón de navegación a otra pestaña).
+                    const onclickAttr = interactiveEl.getAttribute('onclick') || '';
+                    const esNavegacionExterna = onclickAttr.includes('switchFinanzasTab') || onclickAttr.includes('irACierreDeEntradasDesdeCobros') || onclickAttr.includes('window.print');
+                    if (!esNavegacionExterna && card.classList.contains('collapsed')) {
+                        card.classList.remove('collapsed');
+                    }
+                    return;
+                }
+            }
+
+            card.classList.toggle('collapsed');
+        }
+        window.toggleBloqueNumerado = toggleBloqueNumerado;
+
+        function toggleTodosBloquesNumerados(containerId, expandir) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const cards = container.querySelectorAll('.collapsible-numbered-card');
+            cards.forEach(card => {
+                if (expandir) {
+                    card.classList.remove('collapsed');
+                } else {
+                    card.classList.add('collapsed');
+                }
+            });
+        }
+        window.toggleTodosBloquesNumerados = toggleTodosBloquesNumerados;
 
         // Inicialización al arrancar la app
         document.addEventListener('DOMContentLoaded', () => {

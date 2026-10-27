@@ -102,6 +102,9 @@ async function manejarCambioSesion(user) {
 
     if (user) {
         console.log(`[Mandala Festivales] Usuario autenticado: ${user.email}`);
+        if (typeof window.mostrarIndicadorCarga === 'function' && !document.documentElement.classList.contains('festivales-loaded')) {
+            window.mostrarIndicadorCarga('Cargando datos...');
+        }
 
         let nombreUsuario = user.displayName || localStorage.getItem('mandala_current_user_name') || (user.email ? user.email.split('@')[0] : 'Usuario');
         let rolUsuario = localStorage.getItem('mandala_current_user_role') || 'Coordinador';
@@ -111,6 +114,7 @@ async function manejarCambioSesion(user) {
             if (perfil) {
                 if (perfil.activo === false) {
                     console.warn(`[Mandala Festivales] El usuario ${user.email} está inactivo.`);
+                    if (typeof window.ocultarIndicadorCarga === 'function') window.ocultarIndicadorCarga();
                     await cerrarSesionFirebase();
                     if (window.mostrarToast) window.mostrarToast('Tu usuario se encuentra inactivo. Consultá con administración.', 'error');
                     return;
@@ -158,6 +162,9 @@ async function manejarCambioSesion(user) {
         if (tieneSesionGuardada) {
             console.log("[Mandala Festivales] Sesión activa detectada en almacenamiento local, manteniendo estado logueado.");
             document.documentElement.classList.add('user-has-session');
+            if (typeof window.mostrarIndicadorCarga === 'function' && !document.documentElement.classList.contains('festivales-loaded')) {
+                window.mostrarIndicadorCarga('Cargando datos...');
+            }
             if (loginContainer) loginContainer.style.display = 'none';
             if (appLayout) appLayout.classList.add('active');
             
@@ -173,6 +180,7 @@ async function manejarCambioSesion(user) {
 
         console.log("[Mandala Festivales] No hay sesión activa. Mostrando pantalla de login.");
         document.documentElement.classList.remove('user-has-session');
+        if (typeof window.ocultarIndicadorCarga === 'function') window.ocultarIndicadorCarga();
         if (loginContainer) loginContainer.style.display = 'flex';
         if (appLayout) appLayout.classList.remove('active');
     }
@@ -183,6 +191,27 @@ async function manejarCambioSesion(user) {
  */
 async function sincronizarDatosTrasLogin() {
     try {
+        // Sincronización continua en tiempo real de Festivales desde Firestore (Multi-Ventana / Multi-Operador)
+        escucharFestivalesEnTiempoReal((festivalesActualizados) => {
+            console.log(`[Mandala Festivales] Sincronizados ${festivalesActualizados.length} festivales en tiempo real desde Firestore.`);
+            if (typeof window.poblarFestivalesDesdeFirestore === 'function') {
+                window.poblarFestivalesDesdeFirestore(festivalesActualizados);
+            }
+        });
+
+        // Sincronización continua en tiempo real de Caja (Gastos e Ingresos manuales) desde Firestore
+        escucharCajaEnTiempoReal((gastosActualizados) => {
+            console.log("[Mandala Festivales] Sincronización de gastos recibida en tiempo real desde la base de datos.");
+            if (typeof window.aplicarSincronizacionGastos === 'function') {
+                window.aplicarSincronizacionGastos(gastosActualizados);
+            }
+        }, (ingresosActualizados) => {
+            console.log("[Mandala Festivales] Sincronización de ingresos manuales recibida en tiempo real desde la base de datos.");
+            if (typeof window.aplicarSincronizacionIngresos === 'function') {
+                window.aplicarSincronizacionIngresos(ingresosActualizados);
+            }
+        });
+
         const alumnos = await obtenerAlumnosMandala(true);
         console.log(`[Mandala Festivales] Sincronizados ${alumnos.length} alumnos desde Firestore.`);
         if (typeof window.renderizarArtistasFestival === 'function') {
@@ -218,7 +247,7 @@ async function sincronizarDatosTrasLogin() {
             window.poblarSesionistasDesdeFirestore(sesionistas);
         }
 
-        // Sincronizar Tarifas de Productora y Precios por Defecto desde Firestore primero
+        // Sincronizar Tarifas de Productora y Precios por Defecto desde Firestore
         try {
             const tarifasProd = await obtenerTarifasProductoraFirestore();
             const preciosEnt = await obtenerPreciosEntradasFirestore();
@@ -228,29 +257,11 @@ async function sincronizarDatosTrasLogin() {
         } catch (e) {
             console.warn("[Mandala Festivales] Error al cargar configuración general:", e);
         }
-
-        // Sincronización continua en tiempo real de Festivales desde Firestore (Multi-Ventana / Multi-Operador)
-        escucharFestivalesEnTiempoReal((festivalesActualizados) => {
-            console.log(`[Mandala Festivales] Sincronizados ${festivalesActualizados.length} festivales en tiempo real desde Firestore.`);
-            if (typeof window.poblarFestivalesDesdeFirestore === 'function') {
-                window.poblarFestivalesDesdeFirestore(festivalesActualizados);
-            }
-        });
-
-        // Sincronización continua en tiempo real de Caja (Gastos e Ingresos manuales) desde Firestore
-        escucharCajaEnTiempoReal((gastosActualizados) => {
-            console.log("[Mandala Festivales] Sincronización de gastos recibida en tiempo real desde la base de datos.");
-            if (typeof window.aplicarSincronizacionGastos === 'function') {
-                window.aplicarSincronizacionGastos(gastosActualizados);
-            }
-        }, (ingresosActualizados) => {
-            console.log("[Mandala Festivales] Sincronización de ingresos manuales recibida en tiempo real desde la base de datos.");
-            if (typeof window.aplicarSincronizacionIngresos === 'function') {
-                window.aplicarSincronizacionIngresos(ingresosActualizados);
-            }
-        });
     } catch (err) {
         console.warn("[Mandala Festivales] Error durante sincronización tras login:", err);
+        if (typeof window.ocultarIndicadorCarga === 'function') {
+            window.ocultarIndicadorCarga();
+        }
     }
 }
 

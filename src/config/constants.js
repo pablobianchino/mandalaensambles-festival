@@ -2,7 +2,7 @@
 // src/config/constants.js — Constantes y Configuración de Firebase Mandala
 // =======================================================================
 
-export const APP_VERSION = "beta1.4";
+export const APP_VERSION = "beta1.5";
 
 // Credenciales compartidas con app_mdl_admision (Proyecto Firebase Mandala)
 export const firebaseConfig = {

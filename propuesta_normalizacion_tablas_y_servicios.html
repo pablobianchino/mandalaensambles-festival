@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta Visual: Normalización de Tablas y Módulo Servicios | Mandala Festivales</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --border-color: #cbd5e1;
+            --border-subtle: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-blue: #1f5491;
+            --accent-teal: #0d9488;
+            --accent-green: #16a34a;
+            --accent-red: #dc2626;
+            --accent-amber: #d97706;
+            --accent-purple: #7c3aed;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            padding: 32px 24px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .header-bar {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 24px 28px;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-bar h1 {
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-bar p {
+            color: #94a3b8;
+            font-size: 13.5px;
+            margin-top: 6px;
+        }
+
+        /* NAVEGACIÓN ENTRE PROPUESTAS */
+        .tabs-nav {
+            display: flex;
+            gap: 10px;
+            background: #ffffff;
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-blue);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(31, 84, 145, 0.25);
+        }
+
+        .section-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #0f172a;
+        }
+
+        .section-desc {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        /* ESTÁNDAR CANÓNICO DE TABLA NORMALIZADA (BASADO EN EVENTOS Y FINANZAS) */
+        .normalized-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .normalized-table th {
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+        }
+
+        .normalized-table td {
+            padding: 8px 12px;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .normalized-table tr:hover td {
+            background: #faf7f2;
+        }
+
+        /* FILAS DE SUBAGRUPACIÓN UNIFICADAS (REGLA GENERAL PARA TODAS LAS TABLAS) */
+        .group-header-lvl1 {
+            background: #f1f5f9;
+            font-weight: 800;
+            border-top: 2px solid #cbd5e1 !important;
+        }
+
+        .group-header-lvl2 {
+            background: #fffbeb !important;
+            font-weight: 700;
+            cursor: pointer;
+            border-top: 1px solid #fde68a !important;
+            border-bottom: 1px solid #fde68a !important;
+        }
+
+        .group-header-lvl2:hover td {
+            background: #fef9c3 !important;
+        }
+
+        /* INPUTS Y SELECTS DE TABLA */
+        .table-inp {
+            width: 100%;
+            padding: 5px 8px;
+            font-size: 12.5px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: inherit;
+            color: #0f172a;
+            background: #fff;
+        }
+        .table-inp:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(31, 84, 145, 0.15);
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+        .tag-pill.blue { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .tag-pill.purple { background: #f3e8ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+        .tag-pill.green { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .tag-pill.amber { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+        .btn-app {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 4px 10px;
+            font-size: 11.5px;
+            font-weight: 700;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .btn-app:hover { background: #f1f5f9; }
+        .btn-app.btn-primary { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+        .btn-app.btn-success { background: var(--accent-green); color: #fff; border-color: var(--accent-green); }
+
+        .calc-preview-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- CABECERA PRINCIPAL -->
+    <div class="header-bar">
+        <div>
+            <h1>📐 Normalización de Tablas & Módulo Servicios</h1>
+            <p>Análisis técnico exhaustivo, catálogo antes/después de las 14 tablas de la app y propuesta visual del nuevo sub-módulo "3. Servicios Adicionales".</p>
+        </div>
+        <div style="font-family:'Geist Mono'; font-size:12px; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:8px;">
+            Port: 5050 · Mandala Festivales
+        </div>
+    </div>
+
+    <!-- BANNER DE NOVEDAD: ACTUALIZACIÓN EN TIEMPO REAL DESDE DEUDAS -->
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:14px 18px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="background:#16a34a; color:#fff; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px;">
+                ⚡
+            </div>
+            <div>
+                <strong style="font-size:13.5px; color:#14532d;">Actualización en Tiempo Real al Cambiar a "Traspaso" / Plan desde Deudas</strong>
+                <p style="font-size:12px; color:#166534; margin-top:2px;">
+                    Se incorporó la reactividad inmediata: al configurar cuotas o asignar <em>"Saldar deuda sumando entradas al próximo festival"</em> desde el modal de Deudas, la tabla se actualiza en el acto con el badge <strong>Traspaso</strong> y valores correctos, sin tener que salir y volver a entrar a la vista.
+                </p>
+            </div>
+        </div>
+        <span class="tag-pill green" style="font-size:11.5px; padding:4px 10px;">✓ Resuelto en index.html</span>
+    </div>
+
+    <!-- TABS DE NAVEGACIÓN -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchPropuestaTab('tab-normalizacion')">
+            <span>📐 1. Normalización de Todas las Tablas</span>
+        </button>
+        <button class="tab-btn" onclick="switchPropuestaTab('tab-servicios')">
+            <span>💼 2. Pestaña "Servicios" & Servicios Adicionales</span>
+        </button>
+    </div>
+
+    <!-- =========================================================
+         TAB 1: NORMALIZACIÓN DE TODAS LAS TABLAS DE LA APP
+         ========================================================= -->
+    <div id="tab-normalizacion" class="propuesta-content">
+
+        <div class="section-card">
+            <div class="section-title">
+                <span>🎯 Estándar Canónico Definido (Modelo de Referencia)</span>
+                <span class="tag-pill blue">Regla Maestra</span>
+            </div>
+            <div class="section-desc">
+                Basado en la <strong>Tabla Principal de Eventos</strong> y la <strong>Tabla de Finanzas</strong>, todas las tablas de la aplicación compartirán los mismos parámetros visuales, métricas y comportamiento:
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin-bottom:20px;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+                    <div style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Altura y Padding de Filas</div>
+                    <div style="font-size:15px; font-weight:800; color:var(--accent-blue); margin-top:3px;">Padding: 8px 12px</div>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Altura cómoda ~40px. Elimina celdas aplastadas o con paddings disparejos.</div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+                    <div style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Tipografía Unificada</div>
+                    <div style="font-size:15px; font-weight:800; color:var(--text-main); margin-top:3px;">Texto: 13px · Números: Geist Mono</div>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Plus Jakarta Sans 13px para textos; Geist Mono 12.5px - 13.5px para montos y horas.</div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+                    <div style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Subagrupaciones de Bandas</div>
+                    <div style="font-size:15px; font-weight:800; color:#854d0e; margin-top:3px;">Fondo Ambarino #fffbeb</div>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Regla idéntica para Cierre, Deudas y Servicios: cabecera con chevron ▼ y totales a la derecha.</div>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+                    <div style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Excepción Justificada: Caja</div>
+                    <div style="font-size:15px; font-weight:800; color:#0d9488; margin-top:3px;">Fuente Reducida: 11.5px</div>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Única excepción por ancho de pantalla en 2 columnas lado a lado (Ingresos vs Gastos).</div>
+                </div>
+            </div>
+
+            <!-- CATÁLOGO DE TODAS LAS TABLAS Y PLAN DE NORMALIZACIÓN -->
+            <div style="margin-top:14px;">
+                <h4 style="font-size:14px; font-weight:800; margin-bottom:12px; color:var(--text-main);">
+                    📋 Catálogo de Tablas en la App y Acciones de Normalización:
+                </h4>
+
+                <table class="normalized-table">
+                    <thead>
+                        <tr>
+                            <th style="width:220px; text-align:left;">MÓDULO / TABLA</th>
+                            <th style="text-align:left;">ESTADO ACTUAL (ANTES)</th>
+                            <th style="text-align:left;">ESTADO NORMALIZADO (DESPUÉS)</th>
+                            <th style="width:130px; text-align:center;">ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1. Eventos</strong><br><span style="font-size:11px; color:#64748b;">#tabla-eventos-filas</span></td>
+                            <td>Padding 8px 12px, fuente 13px, cabecera gris tenue.</td>
+                            <td><span class="tag-pill green">Modelo Canónico</span> Se toma como referencia base.</td>
+                            <td style="text-align:center;"><span class="tag-pill green">✓ Referencia</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>2. Finanzas Resumen</strong><br><span style="font-size:11px; color:#64748b;">#tabla-finanzas-resumen-filas</span></td>
+                            <td>Padding 8px 12px, Geist Mono en montos, balance verde/rojo.</td>
+                            <td><span class="tag-pill green">Modelo Canónico</span> Se toma como referencia base.</td>
+                            <td style="text-align:center;"><span class="tag-pill green">✓ Referencia</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>3. Info & Artistas</strong><br><span style="font-size:11px; color:#64748b;">#tabla-artistas-participantes</span></td>
+                            <td>Padding en inputs dispares, fuentes 12px y 13px mezcladas.</td>
+                            <td>Padding uniforme 8px 12px, inputs de borde sutil 12.5px, botones de acción alineados.</td>
+                            <td style="text-align:center;"><span class="tag-pill blue">Normalizar</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>4. Cronograma</strong><br><span style="font-size:11px; color:#64748b;">#tabla-cronograma</span></td>
+                            <td>Filas comprimidas con altura < 36px, selectores de horas desfasados.</td>
+                            <td>Altura de fila estándar 40px, padding 8px 12px, badges de horario en Geist Mono.</td>
+                            <td style="text-align:center;"><span class="tag-pill blue">Normalizar</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>5. Rider Técnico</strong><br><span style="font-size:11px; color:#64748b;">#tabla-rider-interactiva</span></td>
+                            <td>Padding 0 heredado de spreadsheet, inputs con bordes pesados.</td>
+                            <td>Inputs integrados con padding de 6px 10px, cabecera homogénea #f8fafc.</td>
+                            <td style="text-align:center;"><span class="tag-pill blue">Normalizar</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>6. Checklist</strong><br><span style="font-size:11px; color:#64748b;">#tabla-checklist-interactiva</span></td>
+                            <td>Checkbox desfasado a la izquierda, fuentes en distintos tamaños.</td>
+                            <td>Columna checkbox fija 36px centrada, texto 13px, select de responsable a 30px de alto.</td>
+                            <td style="text-align:center;"><span class="tag-pill blue">Normalizar</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>7. Cobertura Bandas</strong><br><span style="font-size:11px; color:#64748b;">#tabla-cobertura-bandas</span></td>
+                            <td>Selectores de plan con alturas distintas a inputs de reels.</td>
+                            <td>Normalizar todos los controles a altura 32px y padding 8px 12px.</td>
+                            <td style="text-align:center;"><span class="tag-pill blue">Normalizar</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>8. Cierre de Entradas</strong><br><span style="font-size:11px; color:#64748b;">#tabla-cumplimiento-contrato</span></td>
+                            <td>Cabeceras de banda con gris frío (#f1f5f9) distinto a la tabla de deudas (#fffbeb).</td>
+                            <td><strong>Unificar al estándar ambarino #fffbeb</strong> con chevron animado y totales a la derecha.</td>
+                            <td style="text-align:center;"><span class="tag-pill amber">Unificar Regla</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>9. Finanzas: Taquilla & Ventas</strong><br><span style="font-size:11px; color:#64748b;">#tabla-taquilla-tipos</span></td>
+                            <td>Padding variable en celdas de precios.</td>
+                            <td>Celdas con padding 8px 12px y formato numérico en Geist Mono.</td>
+                            <td style="text-align:center;"><span class="tag-pill blue">Normalizar</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>10. Finanzas: Gastos Evento</strong><br><span style="font-size:11px; color:#64748b;">#tabla-gastos-festival</span></td>
+                            <td>Fila fija de productora tenía estilos diferentes a los manuales.</td>
+                            <td>Ya emparejado; se consolida en la clase `.normalized-table`.</td>
+                            <td style="text-align:center;"><span class="tag-pill green">✓ Emparejado</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>11. Finanzas: Cobros Contrato</strong><br><span style="font-size:11px; color:#64748b;">#tabla-cobros-contrato-unificado</span></td>
+                            <td>Inputs con bordes inferiores y paddings chicos.</td>
+                            <td>Padding uniforme 8px 12px, inputs limpios de cuotas sin bordes punteados.</td>
+                            <td style="text-align:center;"><span class="tag-pill blue">Normalizar</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>12. Deudas Consolidada</strong><br><span style="font-size:11px; color:#64748b;">#tabla-deudas-consolidada</span></td>
+                            <td>Recién optimizada a 10 columnas, textos en negro y números en negrita.</td>
+                            <td><strong>Modelo Canónico de Subagrupación</strong> para eventos y bandas.</td>
+                            <td style="text-align:center;"><span class="tag-pill green">✓ Referencia</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>13. Caja (Ingresos y Gastos)</strong><br><span style="font-size:11px; color:#64748b;">#tabla-ingresos-caja-dinamica</span></td>
+                            <td>Fuente 11.5px para entrar en 2 columnas lado a lado.</td>
+                            <td>Se mantiene la fuente 11.5px como excepción requerida de espacio, pero con bordes y cabeceras normalizadas.</td>
+                            <td style="text-align:center;"><span class="tag-pill purple">Excepción OK</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>14. Configuración (Venues / Sesionistas)</strong><br><span style="font-size:11px; color:#64748b;">#tabla-venues-lista</span></td>
+                            <td>Una usa `app-table` y la otra `spreadsheet-table`.</td>
+                            <td>Ambas unificadas a la clase canónica estándar.</td>
+                            <td style="text-align:center;"><span class="tag-pill blue">Normalizar</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- COMPARADOR VISUAL ANTES Y DESPUÉS INTERACTIVO DE LAS 14 TABLAS -->
+            <div style="margin-top:32px;">
+                <h4 style="font-size:16px; font-weight:800; margin-bottom:6px; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                    <span>👁️ Comparativa Visual de las 14 Tablas: ANTES vs DESPUÉS</span>
+                    <span class="tag-pill blue">14 Tablas Documentadas</span>
+                </h4>
+                <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">
+                    Seleccioná cualquiera de las 14 tablas del catálogo para examinar su apariencia actual versus cómo quedará formateada con el estándar canónico unificado:
+                </p>
+
+                <!-- SELECTOR RÁPIDO DE LAS 14 TABLAS -->
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; background:#f8fafc; padding:10px; border-radius:12px; border:1px solid #e2e8f0;">
+                    <button class="btn-app btn-primary btn-comp-tab" id="btn-comp-cierre" onclick="mostrarComparativa('cierre', this)">8. Cierre Entradas</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-artistas" onclick="mostrarComparativa('artistas', this)">3. Info & Artistas</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-cronograma" onclick="mostrarComparativa('cronograma', this)">4. Cronograma</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-rider" onclick="mostrarComparativa('rider', this)">5. Rider Técnico</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-checklist" onclick="mostrarComparativa('checklist', this)">6. Checklist</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-cobertura" onclick="mostrarComparativa('cobertura', this)">7. Cobertura Bandas</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-taquilla" onclick="mostrarComparativa('taquilla', this)">9. Taquilla & Precios</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-gastos" onclick="mostrarComparativa('gastos', this)">10. Gastos Evento</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-cobros" onclick="mostrarComparativa('cobros', this)">11. Cobros Contrato</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-deudas" onclick="mostrarComparativa('deudas', this)">12. Deudas Consolidada</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-caja" onclick="mostrarComparativa('caja', this)">13. Caja (Ingresos/Gastos)</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-venues" onclick="mostrarComparativa('venues', this)">14. Venues & Sesionistas</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-eventos" onclick="mostrarComparativa('eventos', this)">1. Eventos (Canónico)</button>
+                    <button class="btn-app btn-comp-tab" id="btn-comp-fin-resumen" onclick="mostrarComparativa('fin-resumen', this)">2. Finanzas Resumen (Canónico)</button>
+                </div>
+
+                <!-- 8. CIERRE DE ENTRADAS -->
+                <div id="comp-cierre" class="comp-box">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">8. Cierre de Entradas (#tabla-cumplimiento-contrato)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Disparidades y Estilos Viejos)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Inconsistente</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Cabecera gris frío (#f1f5f9) dispar de deudas, líneas punteadas, pagados sin tachar visible, alturas desiguales.</div>
+                            <table style="width:100%; font-size:11.5px; border-collapse:collapse; background:#fff; border:1px solid #cbd5e1;">
+                                <tr style="background:#f1f5f9; color:#475569; font-weight:700;">
+                                    <td colspan="3" style="padding:4px 8px; border-bottom:1px solid #cbd5e1;">Banda: Mandala Jam (4)</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 8px; border-bottom:1px dashed #cbd5e1; font-weight:bold;">Manu</td>
+                                    <td style="padding:4px 8px; border-bottom:1px dashed #cbd5e1;">Cupo: 5</td>
+                                    <td style="padding:4px 8px; border-bottom:1px dashed #cbd5e1; color:#16a34a;">$ 25.000 Pagado</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 8px; border-bottom:1px dashed #cbd5e1; font-weight:bold;">Pablo</td>
+                                    <td style="padding:4px 8px; border-bottom:1px dashed #cbd5e1;">Cupo: 5</td>
+                                    <td style="padding:4px 8px; border-bottom:1px dashed #cbd5e1; color:#dc2626;">$ 25.000 Pendiente</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico)</span>
+                                <span class="tag-pill green">Unificado</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Cabecera ambarina #fffbeb con chevron ▼, padding 8px 12px, pagados tachados en gris, líneas sólidas limpias.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <tr class="group-header-lvl2">
+                                    <td colspan="2" style="padding:8px 12px; color:#854d0e;">
+                                        <span>▼</span> <strong>🎸 MANDALA JAM</strong> <span style="font-size:11px; font-weight:500; color:#a16207;">(4 participantes)</span>
+                                    </td>
+                                    <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#854d0e; padding:8px 12px;">$ 25.000 pend.</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:8px 12px; color:#0f172a;">Manu</td>
+                                    <td style="padding:8px 12px; font-family:'Geist Mono'; font-weight:700;">5</td>
+                                    <td style="padding:8px 12px; font-family:'Geist Mono'; text-decoration:line-through; color:#94a3b8; text-align:right;">$ 25.000 (Pagado)</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:8px 12px; color:#0f172a;">Pablo</td>
+                                    <td style="padding:8px 12px; font-family:'Geist Mono'; font-weight:700;">5</td>
+                                    <td style="padding:8px 12px; font-family:'Geist Mono'; font-weight:700; color:#dc2626; text-align:right;">$ 25.000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. INFO & ARTISTAS -->
+                <div id="comp-artistas" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">3. Info & Artistas Participantes (#tabla-artistas-participantes)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Dispersión de inputs y padding)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Padding 4px / Fuentes Mixtas</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Selectores e inputs con paddings pequeños de 4px, alturas desiguales y botones sin alinear.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11.5px; border:1px solid #cbd5e1;">
+                                <tr style="background:#f8fafc; font-weight:bold; font-size:11px;">
+                                    <th style="padding:4px 6px; border:1px solid #cbd5e1;">BANDA</th>
+                                    <th style="padding:4px 6px; border:1px solid #cbd5e1;">INTEGRANTE</th>
+                                    <th style="padding:4px 6px; border:1px solid #cbd5e1;">INSTRUMENTO</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 6px; border:1px solid #e2e8f0;"><input type="text" value="Giro Inesperado" style="font-size:11px; padding:2px;"></td>
+                                    <td style="padding:4px 6px; border:1px solid #e2e8f0;"><input type="text" value="Mateo Rossi" style="font-size:11px; padding:2px;"></td>
+                                    <td style="padding:4px 6px; border:1px solid #e2e8f0;"><input type="text" value="Batería" style="font-size:11px; padding:2px;"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico)</span>
+                                <span class="tag-pill green">Padding 8px 12px · Altura 40px</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Celdas de 40px de altura, inputs estilizados `.table-inp`, tipografía 13px uniforme.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left;">BANDA / SHOW</th>
+                                        <th style="text-align:left;">INTEGRANTE</th>
+                                        <th style="text-align:left;">INSTRUMENTO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="text" class="table-inp" value="Giro Inesperado" style="font-weight:700;"></td>
+                                        <td><input type="text" class="table-inp" value="Mateo Rossi"></td>
+                                        <td><input type="text" class="table-inp" value="Batería"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. CRONOGRAMA -->
+                <div id="comp-cronograma" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">4. Cronograma de Presentaciones (#tabla-cronograma)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Filas Apretadas)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Altura &lt; 34px</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Filas comprimidas con selectores desalineados verticalmente y fuentes en tamaño estándar browser.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #cbd5e1;">
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:2px 4px;">#</th>
+                                    <th style="padding:2px 4px;">HORA</th>
+                                    <th style="padding:2px 4px;">BANDA</th>
+                                    <th style="padding:2px 4px;">DUR.</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 4px; text-align:center;">1</td>
+                                    <td style="padding:2px 4px;"><input type="text" value="20:30" style="width:45px; font-size:11px;"></td>
+                                    <td style="padding:2px 4px;"><input type="text" value="Lorenzo" style="font-size:11px;"></td>
+                                    <td style="padding:2px 4px;"><input type="text" value="30 min" style="width:45px; font-size:11px;"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico)</span>
+                                <span class="tag-pill green">Altura 40px · Geist Mono</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Horarios y duraciones en Geist Mono claro, padding 8px 12px, inputs integrados.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px; text-align:center;">#</th>
+                                        <th style="width:80px; text-align:center;">HORARIO</th>
+                                        <th style="text-align:left;">BANDA / SHOW</th>
+                                        <th style="width:90px; text-align:center;">DURACIÓN</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align:center; font-family:'Geist Mono'; font-weight:700; color:#64748b;">1</td>
+                                        <td><input type="text" class="table-inp" value="20:30" style="text-align:center; font-family:'Geist Mono'; font-weight:700;"></td>
+                                        <td><input type="text" class="table-inp" value="Lorenzo" style="font-weight:700;"></td>
+                                        <td><input type="text" class="table-inp" value="30 min" style="text-align:center; font-family:'Geist Mono';"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. RIDER TÉCNICO -->
+                <div id="comp-rider" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">5. Rider Técnico Interactivo (#tabla-rider-interactiva)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Spreadsheet Tosca)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Padding 0 / Bordes Pesados</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Heredaba estilos toscos con padding 0, bordes gruesos y desalineación con los títulos.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #94a3b8;">
+                                <tr style="background:#e2e8f0;">
+                                    <th style="padding:2px 4px; border:1px solid #94a3b8;">Canal</th>
+                                    <th style="padding:2px 4px; border:1px solid #94a3b8;">Instrumento</th>
+                                    <th style="padding:2px 4px; border:1px solid #94a3b8;">Mic / Entrada</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0; border:1px solid #cbd5e1;"><input type="text" value="CH 01" style="width:100%; border:none; padding:3px; font-size:11px;"></td>
+                                    <td style="padding:0; border:1px solid #cbd5e1;"><input type="text" value="Bombo" style="width:100%; border:none; padding:3px; font-size:11px;"></td>
+                                    <td style="padding:0; border:1px solid #cbd5e1;"><input type="text" value="Beta 52" style="width:100%; border:none; padding:3px; font-size:11px;"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Rider Normalizado)</span>
+                                <span class="tag-pill green">Padding 8px 12px · Canónico</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Inputs integrados con margen suave, padding 8px 12px, canales en Geist Mono bold.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:70px; text-align:center;">CANAL</th>
+                                        <th style="text-align:left;">INSTRUMENTO</th>
+                                        <th style="text-align:left;">MIC / ENTRADA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align:center; font-family:'Geist Mono'; font-weight:700;">CH 01</td>
+                                        <td><input type="text" class="table-inp" value="Bombo"></td>
+                                        <td><input type="text" class="table-inp" value="Shure Beta 52A"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. CHECKLIST -->
+                <div id="comp-checklist" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">6. Checklist Operativo (#tabla-checklist-interactiva)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Checkboxes Desplazados)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Alineación Forzada</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Checkbox pegado al margen izquierdo sin ancho de columna fijo, responsables en select básico.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #cbd5e1;">
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:3px;">OK</th>
+                                    <th style="padding:3px; text-align:left;">TAREA</th>
+                                    <th style="padding:3px;">RESP.</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:3px; text-align:center;"><input type="checkbox" checked></td>
+                                    <td style="padding:3px;">Confirmar venue y depósito de seña</td>
+                                    <td style="padding:3px;"><span style="font-size:10.5px;">Pablo</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico)</span>
+                                <span class="tag-pill green">Columna Fija 36px Centrada</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Columna fija de 36px con checkbox centrado, texto 13px y select de responsable a 32px.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px; text-align:center;">ESTADO</th>
+                                        <th style="text-align:left;">TAREA / HITO</th>
+                                        <th style="width:140px; text-align:left;">RESPONSABLE</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align:center;"><input type="checkbox" checked style="width:16px; height:16px; accent-color:#16a34a; cursor:pointer;"></td>
+                                        <td style="font-weight:600; color:#0f172a;">Confirmar venue y depósito de seña</td>
+                                        <td><select class="table-inp" style="font-weight:600;"><option selected>Pablo</option><option>Guido</option></select></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. COBERTURA BANDAS -->
+                <div id="comp-cobertura" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">7. Cobertura de Bandas (#tabla-cobertura-bandas)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Selects con alturas variables)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Desfasaje de Controles</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Selectores de plan con padding 2px y campo de reels con padding 6px.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #cbd5e1;">
+                                <tr style="background:#f8fafc;">
+                                    <th style="padding:4px;">BANDA</th>
+                                    <th style="padding:4px;">PLAN</th>
+                                    <th style="padding:4px;">MONTO</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px; font-weight:bold;">Flambé</td>
+                                    <td style="padding:4px;"><select style="font-size:11px;"><option>Fotos + Reel</option></select></td>
+                                    <td style="padding:4px; font-size:11px; color:#16a34a;">$ 40.000</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico)</span>
+                                <span class="tag-pill green">Altura 32px · Geist Mono</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Todos los controles unificados a 32px de alto, montos alineados en Geist Mono bold.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left;">BANDA</th>
+                                        <th style="width:150px; text-align:left;">PLAN</th>
+                                        <th style="width:120px; text-align:right;">MONTO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight:700; color:#0f172a;">Flambé</td>
+                                        <td><select class="table-inp" style="font-weight:600;"><option selected>📸 Fotos + 🎬 Reel</option></select></td>
+                                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#15803d;">$ 40.000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 9. FINANZAS TAQUILLA -->
+                <div id="comp-taquilla" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">9. Finanzas: Taquilla y Liquidación (#tabla-taquilla-tipos)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Precios con paddings chicos)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Padding 4px</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Padding vertical apretado y números en fuentes proporcionales que no alinean decimales.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #cbd5e1;">
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:3px 6px; text-align:left;">TIPO</th>
+                                    <th style="padding:3px 6px; text-align:right;">PRECIO</th>
+                                    <th style="padding:3px 6px; text-align:center;">CANT.</th>
+                                    <th style="padding:3px 6px; text-align:right;">TOTAL</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:3px 6px;">Anticipada Alumno</td>
+                                    <td style="padding:3px 6px; text-align:right;">$5.000</td>
+                                    <td style="padding:3px 6px; text-align:center;">65</td>
+                                    <td style="padding:3px 6px; text-align:right;">$325.000</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico)</span>
+                                <span class="tag-pill green">Geist Mono Tabular · Padding 8px 12px</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Alineación numérica perfecta en Geist Mono, cantidades en negrita y padding 8px 12px.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left;">TIPO DE ENTRADA</th>
+                                        <th style="width:120px; text-align:right;">PRECIO UNITARIO</th>
+                                        <th style="width:90px; text-align:center;">CANTIDAD</th>
+                                        <th style="width:130px; text-align:right;">TOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight:600; color:#0f172a;">Anticipada Alumno</td>
+                                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:600;">$ 5.000</td>
+                                        <td style="text-align:center; font-family:'Geist Mono'; font-weight:700;">65</td>
+                                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; color:#0f172a;">$ 325.000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10. GASTOS EVENTO -->
+                <div id="comp-gastos" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">10. Finanzas: Gastos del Evento (#tabla-gastos-festival)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Productora fija en negrita dispar)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Tipografía Despareja</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">La fila de Cobertura / Productora venía fija en negrita pesada, mientras los gastos manuales tenían fuente regular.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #cbd5e1;">
+                                <tr style="background:#e0f2fe; font-weight:bold;">
+                                    <td style="padding:4px 6px;">Cobertura Audiovisual Escuela</td>
+                                    <td style="padding:4px 6px;">Jodida Productora</td>
+                                    <td style="padding:4px 6px; text-align:right;">$ 80.000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 6px;"><input type="text" value="Sonidista" style="font-size:11px;"></td>
+                                    <td style="padding:4px 6px;"><input type="text" value="Lucas" style="font-size:11px;"></td>
+                                    <td style="padding:4px 6px; text-align:right;">$ 45.000</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico)</span>
+                                <span class="tag-pill green">Misma Fuente y Alturas</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Todos los proveedores (Productora, SADAIC, Sonidista) comparten tipografía regular, padding 8px 12px y montos en Geist Mono.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left;">CONCEPTO / RUBRO</th>
+                                        <th style="text-align:left;">PROVEEDOR</th>
+                                        <th style="width:120px; text-align:right;">MONTO REAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="color:#0f172a;">Cobertura Audiovisual Escuela</td>
+                                        <td style="color:#0f172a;">Jodida Productora</td>
+                                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#dc2626;">$ 80.000</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="text" class="table-inp" value="Sonidista"></td>
+                                        <td><input type="text" class="table-inp" value="Lucas"></td>
+                                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#dc2626;">$ 45.000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 11. COBROS CONTRATO -->
+                <div id="comp-cobros" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">11. Finanzas: Cobros por Contrato (#tabla-cobros-contrato-unificado)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Inputs con bordes punteados)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Líneas Punteadas</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Celdas de cuotas con bordes inferiores punteados y fechas de vencimiento apretadas.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #cbd5e1;">
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:4px;">ALUMNO</th>
+                                    <th style="padding:4px;">CUOTA</th>
+                                    <th style="padding:4px; text-align:right;">MONTO</th>
+                                    <th style="padding:4px;">VENCE</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px; border-bottom:1px dashed #cbd5e1;">Pablo</td>
+                                    <td style="padding:4px; border-bottom:1px dashed #cbd5e1;">1 pago único</td>
+                                    <td style="padding:4px; border-bottom:1px dashed #cbd5e1; text-align:right; color:#dc2626;">$ 25.000</td>
+                                    <td style="padding:4px; border-bottom:1px dashed #cbd5e1;">11/11/2026</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico)</span>
+                                <span class="tag-pill green">Líneas Sólidas · Padding 8px 12px</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Líneas sólidas limpias, fechas claras en Geist Mono, montos resaltados sin saturar.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left;">ALUMNO / BANDA</th>
+                                        <th style="width:110px; text-align:center;">CUOTA</th>
+                                        <th style="width:110px; text-align:right;">MONTO</th>
+                                        <th style="width:110px; text-align:center;">VENCIMIENTO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="color:#0f172a; font-weight:600;">Pablo</td>
+                                        <td style="text-align:center;"><span class="tag-pill blue">1 pago único</span></td>
+                                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#dc2626;">$ 25.000</td>
+                                        <td style="text-align:center; font-family:'Geist Mono';">11/11/2026</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 12. DEUDAS CONSOLIDADA -->
+                <div id="comp-deudas" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">12. Deudas Consolidada (#tabla-deudas-consolidada)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Texto en negrita excesivo y badges repetidos)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Sobrecarga Visual</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Nombres en negrita pesada, badges azules repetitivos "(2 ent.)", líneas de desplegable que ensuciaban.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #cbd5e1;">
+                                <tr style="background:#e0f2fe; font-weight:bold;">
+                                    <td colspan="4" style="text-decoration:underline;">VOL V 2026 JAM (2 ent.)</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px; font-weight:bold;">👤 Manu</td>
+                                    <td style="padding:4px;"><span style="background:#bfdbfe; padding:2px;">Traspaso Prox. Fest (2 ent.)</span></td>
+                                    <td style="padding:4px; font-weight:bold; color:#16a34a;">$ 0</td>
+                                    <td style="padding:4px;">Guido</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico de 10 Columnas)</span>
+                                <span class="tag-pill green">Modelo Canónico Subagrupación</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Texto en negro regular, columna Cantidad solo con número bold, montos en Geist Mono, sin rayas sucias.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <tr class="group-header-lvl1">
+                                    <td colspan="3" style="padding:8px 12px; color:#1e293b;">🎪 VOL V 2026 JAM</td>
+                                    <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; color:#dc2626; padding:8px 12px;">$ 25.000</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr class="group-header-lvl2">
+                                    <td colspan="3" style="padding:8px 12px; color:#854d0e;">▼ 🎸 JAM MANDALA</td>
+                                    <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#854d0e; padding:8px 12px;">$ 25.000</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:8px 12px; color:#0f172a;">Manu</td>
+                                    <td style="text-align:center;"><span class="tag-pill purple">Traspaso</span></td>
+                                    <td style="text-align:center; font-family:'Geist Mono'; font-weight:700;">2</td>
+                                    <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#64748b;">$ 0</td>
+                                    <td style="text-align:center; color:#64748b;">Próx. fest</td>
+                                    <td style="text-align:center;">⚙️</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 13. CAJA -->
+                <div id="comp-caja" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">13. Caja: Ingresos y Gastos (#tabla-ingresos-caja-dinamica)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fed7aa; border-radius:10px; padding:12px; background:#fffaf5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#c2410c;">ℹ️ ESTADO ACTUAL (Excepción de Espacio)</span>
+                                <span class="tag-pill amber">Fuente 11.5px</span>
+                            </div>
+                            <div style="font-size:11px; color:#9a3412; margin-bottom:10px;">Por requerimiento de layout 2 columnas en paralelo, usa fuente reducida pero con bordes sólidos.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #cbd5e1;">
+                                <tr style="background:#f8fafc; font-weight:bold;">
+                                    <th style="padding:4px;">FECHA</th>
+                                    <th style="padding:4px;">DETALLE</th>
+                                    <th style="padding:4px; text-align:right;">MONTO</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px;">12/08</td>
+                                    <td style="padding:4px;">Cobro entradas Manu</td>
+                                    <td style="padding:4px; text-align:right; color:#16a34a; font-weight:bold;">+$ 25.000</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ ESTADO NORMALIZADO (Se Mantiene 11.5px)</span>
+                                <span class="tag-pill purple">Excepción Justificada OK</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Conserva su tipografía compacta 11.5px y padding optimizado 6px 8px para que ambas tablas encajen en pantalla.</div>
+                            <table class="normalized-table" style="font-size:11.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:75px; text-align:center;">FECHA</th>
+                                        <th style="text-align:left;">DETALLE</th>
+                                        <th style="width:95px; text-align:right;">MONTO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align:center; font-family:'Geist Mono';">12/08/2026</td>
+                                        <td style="color:#0f172a;">Cobro entradas Manu</td>
+                                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#16a34a;">+$ 25.000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 14. VENUES Y SESIONISTAS -->
+                <div id="comp-venues" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">14. Configuración: Venues y Sesionistas (#tabla-venues-lista / #tabla-sesionistas-lista)</strong></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div style="border:1px solid #fecaca; border-radius:10px; padding:12px; background:#fff5f5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#dc2626;">❌ ANTES (Clases CSS Dispares)</span>
+                                <span class="tag-pill" style="background:#fee2e2; color:#b91c1c;">Híbrido app vs spreadsheet</span>
+                            </div>
+                            <div style="font-size:11px; color:#7f1d1d; margin-bottom:10px;">Venues utilizaba clase `app-table` y Sesionistas `spreadsheet-table` generando bordes y altos distintos.</div>
+                            <table style="width:100%; border-collapse:collapse; background:#fff; font-size:11px; border:1px solid #cbd5e1;">
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:4px;">VENUE</th>
+                                    <th style="padding:4px;">DIRECCIÓN</th>
+                                    <th style="padding:4px; text-align:center;">CAPACIDAD</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px; font-weight:bold;">The Cavern Club</td>
+                                    <td style="padding:4px;">Av. Corrientes 1660</td>
+                                    <td style="padding:4px; text-align:center;">120 - 150</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="border:1px solid #bbf7d0; border-radius:10px; padding:12px; background:#f0fdf4;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#15803d;">✅ DESPUÉS (Normalizado Canónico)</span>
+                                <span class="tag-pill green">Ambas Unificadas</span>
+                            </div>
+                            <div style="font-size:11px; color:#14532d; margin-bottom:10px;">Ambas tablas integradas a la clase canónica estándar con padding 8px 12px y tags visuales elegantes.</div>
+                            <table class="normalized-table" style="font-size:12.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left;">VENUE</th>
+                                        <th style="text-align:left;">DIRECCIÓN</th>
+                                        <th style="width:130px; text-align:center;">CAPACIDAD</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight:700; color:#0f172a;">The Cavern Club</td>
+                                        <td style="color:#64748b;">Av. Corrientes 1660, CABA</td>
+                                        <td style="text-align:center; font-family:'Geist Mono'; font-weight:700;"><span class="tag-pill blue">120 - 150 pers.</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. EVENTOS -->
+                <div id="comp-eventos" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">1. Tabla Principal de Eventos (#tabla-eventos-filas)</strong></div>
+                    <div style="border:1px solid #bbf7d0; border-radius:10px; padding:14px; background:#f0fdf4;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span style="font-size:12.5px; font-weight:800; color:#15803d;">⭐ MODELO CANÓNICO DE REFERENCIA</span>
+                            <span class="tag-pill green">No Requiere Cambios</span>
+                        </div>
+                        <p style="font-size:12px; color:#14532d; margin-bottom:12px;">
+                            Esta tabla tiene la estructura ideal: padding 8px 12px, altura de fila de 40px, tipografía 13px limpia y bordes sutiles #cbd5e1. Es el estándar que se toma como molde para todas las demás tablas.
+                        </p>
+                        <table class="normalized-table" style="font-size:12.5px;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">EVENTO</th>
+                                    <th style="width:110px; text-align:center;">FECHA</th>
+                                    <th style="text-align:left;">VENUE</th>
+                                    <th style="width:110px; text-align:center;">ESTADO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight:700; color:#0f172a;">VOL V 2026 JAM</td>
+                                    <td style="text-align:center; font-family:'Geist Mono';">12/08/2026</td>
+                                    <td>The Cavern Club</td>
+                                    <td style="text-align:center;"><span class="tag-pill green">● Finalizado</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. FINANZAS RESUMEN -->
+                <div id="comp-fin-resumen" class="comp-box" style="display:none;">
+                    <div style="margin-bottom:8px;"><strong style="font-size:13.5px; color:#0f172a;">2. Finanzas Resumen (#tabla-finanzas-resumen-filas)</strong></div>
+                    <div style="border:1px solid #bbf7d0; border-radius:10px; padding:14px; background:#f0fdf4;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span style="font-size:12.5px; font-weight:800; color:#15803d;">⭐ MODELO CANÓNICO DE REFERENCIA</span>
+                            <span class="tag-pill green">No Requiere Cambios</span>
+                        </div>
+                        <p style="font-size:12px; color:#14532d; margin-bottom:12px;">
+                            Esta tabla posee la distribución perfecta de números monetarios en Geist Mono, alineación a la derecha y balances con color condicional.
+                        </p>
+                        <table class="normalized-table" style="font-size:12.5px;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">FESTIVAL</th>
+                                    <th style="width:120px; text-align:right;">INGRESOS</th>
+                                    <th style="width:120px; text-align:right;">GASTOS</th>
+                                    <th style="width:120px; text-align:right;">RESULTADO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight:700; color:#0f172a;">VOL V 2026 JAM</td>
+                                    <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#16a34a;">$ 755.000</td>
+                                    <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#dc2626;">$ 410.000</td>
+                                    <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; color:#16a34a;">+$ 345.000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+         TAB 2: PESTAÑA SERVICIOS & SERVICIOS ADICIONALES
+         ========================================================= -->
+    <div id="tab-servicios" class="propuesta-content" style="display:none;">
+
+        <!-- RESUMEN DEL CAMBIO DE PESTAÑA -->
+        <div class="section-card">
+            <div class="section-title">
+                <span>💼 Nueva Pestaña "Servicios" (Ex-Cobertura Audiovisual)</span>
+                <span class="tag-pill blue">Estructura de la Ficha</span>
+            </div>
+            <div class="section-desc">
+                La pestaña ahora centraliza tanto la <strong>cobertura institucional y de bandas</strong> como los <strong>servicios adicionales</strong> que se contratan para el show (músicos sesionistas de apoyo, horas de salas de ensayo, etc.):
+            </div>
+
+            <div style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
+                <span class="tag-pill blue" style="font-size:12px; padding:4px 10px;">1. Cobertura Audiovisual Escuela (Jodida Productora)</span>
+                <span class="tag-pill purple" style="font-size:12px; padding:4px 10px;">2. Cobertura de Artistas & Bandas Participantes</span>
+                <span class="tag-pill green" style="font-size:12px; padding:4px 10px;">3. Servicios Adicionales (NUEVO)</span>
+            </div>
+        </div>
+
+        <!-- MOCKUP VIVO DEL PUNTO 3: SERVICIOS ADICIONALES -->
+        <div class="section-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <h3 style="font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                        <span>▼ 🛠️ 3. Servicios Adicionales por Banda</span>
+                    </h3>
+                    <span style="font-size:12px; color:var(--text-muted);">
+                        Asigná horas de sesionistas o ensayos a cada banda. El costo total se divide automáticamente en partes iguales entre los integrantes de la banda y se redondea siempre para arriba.
+                    </span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <span class="tag-pill green">Sincronizado con Finanzas & Deudas</span>
+                </div>
+            </div>
+
+            <!-- TABLA OPERATIVA DE SERVICIOS ADICIONALES -->
+            <table class="normalized-table" id="tabla-servicios-adicionales-demo">
+                <thead>
+                    <tr>
+                        <th style="width:170px; text-align:left;">SERVICIO</th>
+                        <th style="width:110px; text-align:center;">DURACIÓN</th>
+                        <th style="width:130px; text-align:right;">PRECIO / HORA</th>
+                        <th style="width:130px; text-align:right;">TOTAL SERVICIO</th>
+                        <th style="width:190px; text-align:left;">PAGAR A (SESIONISTA / SALA)</th>
+                        <th style="text-align:left;">OBSERVACIONES</th>
+                        <th style="width:180px; text-align:center; color:#15803d;">CUOTA INTEGRANTE (REDONDEO)</th>
+                        <th style="width:40px; text-align:center;">⚙️</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- SUBAGRUPACIÓN: BANDA 1 -->
+                    <tr class="group-header-lvl2" onclick="toggleBandaServicio('banda-1')">
+                        <td colspan="3" style="padding:8px 12px; color:#854d0e;">
+                            <span id="chev-banda-1" style="display:inline-block; transition:transform .15s;">▼</span>
+                            <strong>🎸 MANDALA JAM</strong> <span style="font-size:11px; font-weight:500; color:#a16207;">(4 integrantes: Pablo, Manu, Santi, Gonza)</span>
+                        </td>
+                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#1e293b;" id="tot-banda-1-txt">
+                            $ 37.500
+                        </td>
+                        <td colspan="2"></td>
+                        <td style="text-align:center; font-family:'Geist Mono'; font-weight:700; color:#15803d;" id="cuota-banda-1-txt">
+                            $ 10.000 c/u
+                        </td>
+                        <td style="text-align:center;">
+                            <button type="button" class="btn-app btn-primary" style="padding:2px 6px; font-size:10px;" onclick="agregarFilaServicio('banda-1', event)" title="Agregar otro servicio a esta banda">＋</button>
+                        </td>
+                    </tr>
+
+                    <!-- FILA 1 DE BANDA 1: MÚSICO SESIONISTA -->
+                    <tr class="fila-srv-banda-1">
+                        <td>
+                            <select class="table-inp inp-srv-tipo" onchange="cambiarTipoServicioDemo(this)">
+                                <option value="sesionista" selected>🎷 Músico Sesionista</option>
+                                <option value="ensayo">🎹 Ensayos</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="table-inp inp-srv-horas" style="text-align:center; font-family:'Geist Mono'; font-weight:700;" onchange="recalcularFilaServicioDemo(this)">
+                                <option value="1">1.0 h</option>
+                                <option value="1.5" selected>1.5 h</option>
+                                <option value="2">2.0 h</option>
+                                <option value="2.5">2.5 h</option>
+                                <option value="3">3.0 h</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="table-inp inp-srv-precio" style="text-align:right; font-family:'Geist Mono'; font-weight:700;" value="$ 25.000" onchange="recalcularFilaServicioDemo(this)">
+                        </td>
+                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; color:#0f172a;" class="celda-srv-total">
+                            $ 37.500
+                        </td>
+                        <td class="celda-srv-proveedor-contenedor">
+                            <!-- SELECT CARGADO DIRECTAMENTE DESDE LA SECCIÓN SESIONISTAS -->
+                            <select class="table-inp sel-srv-sesionista" style="font-weight:600; color:#1e293b;">
+                                <option value="Santi" selected>🥁 Santi (Batería)</option>
+                                <option value="Nacho">🎸 Nacho (Guitarra / Bajo)</option>
+                                <option value="Gonza">🎹 Gonza (Teclados / Sintes)</option>
+                                <option value="Fede">🎤 Fede (Voz / Coros)</option>
+                                <option value="Cami">🎸 Cami (Bajo)</option>
+                                <option value="Lucas">🎷 Lucas (Saxo / Vientos)</option>
+                                <option value="__otro__">＋ Otro músico sesionista...</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="table-inp" value="Ensayo general + soporte en show en vivo" placeholder="Detalle...">
+                        </td>
+                        <td style="text-align:center; font-family:'Geist Mono';">
+                            <strong style="color:#15803d; font-size:13px;" class="celda-srv-cuota">$ 10.000</strong>
+                            <span style="font-size:10.5px; color:#64748b; display:block;" class="celda-srv-calc-desc">($ 9.375 → $ 10.000)</span>
+                        </td>
+                        <td style="text-align:center;">
+                            <button type="button" class="btn-app" style="color:#dc2626; border-color:#fecaca;" title="Eliminar servicio">✕</button>
+                        </td>
+                    </tr>
+
+                    <!-- SUBAGRUPACIÓN: BANDA 2 -->
+                    <tr class="group-header-lvl2" onclick="toggleBandaServicio('banda-2')">
+                        <td colspan="3" style="padding:8px 12px; color:#854d0e;">
+                            <span id="chev-banda-2" style="display:inline-block; transition:transform .15s;">▼</span>
+                            <strong>🎸 REFE (ENSAMBLE ROCK)</strong> <span style="font-size:11px; font-weight:500; color:#a16207;">(5 integrantes: Juli, Nacho, Fede, Cami, Lucas)</span>
+                        </td>
+                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#1e293b;" id="tot-banda-2-txt">
+                            $ 18.000
+                        </td>
+                        <td colspan="2"></td>
+                        <td style="text-align:center; font-family:'Geist Mono'; font-weight:700; color:#15803d;" id="cuota-banda-2-txt">
+                            $ 4.000 c/u
+                        </td>
+                        <td style="text-align:center;">
+                            <button type="button" class="btn-app btn-primary" style="padding:2px 6px; font-size:10px;" onclick="agregarFilaServicio('banda-2', event)" title="Agregar otro servicio a esta banda">＋</button>
+                        </td>
+                    </tr>
+
+                    <!-- FILA 1 DE BANDA 2: ENSAYOS EXTRA -->
+                    <tr class="fila-srv-banda-2">
+                        <td>
+                            <select class="table-inp inp-srv-tipo" onchange="cambiarTipoServicioDemo(this)">
+                                <option value="sesionista">🎷 Músico Sesionista</option>
+                                <option value="ensayo" selected>🎹 Ensayos</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="table-inp inp-srv-horas" style="text-align:center; font-family:'Geist Mono'; font-weight:700;" onchange="recalcularFilaServicioDemo(this)">
+                                <option value="1">1.0 h</option>
+                                <option value="1.5">1.5 h</option>
+                                <option value="2" selected>2.0 h</option>
+                                <option value="2.5">2.5 h</option>
+                                <option value="3">3.0 h</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="table-inp inp-srv-precio" style="text-align:right; font-family:'Geist Mono'; font-weight:700;" value="$ 9.000" onchange="recalcularFilaServicioDemo(this)">
+                        </td>
+                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; color:#0f172a;" class="celda-srv-total">
+                            $ 18.000
+                        </td>
+                        <td class="celda-srv-proveedor-contenedor">
+                            <input type="text" class="table-inp inp-srv-proveedor" value="Sala El Faro (Turno Noche)" placeholder="Nombre de sala o contacto...">
+                        </td>
+                        <td>
+                            <input type="text" class="table-inp" value="2 horas de sala adicional para ensamble" placeholder="Detalle...">
+                        </td>
+                        <td style="text-align:center; font-family:'Geist Mono';">
+                            <strong style="color:#15803d; font-size:13px;" class="celda-srv-cuota">$ 4.000</strong>
+                            <span style="font-size:10.5px; color:#64748b; display:block;" class="celda-srv-calc-desc">($ 3.600 → $ 4.000)</span>
+                        </td>
+                        <td style="text-align:center;">
+                            <button type="button" class="btn-app" style="color:#dc2626; border-color:#fecaca;" title="Eliminar servicio">✕</button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr style="background:#f8fafc; font-weight:800; border-top:2px solid var(--border-color);">
+                        <td colspan="3" style="text-align:right; padding:10px 12px; font-size:12px;">
+                            TOTAL SERVICIOS ADICIONALES DEL EVENTO:
+                        </td>
+                        <td style="text-align:right; font-family:'Geist Mono'; font-size:14px; color:var(--accent-blue);" id="gran-total-servicios">
+                            $ 55.500
+                        </td>
+                        <td colspan="4" style="font-size:11.5px; color:var(--text-muted); padding:10px 12px;">
+                            Sincronizado automáticamente: egreso por pagar a proveedores y cobro imputado a cada integrante.
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- DETALLE DE INTEGRACIÓN Y REDONDEO -->
+            <div class="calc-preview-card" style="margin-top:16px;">
+                <div>
+                    <span style="font-size:11px; font-weight:800; color:#15803d; text-transform:uppercase;">💡 Selección de Sesionistas del Directorio:</span>
+                    <p style="font-size:12px; color:#334155; margin-top:2px;">
+                        Al elegir <strong>"Músico Sesionista"</strong>, el desplegable se nutre automáticamente con los músicos registrados en la sección <strong>Sesionistas</strong> de la aplicación (con su nombre e instrumentos). Si se elige <strong>"Ensayos"</strong>, el campo se adapta automáticamente para ingresar la sala de ensayo o espacio de práctica.
+                    </p>
+                </div>
+            </div>
+
+            <div class="calc-preview-card">
+                <div>
+                    <span style="font-size:11px; font-weight:800; color:#15803d; text-transform:uppercase;">Regla de Redondeo para Arriba:</span>
+                    <p style="font-size:12px; color:#334155; margin-top:2px;">
+                        Si la división exacta da $ 1.500 → se redondea a <strong>$ 2.000</strong>. Si da $ 3.600 → se redondea a <strong>$ 4.000</strong>. Se aplica siempre el múltiplo de $ 1.000 superior para evitar fracciones y saldos descalzados.
+                    </p>
+                </div>
+                <div style="text-align:right; font-family:'Geist Mono';">
+                    <span style="font-size:11px; color:var(--text-muted); display:block;">Imputación en Deudas Alumnos:</span>
+                    <strong style="color:var(--accent-blue); font-size:13px;">Automática por Alumno</strong>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const sesionistasDisponibles = [
+        { nombre: 'Santi', instrumentos: 'Batería' },
+        { nombre: 'Nacho', instrumentos: 'Guitarra / Bajo' },
+        { nombre: 'Gonza', instrumentos: 'Teclados / Sintes' },
+        { nombre: 'Fede', instrumentos: 'Voz / Coros' },
+        { nombre: 'Cami', instrumentos: 'Bajo' },
+        { nombre: 'Lucas', instrumentos: 'Saxo / Vientos' }
+    ];
+
+    function switchPropuestaTab(tabId) {
+        document.querySelectorAll('.propuesta-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        const target = document.getElementById(tabId);
+        if (target) target.style.display = 'block';
+        if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    }
+
+    function toggleBandaServicio(bandaKey) {
+        const filas = document.querySelectorAll('.fila-srv-' + bandaKey);
+        const chev = document.getElementById('chev-' + bandaKey);
+        let ocultar = false;
+        filas.forEach(f => {
+            if (f.style.display === 'none') {
+                f.style.display = '';
+            } else {
+                f.style.display = 'none';
+                ocultar = true;
+            }
+        });
+        if (chev) {
+            chev.style.transform = ocultar ? 'rotate(-90deg)' : 'rotate(0deg)';
+        }
+    }
+
+    function cambiarTipoServicioDemo(el) {
+        const tr = el.closest('tr');
+        const tdContenedor = tr.querySelector('.celda-srv-proveedor-contenedor');
+        const tipo = el.value;
+
+        if (tipo === 'sesionista') {
+            let optionsHtml = sesionistasDisponibles.map(s => `<option value="${s.nombre}">🎵 ${s.nombre} (${s.instrumentos})</option>`).join('');
+            optionsHtml += '<option value="__otro__">＋ Otro músico sesionista...</option>';
+            tdContenedor.innerHTML = `
+                <select class="table-inp sel-srv-sesionista" style="font-weight:600; color:#1e293b;">
+                    ${optionsHtml}
+                </select>
+            `;
+        } else {
+            tdContenedor.innerHTML = `
+                <input type="text" class="table-inp inp-srv-proveedor" placeholder="Nombre de sala o contacto..." value="Sala El Faro">
+            `;
+        }
+        recalcularFilaServicioDemo(el);
+    }
+
+    function recalcularFilaServicioDemo(el) {
+        const tr = el.closest('tr');
+        const selHoras = tr.querySelector('.inp-srv-horas');
+        const inpPrecio = tr.querySelector('.inp-srv-precio');
+        const celdaTot = tr.querySelector('.celda-srv-total');
+        const celdaCuota = tr.querySelector('.celda-srv-cuota');
+        const celdaDesc = tr.querySelector('.celda-srv-calc-desc');
+
+        const horas = parseFloat(selHoras ? selHoras.value : 1);
+        const precio = parseFloat(inpPrecio ? inpPrecio.value.replace(/[^0-9]/g, '') : 0);
+        const total = Math.round(horas * precio);
+
+        // Integrantes demo: si es banda-1 son 4, si es banda-2 son 5
+        const esBanda1 = tr.classList.contains('fila-srv-banda-1');
+        const cantIntegrantes = esBanda1 ? 4 : 5;
+
+        const cuotaExacta = total / cantIntegrantes;
+        // Redondeo hacia arriba al millar: Math.ceil(cuotaExacta / 1000) * 1000
+        const cuotaRedondeada = Math.ceil(cuotaExacta / 1000) * 1000;
+
+        if (celdaTot) celdaTot.textContent = '$ ' + total.toLocaleString('es-AR');
+        if (celdaCuota) celdaCuota.textContent = '$ ' + cuotaRedondeada.toLocaleString('es-AR');
+        if (celdaDesc) celdaDesc.textContent = '($ ' + Math.round(cuotaExacta).toLocaleString('es-AR') + ' → $ ' + cuotaRedondeada.toLocaleString('es-AR') + ')';
+    }
+
+    function agregarFilaServicio(bandaKey, ev) {
+        if (ev) ev.stopPropagation();
+        alert('En la versión final, este botón agrega una nueva fila editable para la banda ' + bandaKey);
+    }
+
+    function mostrarComparativa(compKey, btn) {
+        document.querySelectorAll('.comp-box').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('#tab-normalizacion .btn-app').forEach(b => {
+            if (b.id && b.id.startsWith('btn-comp-')) b.classList.remove('btn-primary');
+        });
+        const target = document.getElementById('comp-' + compKey);
+        if (target) target.style.display = 'block';
+        if (btn) btn.classList.add('btn-primary');
+    }
+</script>
+
+</body>
+</html>

@@ -1193,21 +1193,28 @@ body {
     background: #f8fafc;
     box-shadow: inset 0 -1px 0 #cbd5e1;
     border: 1px solid #cbd5e1;
-    padding: 8px 10px;
+    padding: 9px 12px;
     font-size: 11px;
     font-weight: 800;
     color: var(--text-muted);
     text-transform: uppercase;
     text-align: center;
     user-select: none;
+    letter-spacing: 0.04em;
 }
 
 .spreadsheet-table td {
-    border: 1px solid #e2e8f0;
-    padding: 0;
+    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    font-size: 13px;
     vertical-align: middle;
     background: #ffffff;
+    color: var(--text-main);
     transition: background 0.15s;
+}
+
+.spreadsheet-table td:has(> .spreadsheet-inp) {
+    padding: 0;
 }
 
 .spreadsheet-table tr:hover td {
@@ -1215,49 +1222,107 @@ body {
 }
 
 /* =========================================================
-   TABLA CONSOLIDADA DE DEUDAS - ALINEACIÓN Y GROSOR UNIFICADO
+   ESTÁNDAR CANÓNICO UNIFICADO: NORMALIZED-TABLE Y AGRUPACIONES
    ========================================================= */
-#tabla-deudas-consolidada {
+.normalized-table {
     width: 100%;
-    table-layout: fixed;
     border-collapse: collapse;
+    font-size: 13px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
 }
 
-#tabla-deudas-consolidada th {
-    padding: 10px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.normalized-table th {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     background: #f8fafc;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
+    box-shadow: inset 0 -1px 0 #cbd5e1;
+    border: 1px solid #cbd5e1;
+    padding: 9px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-/* Fila de Evento */
-#tabla-deudas-consolidada tr.group-header-row td {
+.normalized-table td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    font-size: 13px;
+    vertical-align: middle;
+    background: #ffffff;
+    color: var(--text-main);
+}
+
+.normalized-table tr:hover td {
+    background: #fbfbfa;
+}
+
+/* REGLA GENERAL DE SUBAGRUPACIONES PARA TODAS LAS TABLAS DE LA APP */
+.group-header-lvl1, tr.group-header-lvl1, tr.group-header-row {
     background-color: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
-    height: 42px !important;
+    border-top: 2px solid #cbd5e1 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+}
+
+.group-header-lvl1 td, tr.group-header-lvl1 td, tr.group-header-row td {
+    background-color: #f1f5f9 !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    height: 40px !important;
+    padding: 8px 12px !important;
     vertical-align: middle !important;
 }
 
-/* Filas de Bandas y Mandala Ensambles: EXACTAMENTE MISMO ALTO/GROSOR Y ANCHO QUE LOS INTEGRANTES */
-#tabla-deudas-consolidada tr.fila-banda-header {
-    height: 42px !important;
+.group-header-lvl2, tr.group-header-lvl2, tr.fila-banda-header {
+    background-color: #fffbeb !important;
+    border-top: 1px solid #fde68a !important;
+    border-bottom: 1px solid #fde68a !important;
     cursor: pointer;
 }
 
-#tabla-deudas-consolidada tr.fila-banda-header td {
-    background-color: #fefce8 !important;
-    border-top: 1px solid #fef08a !important;
-    border-bottom: 1px solid #fef08a !important;
-    border-left: 1px solid #fef08a !important;
-    border-right: 1px solid #fef08a !important;
-    height: 42px !important;
+.group-header-lvl2 td, tr.group-header-lvl2 td, tr.fila-banda-header td {
+    background-color: #fffbeb !important;
+    border-top: 1px solid #fde68a !important;
+    border-bottom: 1px solid #fde68a !important;
+    font-weight: 700 !important;
+    color: #854d0e !important;
+    height: 40px !important;
     padding: 8px 12px !important;
     vertical-align: middle !important;
     box-sizing: border-box !important;
+}
+
+.group-header-lvl2:hover td, tr.fila-banda-header:hover td {
+    background-color: #fef9c3 !important;
+}
+
+/* CONTROLES DE ENTRADA EN TABLAS NORMALIZADAS */
+.table-inp {
+    width: 100%;
+    padding: 5px 8px;
+    font-size: 12.5px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-family: inherit;
+    color: #0f172a;
+    background: #ffffff;
+    box-sizing: border-box;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.table-inp:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(31, 84, 145, 0.15);
+}
+
+.pago-tachado {
+    text-decoration: line-through !important;
+    color: #94a3b8 !important;
+}
 }
 
 #tabla-deudas-consolidada tr.fila-banda-header:hover td {

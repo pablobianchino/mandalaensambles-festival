@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta Visual: Deudas, Finanzas y Cierre de Entradas | Mandala Festivales</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-blue: #1f5491;
+            --accent-teal: #0d9488;
+            --accent-green: #16a34a;
+            --accent-red: #dc2626;
+            --accent-amber: #d97706;
+            --accent-purple: #7c3aed;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            padding: 32px 24px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+
+        .header-bar {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 24px 28px;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+        }
+
+        .header-bar h1 {
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-bar p {
+            color: #94a3b8;
+            font-size: 13.5px;
+            margin-top: 6px;
+        }
+
+        .section-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #0f172a;
+        }
+
+        .section-desc {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
+        }
+
+        .tag-pill.blue { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .tag-pill.purple { background: #f3e8ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+        .tag-pill.green { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .tag-pill.red { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+        /* TABLAS ESTILO CAJA */
+        .spreadsheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .spreadsheet-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.03em;
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid #f1f5f9;
+        }
+
+        .spreadsheet-table td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            border-right: 1px solid #f8fafc;
+            color: var(--text-main);
+        }
+
+        .spreadsheet-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .btn-app {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 4px 10px;
+            font-size: 11.5px;
+            font-weight: 700;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .btn-app:hover { background: #f1f5f9; }
+        .btn-app.btn-primary { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+        .btn-app.btn-primary:hover { opacity: 0.9; }
+
+        .btn-gear {
+            padding: 3px 6px;
+            font-size: 12px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #334155;
+            transition: all .15s;
+        }
+        .btn-gear:hover { background: #e2e8f0; transform: scale(1.05); }
+
+        .callout-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-left: 4px solid var(--accent-blue);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            color: #1e3a8a;
+            margin-bottom: 16px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .comp-card {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            background: #fafafa;
+        }
+        .comp-card.new {
+            background: #ffffff;
+            border-color: #86efac;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.08);
+        }
+        .comp-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- CABECERA PRINCIPAL -->
+    <div class="header-bar">
+        <h1>🎨 Propuesta Visual Interactiva: Deudas, Finanzas y Cierre</h1>
+        <p>Previsualización exacta de los cambios solicitados para validar formato, columnas y distribución antes de la aplicación definitiva.</p>
+    </div>
+
+    <!-- SECCIÓN 1: DINÁMICA DE MANU (ROLLEVER) -->
+    <div class="section-card">
+        <div class="section-title">
+            <span>🔄 1. Dinámica del Rollover (Manu en VOL 5 vs VOL 6)</span>
+            <span class="tag-pill green">Solución en Vivo</span>
+        </div>
+        <div class="section-desc">
+            Explicación clara de por qué Manu figuraba y cómo queda regularizada automáticamente al estar en VOL VI.
+        </div>
+
+        <div class="callout-box">
+            <strong>¿Cómo funciona la desvinculación de la deuda?</strong><br>
+            • En <strong>VOL 5</strong>, Manu difirió <strong>2 entradas</strong> como traspaso.<br>
+            • Al crear la banda de Manu en <strong>VOL 6</strong>, el sistema ya le sumó esas 2 entradas a su cupo (5 base + 2 = <strong>7 requeridas</strong>).<br>
+            • <strong>La corrección:</strong> La tabla centralizada de deudas ahora comprueba si el participante ya tiene una banda activa en un festival posterior. Al detectar que Manu ya está en VOL 6, <strong>se retira automáticamente de la lista de deudas pendientes de VOL 5</strong>, porque la obligación ya fue absorbida y está corriendo en el contrato de VOL 6.
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: NUEVA TABLA CONSOLIDADA DE DEUDAS -->
+    <div class="section-card">
+        <div class="section-title">
+            <span>📋 2. Nueva Estructura de la Tabla de Deudas (10 Columnas)</span>
+            <span class="tag-pill blue">Propuesta Visual</span>
+        </div>
+        <div class="section-desc">
+            • Nueva columna <strong>"Cantidad"</strong> (quita el badge azul de entradas). Si no es entrada, muestra <code>N/A</code>.<br>
+            • Nueva columna <strong>"A Pagar"</strong> (con fecha acordada o A convenir, quitada de debajo del nombre).<br>
+            • Botón de engranaje <code>⚙️</code> en todas las filas de alumnos para gestionar plan/cuotas/vencimiento directo desde acá.<br>
+            • En traspasos: <strong>quitado el botón "Ver Cierre"</strong>, solo muestra <code>⚙️</code> y la columna Responsable muestra <code>-</code>.<br>
+            • Quitado de rayas conectoras de árbol (<code>├</code>, <code>└</code>) y quitado del subrayado en el título del evento.<br>
+            • Bandas comprimidas por defecto al ingresar.
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="spreadsheet-table">
+                <thead>
+                    <tr>
+                        <th style="width:34px; text-align:center;"><input type="checkbox"></th>
+                        <th style="width:230px; text-align:left;">Concepto / Participante</th>
+                        <th style="width:130px; text-align:center;">Tipo / Origen</th>
+                        <th style="width:85px; text-align:center; color:#0284c7;">Cantidad</th>
+                        <th style="width:110px; text-align:right;">Monto</th>
+                        <th style="width:115px; text-align:center; color:#0284c7;">A Pagar</th>
+                        <th style="width:115px; text-align:center;">Medio Pago</th>
+                        <th style="width:105px; text-align:center;">Responsable</th>
+                        <th style="text-align:left;">Detalle / Observaciones</th>
+                        <th style="width:115px; text-align:center;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- CABECERA EVENTO (SIN SUBRAYADO) -->
+                    <tr style="background:#f1f5f9; font-weight:800; border-top:2px solid #cbd5e1;">
+                        <td style="text-align:center;"></td>
+                        <td colspan="4" style="padding:10px 14px;">
+                            🎪 <strong style="color:var(--accent-blue); font-size:13px; cursor:pointer;">2026 FEST VOL 5 JAM</strong>
+                            <span style="font-size:11px; color:#64748b; font-weight:500;">(24/09/2026)</span>
+                            <span class="tag-pill" style="background:#e2e8f0; color:#334155; font-size:10.5px; margin-left:6px;">2 pendientes</span>
+                        </td>
+                        <td colspan="4" style="text-align:right; font-family:'Geist Mono'; font-size:11.5px; padding:10px 14px;">
+                            <span style="color:#dc2626; margin-right:10px;">Escuela: -$ 45.000</span>
+                            <span style="color:#059669; margin-right:10px;">Cobros: +$ 17.000</span>
+                            <strong style="color:#dc2626;">Saldo: -$ 28.000</strong>
+                        </td>
+                        <td style="text-align:center;"></td>
+                    </tr>
+
+                    <!-- CABECERA BANDA -->
+                    <tr style="background:#fffbeb; font-weight:700; cursor:pointer;">
+                        <td></td>
+                        <td colspan="9" style="color:#854d0e; font-size:12px; padding:7px 12px;">
+                            ▼ 🎸 MANDALA JAM <span style="font-size:11px; font-weight:500; color:#a16207;">(1 pendiente)</span>
+                        </td>
+                    </tr>
+
+                    <!-- FILA 1: PABLO (DEUDA CON FECHA ACORDADA) -->
+                    <tr>
+                        <td style="text-align:center;"><input type="checkbox"></td>
+                        <td style="padding-left:16px;">
+                            <span style="font-weight:400; color:#0f172a;">👤 Pablo</span>
+                            <div style="font-size:10.5px; color:#64748b;">1 pago acordado post-festival</div>
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="tag-pill green">● Entrada Alumno</span>
+                        </td>
+                        <td style="text-align:center; font-weight:700; color:#0f172a;">
+                            2
+                        </td>
+                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; color:#059669;">
+                            +$ 17.000
+                        </td>
+                        <td style="text-align:center; font-weight:400; color:#0f172a; font-family:'Geist Mono';">
+                            11/11/2026
+                        </td>
+                        <td style="text-align:center; font-size:11.5px; color:#0f172a;">Transferencia</td>
+                        <td style="text-align:center; font-size:11.5px; color:#0f172a;">Guido</td>
+                        <td style="font-size:11.5px; color:#0f172a;">Liquidación cupo contractual</td>
+                        <td style="text-align:center;">
+                            <div style="display:inline-flex; align-items:center; gap:5px;">
+                                <button type="button" class="btn-app" style="color:#0284c7; padding:2px 7px;">✔ Cobrar</button>
+                                <button type="button" class="btn-gear" title="Configurar plan o fecha">⚙️</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- CABECERA BANDA TRASPASO -->
+                    <tr style="background:#fffbeb; font-weight:700; cursor:pointer;">
+                        <td></td>
+                        <td colspan="9" style="color:#854d0e; font-size:12px; padding:7px 12px;">
+                            ▼ 🎸 BANDA EJEMPLO TRASPASO <span style="font-size:11px; font-weight:500; color:#a16207;">(1 traspaso)</span>
+                        </td>
+                    </tr>
+
+                    <!-- FILA 2: CASO TRASPASO (SIN BOTÓN VER CIERRE, CON ⚙️ Y SIN RESPONSABLE) -->
+                    <tr style="background:#faf5ff;">
+                        <td style="text-align:center;"><input type="checkbox"></td>
+                        <td style="padding-left:16px;">
+                            <span style="font-weight:400; color:#0f172a;">👤 Alumno con Traspaso</span>
+                            <div style="font-size:10.5px; color:#64748b;">Cobertura en próximo festival</div>
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="tag-pill purple">🔄 Traspaso</span>
+                        </td>
+                        <td style="text-align:center; font-weight:700; color:#0f172a;">
+                            2
+                        </td>
+                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; color:#64748b;">
+                            $ 0
+                        </td>
+                        <td style="text-align:center; font-size:11px; color:#0f172a;">
+                            Próx. Fest
+                        </td>
+                        <td style="text-align:center; font-size:11.5px; color:#0f172a;">Entradas</td>
+                        <td style="text-align:center; color:#0f172a;">-</td>
+                        <td style="font-size:11.5px; color:#0f172a;">Saldará cubriendo 2 entradas en el próximo festival</td>
+                        <td style="text-align:center;">
+                            <button type="button" class="btn-gear" title="Configurar plan o traspaso">⚙️</button>
+                        </td>
+                    </tr>
+
+                    <!-- FILA 3: GASTO DE ESCUELA (N/A EN CANTIDAD) -->
+                    <tr>
+                        <td style="text-align:center;"><input type="checkbox"></td>
+                        <td style="padding-left:16px;">
+                            <span style="font-weight:400; color:#0f172a;">📦 Flete y Sonido Extra</span>
+                            <div style="font-size:10.5px; color:#64748b;">Gasto Operativo</div>
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="tag-pill red">🔴 Gasto Escuela</span>
+                        </td>
+                        <td style="text-align:center; font-weight:700; color:#0f172a; font-size:11px;">
+                            N/A
+                        </td>
+                        <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; color:#dc2626;">
+                            -$ 45.000
+                        </td>
+                        <td style="text-align:center; color:#0f172a; font-size:11px;">
+                            A convenir
+                        </td>
+                        <td style="text-align:center; font-size:11.5px; color:#0f172a;">Efectivo</td>
+                        <td style="text-align:center; font-size:11.5px; color:#0f172a;">Nacho</td>
+                        <td style="font-size:11.5px; color:#0f172a;">Pago al descargar en sala</td>
+                        <td style="text-align:center;">
+                            <div style="display:inline-flex; align-items:center; gap:5px;">
+                                <button type="button" class="btn-app btn-primary" style="padding:2px 7px;">✔ Pagar</button>
+                                <button type="button" class="btn-gear" title="Configurar">⚙️</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 3: REEMPLAZO DE TARJETAS POR TABLAS SENCILLAS (ESTILO CAJA) -->
+    <div class="section-card">
+        <div class="section-title">
+            <span>📊 3. Resumen Financiero: Conversión de Tarjetas KPI a Tablas Estilo Caja</span>
+            <span class="tag-pill green">Nuevo Formato Tabla</span>
+        </div>
+        <div class="section-desc">
+            Sustituye las 5 tarjetas horizontales superiores y las 3 tarjetas de cobros por tablas sencillas, compactas y prolijas idénticas a las tablas de Caja.
+        </div>
+
+        <div class="comparison-grid">
+            <!-- TABLA A: RESUMEN LIQUIDACIÓN Y GANANCIA REAL -->
+            <div class="comp-card new">
+                <div class="comp-title" style="color:var(--accent-blue);">
+                    📊 Tabla Resumen: Liquidación y Ganancia Real
+                </div>
+                <table class="spreadsheet-table" style="font-size:11.5px;">
+                    <thead>
+                        <tr>
+                            <th>Rubro</th>
+                            <th>Detalle</th>
+                            <th style="text-align:right;">Monto ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1. Ingresos Netos de Ventas</strong></td>
+                            <td style="color:#64748b; font-size:11px;">Taquilla ($ 1.097.600) + Ventas Especiales ($ 54.000) · 107 ent.</td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);">+$ 1.151.600</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2. Cobros de Incumplimientos</strong></td>
+                            <td style="color:#64748b; font-size:11px;">1 cobrado(s) ($ 18.000) · Pendiente: $ 96.000</td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-blue);">+$ 18.000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3. Gastos Operativos</strong></td>
+                            <td style="color:#64748b; font-size:11px;">Fletes, sonido extra, staff</td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red);">-$ 200.568</td>
+                        </tr>
+                        <tr>
+                            <td><strong>4. Cobertura Neta Escuela</strong></td>
+                            <td style="color:#64748b; font-size:11px;">Presupuesto $ 285.000 - Bandas $ 125.000</td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-amber);">-$ 160.000</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:#f0fdf4; border-top:2px solid #86efac;">
+                            <td colspan="2" style="font-weight:800; color:#166534; font-size:12px; padding:10px 12px;">
+                                5. GANANCIA
+                            </td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:900; font-size:14px; color:var(--accent-green); padding:10px 12px;">
+                                +$ 809.032
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- TABLA B: RESUMEN DE COBROS & CUOTAS -->
+            <div class="comp-card new">
+                <div class="comp-title" style="color:var(--accent-teal);">
+                    💳 Tabla Resumen: Cobros & Cuotas
+                </div>
+                <table class="spreadsheet-table" style="font-size:11.5px;">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th style="text-align:right;">Cobrado</th>
+                            <th style="text-align:right;">Pendiente</th>
+                            <th style="text-align:center;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1. Entradas Alumnos</strong></td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:600; color:#166534;">$ 18.000</td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#dc2626;">$ 96.000</td>
+                            <td style="text-align:center;"><span class="tag-pill red">3 pend.</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>2. Cobertura Bandas</strong></td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:600; color:#166534;">$ 125.000</td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#166534;">$ 0</td>
+                            <td style="text-align:center;"><span class="tag-pill green">100% al día</span></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:#fffbeb; border-top:2px solid #fde68a;">
+                            <td style="font-weight:800; color:#92400e; font-size:12px; padding:10px 12px;">
+                                TOTAL PENDIENTE
+                            </td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#166534;">$ 143.000</td>
+                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:900; font-size:13.5px; color:#dc2626;">$ 96.000</td>
+                            <td style="text-align:center; font-size:11px; color:#b45309; font-weight:700;">Por cobrar</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 4: GASTOS DEL EVENTO Y LIQUIDACIÓN -->
+    <div class="section-card">
+        <div class="section-title">
+            <span>🧾 4. Ajustes en Gastos del Evento y Liquidación de Entradas</span>
+            <span class="tag-pill blue">Alineación y Orden</span>
+        </div>
+        <div class="section-desc">
+            Visualización de los cambios de alineación del proveedor, fechas, reordenamiento de SADAIC y Cumplimiento de contratos.
+        </div>
+
+        <div class="comparison-grid">
+            <div class="comp-card new">
+                <div class="comp-title">Gastos del Evento (Alineación)</div>
+                <div style="font-size:12px; color:#475569; line-height:1.6;">
+                    ✔ <strong>Jodida Productora:</strong> Con el mismo padding y tamaño que los inputs de Santi, Gonza y Nacho (sin desfasaje a la izquierda).<br>
+                    ✔ <strong>Fecha Cobertura:</strong> Sin negrita, formato estándar idéntico a las fechas de los demás gastos.
+                </div>
+            </div>
+
+            <div class="comp-card new">
+                <div class="comp-title">Liquidación de Entradas & SADAIC</div>
+                <div style="font-size:12px; color:#475569; line-height:1.6;">
+                    ✔ <strong>Badge y Botón apilados:</strong> <code>🔒 Entradas Congeladas</code> arriba y <code>🔄 Restablecer Precios</code> inmediatamente abajo.<br>
+                    ✔ <strong>Botón Agregar Tipo:</strong> Ubicado directamente arriba a la izquierda de la tabla de taquilla.<br>
+                    ✔ <strong>Barra Amarilla SADAIC:</strong> Movida para ubicarse debajo de la tabla de entradas.
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:14px;" class="comp-card new">
+            <div class="comp-title">Cumplimiento de Contratos (Cierre de Entradas)</div>
+            <div style="font-size:12px; color:#475569; line-height:1.6;">
+                ✔ <strong>JAM:</strong> Quitado el badge <code>JAM (2 ent.)</code> al lado del título.<br>
+                ✔ <strong>Línea punteada:</strong> Eliminada de la columna de deuda de entradas.<br>
+                ✔ <strong>Valores Pagados:</strong> Se muestran tachados y en gris: <span style="color:#94a3b8; text-decoration:line-through; font-family:'Geist Mono'; font-weight:600;">-$ 17.000</span>.
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

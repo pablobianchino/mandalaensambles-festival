@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Festivales</title>
+    <title>MDL Festival</title>
     
     <link rel="icon" href="logo.png" type="image/png">
     
@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=beta2.0">
+    <link rel="stylesheet" href="styles.css?v=beta3.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -168,7 +168,7 @@
             </ul>
 
             <div class="sidebar-footer">
-                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta2.0</div>
+                <div id="sidebar-version-label" style="font-size: 11px; color: var(--text-light); text-align: left; font-weight: 600; padding: 2px 6px;">beta3.0</div>
             </div>
         </aside>
 
@@ -367,9 +367,11 @@
                                 <div>
                                     <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Venue / Lugar</span>
                                     <p style="font-size:14px; font-weight:700; margin:4px 0;" id="det-ev-venue">Gregón Bar</p>
-                                    <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+                                    <div style="margin-top:2px; display:flex; flex-direction:column; gap:3px;">
                                         <span style="font-size:12px; color:var(--text-muted);" id="det-ev-direccion">Hipólito Yrigoyen 4071, Almagro</span>
-                                        <span class="pill-status pill-info" style="font-size:10.5px; padding:1px 6px; font-family:'Geist Mono';" id="det-ev-capacidad">👥 100-130 pers.</span>
+                                        <div style="display:flex; align-items:center; gap:6px;">
+                                            <span style="font-size:11px; color:#475569; font-weight:600; display:inline-flex; align-items:center; gap:4px;" id="det-ev-capacidad">👥 100 - 130</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
@@ -572,7 +574,7 @@
                                         <button class="btn-table-pill" id="btn-toggle-todos-rider" onclick="toggleTodosRiderBandas()" title="Comprimir o descomprimir todas las bandas del rider">
                                             🔽 Expandir Todo
                                         </button>
-                                        <button class="btn-table-pill" onclick="window.print()" title="Imprimir planilla de rider técnico" style="padding:3px 8px;">
+                                        <button class="btn-table-pill" onclick="imprimirRiderTecnico()" title="Imprimir planilla de rider técnico (Horizontal)" style="padding:3px 8px;">
                                             🖨️
                                         </button>
                                         <button class="btn-table-pill" onclick="agregarColumnaInstrumentoRider()" title="Agregar nueva columna de instrumento">
@@ -623,7 +625,7 @@
                                         </span>
                                     </div>
                                     <div style="display:flex; gap:8px; align-items:center;">
-                                        <button class="btn-table-pill" onclick="window.print()" title="Imprimir checklist para flete o escenario" style="padding:3px 8px;">
+                                        <button class="btn-table-pill" onclick="imprimirChecklistEquipamiento()" title="Imprimir checklist para flete o escenario (Vertical)" style="padding:3px 8px;">
                                             🖨️
                                         </button>
                                         <button class="btn-table-pill" style="display:none;" onclick="descargarPlantillaExcelChecklist()" title="Descargar plantilla Excel modelo (.xlsx)">
@@ -898,15 +900,15 @@
 
                     </div>
 
-                    <!-- Pestaña: Cierre de Entradas (Subsecciones: 1. Registro de Taquilla + 2. Cumplimiento de Contrato) -->
+                    <!-- Pestaña: Cierre de Entradas (Subsecciones: 1. Registro de Entradas + 2. Cumplimiento de Contrato) -->
                     <div id="tab-ev-cierre-entradas" class="tab-ev-content" style="display:none;">
                         
-                        <!-- Subsección 1: Registro de Entradas Vendidas (Taquilla) -->
+                        <!-- Subsección 1: Registro de Entradas Vendidas -->
                         <div class="content-card collapsible-numbered-card" id="card-cierre-taquilla" style="margin-bottom:16px;">
                             <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                 <div>
                                     <h4 class="card-title" style="margin:0 0 4px 0; font-size:14px; font-weight:800; color:var(--accent-blue);">
-                                        <span class="collapsible-chevron">▼</span>🎟️ 1. Registro de Entradas Vendidas (Taquilla)
+                                        <span class="collapsible-chevron">▼</span>🎟️ 1. Registro de Entradas Vendidas
                                     </h4>
                                     <span style="font-size:12px; color:var(--text-muted);">
                                         Cargá la cantidad de entradas vendidas por tipo de entrada para este festival. Se sincroniza automáticamente con la <em>Liquidación de Entradas</em> en Finanzas.
@@ -914,7 +916,7 @@
                                 </div>
                                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;" onclick="event.stopPropagation()">
                                     <span class="pill-status pill-info" id="badge-total-taquilla-cierre" style="font-size:11px; font-weight:700;">
-                                        Total Taquilla: 0 ent.
+                                        Total Entradas: 0 ent.
                                     </span>
                                 </div>
                             </div>
@@ -934,7 +936,7 @@
                                         <tfoot>
                                             <tr style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
                                                 <td style="text-align:right; padding:10px 14px; font-size:12.5px; text-transform:uppercase; color:var(--text-main);">
-                                                    Subtotal Taquilla (Preventa + General + Puerta):
+                                                    Subtotal Entradas (Preventa + General + Puerta):
                                                 </td>
                                                 <td style="text-align:center; font-family:'Geist Mono'; font-size:14px; color:var(--accent-teal);" id="txt-cierre-taquilla-cant-total">
                                                     0 ent.
@@ -946,12 +948,12 @@
                             </div>
                         </div>
 
-                        <!-- Subsección 2: Estado de Cumplimiento de Contrato & Entradas (Detalle Participantes) -->
+                        <!-- Subsección 2: Estado de Cumplimiento de Contrato -->
                         <div class="content-card collapsible-numbered-card" id="card-cierre-cumplimiento">
                             <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                 <div>
                                     <h4 class="card-title" style="margin:0 0 4px 0; font-size:14px; font-weight:800; color:var(--accent-blue);">
-                                        <span class="collapsible-chevron">▼</span>📊 2. Estado de Cumplimiento de Contrato & Entradas (Detalle Participantes)
+                                        <span class="collapsible-chevron">▼</span>📊 2. Estado de Cumplimiento de Contrato
                                     </h4>
                                     <span style="font-size:12px; color:var(--text-muted);">
                                         Ingresá las entradas vendidas directamente en la tabla. Si cumple el cupo contractual pasa a <strong>Cupo Completo</strong>; si no, queda en <strong>Cupo Incumplido</strong> y se sincroniza automáticamente con la pestaña de <em>Cobros & Cuotas Alumnos</em> en Finanzas.
@@ -963,9 +965,6 @@
                                     </button>
                                     <button class="btn-app btn-secondary" onclick="toggleTodasLasBandas()" id="btn-toggle-bandas-todas">
                                         🔽 Expandir Todo
-                                    </button>
-                                    <button class="btn-app btn-primary" onclick="abrirModalAgregarParticipante()">
-                                        ＋ Agregar Participante
                                     </button>
                                 </div>
                             </div>
@@ -1684,36 +1683,31 @@
                                 <table class="spreadsheet-table" style="font-size:11.5px; margin-bottom:0; width:100%;">
                                     <thead>
                                         <tr>
-                                            <th style="text-align:left; width:30%;">RUBRO / CONCEPTO</th>
-                                            <th style="text-align:left;">DETALLE</th>
+                                            <th style="text-align:left;">RUBRO / CONCEPTO</th>
                                             <th style="text-align:right; width:180px;">MONTO ($)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td><strong>1. Ingresos Netos de Ventas</strong></td>
-                                            <td style="color:#64748b; font-size:11px;" id="resumen-card-sub-ingresos">Taquilla ($ 0) + Ventas Esp. ($ 0)</td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);" id="resumen-card-ingresos-tot">+$ 0</td>
                                         </tr>
                                         <tr>
                                             <td><strong>2. Cobros de Incumplimientos</strong></td>
-                                            <td style="color:#64748b; font-size:11px;" id="resumen-card-sub-incumplimientos">Pagos de cupo entradas alumnos</td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-blue);" id="resumen-card-incumplimientos-tot">+$ 0</td>
                                         </tr>
                                         <tr>
                                             <td><strong>3. Gastos Operativos</strong></td>
-                                            <td style="color:#64748b; font-size:11px;">Fletes, sonido extra, staff</td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red);" id="resumen-card-gastos-tot">-$ 0</td>
                                         </tr>
                                         <tr>
                                             <td><strong>4. Cobertura Neta de la Escuela</strong></td>
-                                            <td style="color:#64748b; font-size:11px;" id="resumen-card-sub-cobertura">Presupuesto prod. - aporte bandas</td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-amber);" id="resumen-card-cobertura-tot">-$ 0</td>
                                         </tr>
                                     </tbody>
                                     <tfoot>
                                         <tr style="background:#f0fdf4; border-top:2px solid #86efac;">
-                                            <td colspan="2" style="font-weight:800; color:#166534; font-size:12px; padding:9px 12px;">
+                                            <td style="font-weight:800; color:#166534; font-size:12px; padding:9px 12px;">
                                                 5. GANANCIA
                                             </td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:900; font-size:14px; color:var(--accent-green); padding:9px 12px;" id="resumen-card-ganancia-tot">
@@ -1756,7 +1750,7 @@
                                 </div>
                             </div>
 
-                            <!-- 1. LIQUIDACIÓN VENTA TAQUILLA POR TIPO DE ENTRADA + PRECIOS UNITARIOS + SADAIC -->
+                            <!-- 1. LIQUIDACIÓN VENTA DE ENTRADAS POR TIPO + PRECIOS UNITARIOS + SADAIC -->
                             <div class="content-card collapsible-numbered-card collapsed">
                                 <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
                                     <div>
@@ -1802,7 +1796,7 @@
                                             <tfoot>
                                                 <tr style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
                                                     <td colspan="2" style="text-align:right; padding:10px 14px; font-size:12.5px; text-transform:uppercase; color:var(--text-main);">
-                                                        Subtotal Taquilla (Preventa + General + Puerta):
+                                                        Subtotal Entradas (Preventa + General + Puerta):
                                                     </td>
                                                     <td style="text-align:center; font-family:'Geist Mono'; font-size:13.5px; color:var(--accent-blue);" id="txt-taquilla-cant-total">0 ent.</td>
                                                     <td style="text-align:right; padding:10px 14px; font-family:'Geist Mono'; font-size:14px; color:var(--accent-blue);" id="txt-taquilla-bruto-total">$ 0</td>
@@ -1850,14 +1844,14 @@
                                         <!-- Modo 2: Porcentaje -->
                                         <div id="box-sadaic-ctrls-porcentaje" style="display:none; align-items:center; gap:12px; flex-wrap:wrap;">
                                             <div style="display:flex; align-items:center; gap:6px;">
-                                                <label style="font-size:12px; font-weight:700; color:#78350f;">% sobre Taquilla:</label>
+                                                <label style="font-size:12px; font-weight:700; color:#78350f;">% sobre Entradas:</label>
                                                 <div style="display:flex; align-items:center; gap:5px;">
                                                     <input type="number" id="inp-sadaic-porcentaje" class="form-control" style="width:70px; padding:4px 8px; font-family:'Geist Mono'; font-weight:700; text-align:center;" value="3" min="0" max="100" step="0.5" oninput="actualizarConfigSadaicFestival()">
                                                     <span style="font-weight:700; font-size:12.5px; color:var(--text-main);">%</span>
                                                 </div>
                                             </div>
                                             <div style="font-size:12px; color:#78350f;" id="txt-sadaic-detalle-porcentaje">
-                                                Se descuenta el <strong>3%</strong> de la recaudación bruta por taquilla.
+                                                Se descuenta el <strong>3%</strong> de la recaudación bruta por entradas.
                                             </div>
                                         </div>
 
@@ -1866,7 +1860,7 @@
 
                                     <div class="form-grid" style="align-items:stretch;">
                                         <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
-                                            <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Recaudación Bruta Taquilla</span>
+                                            <span style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Recaudación Bruta Entradas</span>
                                             <div style="font-size:1.45em; font-weight:800; color:var(--accent-blue); font-family:'Geist Mono'; margin:4px 0;" id="txt-calc-bruto-taquilla">
                                                 $ 0
                                             </div>
@@ -1882,16 +1876,25 @@
                                         </div>
 
                                         <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
-                                            <label style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">% Participación Escuela (Mandala)</label>
-                                            <div style="display:flex; align-items:center; gap:8px;">
-                                                <input type="number" id="inp-ingresos-porc-escuela" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:85px;" value="70" min="0" max="100" oninput="recalcularIngresosFestival(true)">
-                                                <span style="font-size:12px; font-weight:700; color:var(--text-muted);">% Escuela</span>
+                                            <div>
+                                                <label style="font-size:10.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">% Participación Escuela (Mandala)</label>
+                                                <div id="wrap-badge-acuerdo-venue" style="margin-bottom:8px;">
+                                                    <span class="pill-status" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-size:11px; font-weight:700;">🏷️ Acuerdo Venue: 70% Escuela (Automático)</span>
+                                                </div>
+                                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                                    <input type="number" id="inp-ingresos-porc-escuela" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:85px;" value="70" min="0" max="100" oninput="alCambiarPorcentajeEscuelaManual(this.value)">
+                                                    <span style="font-size:12px; font-weight:700; color:var(--text-muted);">% Escuela</span>
+                                                    <button type="button" id="btn-restablecer-acuerdo-venue" class="btn-app btn-secondary" style="font-size:10.5px; padding:3px 8px; display:none;" onclick="restablecerAcuerdoVenue()" title="Volver al acuerdo predeterminado del venue">↺ Restablecer a Venue</button>
+                                                </div>
+                                                <div id="alerta-acuerdo-a-definir" style="display:none; margin-top:8px; font-size:11px; color:#b91c1c; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:6px 8px; font-weight:600;">
+                                                    ⚠️ El venue asignado tiene acuerdo <strong>A definir</strong>. Ingresá el % pactado para liquidar este festival.
+                                                </div>
                                             </div>
                                             <span style="font-size:11px; color:var(--text-muted); display:block; margin-top:6px;">Saldo post-SADAIC: <strong id="txt-calc-base-post-sadaic" style="color:var(--text-main);">$ 0</strong></span>
                                         </div>
 
                                         <div style="background:#f0fdf4; padding:14px; border-radius:12px; border:1px solid #86efac; display:flex; flex-direction:column; justify-content:space-between;">
-                                            <span style="font-size:10.5px; font-weight:800; color:#166534; text-transform:uppercase;">Ingreso Neto Escuela (Taquilla)</span>
+                                            <span style="font-size:10.5px; font-weight:800; color:#166534; text-transform:uppercase;">Ingreso Neto Escuela (Entradas)</span>
                                             <div style="font-size:1.55em; font-weight:800; color:var(--accent-green); font-family:'Geist Mono'; margin:4px 0;" id="txt-calc-neto-escuela">
                                                 $ 0
                                             </div>
@@ -1940,7 +1943,7 @@
                                                 Entradas Ventas Especiales: <strong style="font-family:'Geist Mono'; color:var(--accent-blue);" id="txt-cant-ventas-especiales">0 ent.</strong>
                                             </span>
                                             <span style="font-size:12.5px; font-weight:800; color:var(--text-main); background:#e0f2fe; padding:4px 10px; border-radius:8px; border:1px solid #bae6fd;">
-                                                🎟️ Total General Entradas Vendidas (Taquilla + Especiales): <strong style="font-family:'Geist Mono'; color:#0369a1;" id="txt-total-general-entradas-evento">0 ent.</strong>
+                                                🎟️ Total General Entradas Vendidas (Entradas + Especiales): <strong style="font-family:'Geist Mono'; color:#0369a1;" id="txt-total-general-entradas-evento">0 ent.</strong>
                                             </span>
                                         </div>
                                         <div>
@@ -2855,8 +2858,16 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Acuerdo Comercial</label>
-                    <input type="text" id="venue-acuerdo-inp" class="form-control" placeholder="Ej: 70% Escuela / 30% Venue">
+                    <label style="font-weight:700;">Acuerdo Comercial del Venue</label>
+                    <select id="venue-acuerdo-select" class="form-control" onchange="cambiarSelectAcuerdoVenue(this.value)" style="font-weight:600;">
+                        <option value="70% Escuela / 30% Venue">70% Escuela / 30% Venue (Estándar)</option>
+                        <option value="100% Escuela">100% Escuela (Alquiler fijo / Sin % para venue)</option>
+                        <option value="A definir">A definir (Requiere acordar por evento)</option>
+                        <option value="otro">Otro porcentaje personalizado...</option>
+                    </select>
+                    <div id="venue-acuerdo-custom-wrap" style="display:none; margin-top:8px;">
+                        <input type="text" id="venue-acuerdo-inp" class="form-control" placeholder="Ej: 60% Escuela / 40% Venue">
+                    </div>
                 </div>
 
                 <!-- Capacidad en rango -->
@@ -4095,14 +4106,101 @@
             min = parseInt(min) || 0;
             max = parseInt(max) || 0;
             if (min > 0 && max > 0 && min !== max) {
-                return `${min} - ${max} pers.`;
+                return `${min} - ${max}`;
             } else if (max > 0) {
-                return `${max} pers.`;
+                return `${max}`;
             } else if (min > 0) {
-                return `${min} pers.`;
+                return `${min}`;
             }
             return 'A definir';
         }
+
+        // Obtener porcentaje numérico de acuerdo para la escuela según el venue (ej: "70% Escuela / 30% Venue" -> 70, "100% Escuela" -> 100, "A definir" -> null)
+        function parsearPorcentajeAcuerdoVenue(textoAcuerdo) {
+            if (!textoAcuerdo) return null;
+            const str = String(textoAcuerdo).trim().toLowerCase();
+            if (str.includes('definir')) return null;
+            if (str.includes('100') || str.includes('100%')) return 100;
+            const match = str.match(/(\d+)\s*%/);
+            if (match) {
+                const val = parseInt(match[1], 10);
+                if (!isNaN(val) && val >= 0 && val <= 100) return val;
+            }
+            return null;
+        }
+        window.parsearPorcentajeAcuerdoVenue = parsearPorcentajeAcuerdoVenue;
+
+        function obtenerAcuerdoVenuePorNombre(nombreVenue) {
+            if (!nombreVenue) return null;
+            const cleanBuscado = String(nombreVenue).trim().toLowerCase();
+            // 1. Coincidencia exacta
+            let v = Object.values(venuesData).find(ven => ven && ven.nombre && ven.nombre.trim().toLowerCase() === cleanBuscado);
+            if (v) return v.acuerdo;
+            // 2. Coincidencia parcial (ej: "Gregón Bar Club" vs "Gregón Bar")
+            v = Object.values(venuesData).find(ven => ven && ven.nombre && (
+                cleanBuscado.includes(ven.nombre.trim().toLowerCase()) ||
+                ven.nombre.trim().toLowerCase().includes(cleanBuscado)
+            ));
+            return v ? v.acuerdo : null;
+        }
+        window.obtenerAcuerdoVenuePorNombre = obtenerAcuerdoVenuePorNombre;
+
+        function obtenerEstadoAcuerdoFestival(festivalId) {
+            const fId = festivalId || (typeof eventoActualId !== 'undefined' ? eventoActualId : null);
+            const fInfo = (typeof infoFestivales !== 'undefined' && fId) ? infoFestivales[fId] : null;
+            const venueNombre = fInfo ? (fInfo.venue || '') : '';
+            const acuerdoTexto = obtenerAcuerdoVenuePorNombre(venueNombre) || '70% Escuela / 30% Venue';
+            const porcAuto = parsearPorcentajeAcuerdoVenue(acuerdoTexto); // 70, 100 o null si es "A definir"
+
+            const d = (typeof ingresosFestivalesDB !== 'undefined' && fId && ingresosFestivalesDB[fId]) ? ingresosFestivalesDB[fId] : null;
+            const esManual = Boolean(d && d.porcEscuelaManual === true);
+
+            let porcFinal = 70;
+            let tipo = 'auto'; // 'auto' | 'manual' | 'indefinido'
+
+            if (esManual && d && d.porcEscuela !== null && d.porcEscuela !== undefined && d.porcEscuela !== '') {
+                porcFinal = Number(d.porcEscuela);
+                tipo = 'manual';
+            } else {
+                if (porcAuto !== null) {
+                    porcFinal = porcAuto;
+                    tipo = 'auto';
+                    if (d && !esManual) d.porcEscuela = porcAuto;
+                } else {
+                    if (d && d.porcEscuela !== null && d.porcEscuela !== undefined && d.porcEscuela !== '' && d.porcEscuelaManual) {
+                        porcFinal = Number(d.porcEscuela);
+                        tipo = 'manual';
+                    } else {
+                        porcFinal = null;
+                        tipo = 'indefinido';
+                    }
+                }
+            }
+
+            return {
+                festivalId: fId,
+                venueNombre,
+                acuerdoTexto,
+                porcAuto,
+                porcFinal,
+                tipo,
+                esManual
+            };
+        }
+        window.obtenerEstadoAcuerdoFestival = obtenerEstadoAcuerdoFestival;
+
+        function cambiarSelectAcuerdoVenue(val) {
+            const customWrap = document.getElementById('venue-acuerdo-custom-wrap');
+            const inp = document.getElementById('venue-acuerdo-inp');
+            if (val === 'otro') {
+                if (customWrap) customWrap.style.display = 'block';
+                if (inp) inp.focus();
+            } else {
+                if (customWrap) customWrap.style.display = 'none';
+                if (inp) inp.value = val;
+            }
+        }
+        window.cambiarSelectAcuerdoVenue = cambiarSelectAcuerdoVenue;
 
         function agregarFilaContactoVenue(tipo = 'Encargado', nombre = '', telefono = '') {
             const cont = document.getElementById('contenedor-contactos-venue');
@@ -4128,7 +4226,13 @@
             document.getElementById('venue-edit-id').value = '';
             document.getElementById('venue-nombre-inp').value = '';
             document.getElementById('venue-direccion-inp').value = '';
-            document.getElementById('venue-acuerdo-inp').value = '70% Escuela / 30% Venue';
+            const selAc = document.getElementById('venue-acuerdo-select');
+            if (selAc) selAc.value = '70% Escuela / 30% Venue';
+            const inpAc = document.getElementById('venue-acuerdo-inp');
+            if (inpAc) inpAc.value = '70% Escuela / 30% Venue';
+            const customWrap = document.getElementById('venue-acuerdo-custom-wrap');
+            if (customWrap) customWrap.style.display = 'none';
+
             document.getElementById('venue-cap-min-inp').value = '';
             document.getElementById('venue-cap-max-inp').value = '';
             
@@ -4146,7 +4250,21 @@
             document.getElementById('venue-edit-id').value = venueKey;
             document.getElementById('venue-nombre-inp').value = v.nombre;
             document.getElementById('venue-direccion-inp').value = v.direccion;
-            document.getElementById('venue-acuerdo-inp').value = v.acuerdo;
+            
+            const selAc = document.getElementById('venue-acuerdo-select');
+            const inpAc = document.getElementById('venue-acuerdo-inp');
+            const customWrap = document.getElementById('venue-acuerdo-custom-wrap');
+            const acVal = (v.acuerdo || '70% Escuela / 30% Venue').trim();
+            if (['70% Escuela / 30% Venue', '100% Escuela', 'A definir'].includes(acVal)) {
+                if (selAc) selAc.value = acVal;
+                if (inpAc) inpAc.value = acVal;
+                if (customWrap) customWrap.style.display = 'none';
+            } else {
+                if (selAc) selAc.value = 'otro';
+                if (inpAc) inpAc.value = acVal;
+                if (customWrap) customWrap.style.display = 'block';
+            }
+
             document.getElementById('venue-cap-min-inp').value = v.capMin;
             document.getElementById('venue-cap-max-inp').value = v.capMax;
 
@@ -4171,7 +4289,15 @@
                 return;
             }
             const direccion = document.getElementById('venue-direccion-inp').value.trim();
-            const acuerdo = document.getElementById('venue-acuerdo-inp').value.trim();
+            const selAc = document.getElementById('venue-acuerdo-select');
+            let acuerdo = '70% Escuela / 30% Venue';
+            if (selAc && selAc.value === 'otro') {
+                acuerdo = document.getElementById('venue-acuerdo-inp')?.value.trim() || '70% Escuela / 30% Venue';
+            } else if (selAc) {
+                acuerdo = selAc.value;
+            } else {
+                acuerdo = document.getElementById('venue-acuerdo-inp')?.value.trim() || '70% Escuela / 30% Venue';
+            }
             const capMin = parseInt(document.getElementById('venue-cap-min-inp').value) || 0;
             const capMax = parseInt(document.getElementById('venue-cap-max-inp').value) || 0;
 
@@ -4337,8 +4463,13 @@
                     <td style="vertical-align:middle; padding:8px 12px; border:1px solid #cbd5e1; background:#ffffff; min-width:470px;">
                         ${contactosHtml}
                     </td>
-                    <td style="vertical-align:middle; padding:8px 12px; background:#ffffff; border:1px solid #cbd5e1; text-align:center;">
-                        <input type="text" class="spreadsheet-inp text-center" style="font-size:12px; font-weight:700; color:var(--accent-blue); padding:4px 6px;" value="${v.acuerdo || '70% Escuela / 30% Venue'}" onchange="actualizarCampoVenueInSitu('${v.id}', 'acuerdo', this.value)">
+                    <td style="vertical-align:middle; padding:6px 10px; background:#ffffff; border:1px solid #cbd5e1; text-align:center;">
+                        <select class="spreadsheet-inp text-center" style="font-size:12px; font-weight:700; color:var(--accent-blue); padding:4px 6px; width:100%; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc;" onchange="actualizarCampoVenueInSitu('${v.id}', 'acuerdo', this.value)">
+                            <option value="70% Escuela / 30% Venue" ${v.acuerdo === '70% Escuela / 30% Venue' ? 'selected' : ''}>70% Escuela / 30% Venue</option>
+                            <option value="100% Escuela" ${v.acuerdo === '100% Escuela' ? 'selected' : ''}>100% Escuela</option>
+                            <option value="A definir" ${v.acuerdo === 'A definir' ? 'selected' : ''}>A definir</option>
+                            ${(!['70% Escuela / 30% Venue', '100% Escuela', 'A definir'].includes(v.acuerdo || '')) ? `<option value="${(v.acuerdo || '').replace(/"/g, '&quot;')}" selected>${v.acuerdo}</option>` : ''}
+                        </select>
                     </td>
                     <td style="vertical-align:middle; padding:8px; background:#ffffff; border:1px solid #cbd5e1; text-align:center;">
                         <div style="display:inline-flex; align-items:center; gap:4px; justify-content:center;">
@@ -5187,7 +5318,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta2.0";
+        const APP_VERSION = "beta3.0";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -5544,7 +5675,13 @@
                 if (nomEl) nomEl.textContent = `🎪 ${fInfo.nombre || 'Festival'}`;
                 if (vEl) vEl.textContent = fInfo.venue || 'Venue';
                 if (dEl) dEl.textContent = fInfo.dir || '-';
-                if (cEl) cEl.textContent = fInfo.cap || '-';
+                if (cEl) {
+                    let cleanCap = String(fInfo.cap || '-').replace(/\s*pers\.?/gi, '').trim();
+                    if (cleanCap && !cleanCap.startsWith('👥') && cleanCap !== '-') {
+                        cleanCap = `👥 ${cleanCap}`;
+                    }
+                    cEl.textContent = cleanCap;
+                }
                 if (fecEl) fecEl.textContent = fInfo.fecha || 'A definir';
                 const linkDetEl = document.getElementById('det-ev-link');
                 if (linkDetEl) {
@@ -5946,10 +6083,25 @@
             const fecha = fInfo && fInfo.fecha ? fInfo.fecha : 'A definir';
             const venue = fInfo && fInfo.venue ? fInfo.venue : 'A definir';
             const estado = (fInfo && fInfo.estado) ? fInfo.estado : 'Programado';
-            const porcEsc = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[id] && ingresosFestivalesDB[id].porcEscuela !== undefined)
-                ? Number(ingresosFestivalesDB[id].porcEscuela)
-                : 70;
-            const sub = `<strong>Fecha:</strong> ${fecha} &nbsp;·&nbsp; <strong>Venue:</strong> ${venue} &nbsp;·&nbsp; <strong>Acuerdo:</strong> ${porcEsc}% Escuela / ${100 - porcEsc}% Venue`;
+            let acuerdoTextoCabecera = '70% Escuela / 30% Venue';
+            if (typeof obtenerEstadoAcuerdoFestival === 'function') {
+                const estAc = obtenerEstadoAcuerdoFestival(id);
+                if (estAc) {
+                    if (estAc.tipo === 'indefinido') {
+                        acuerdoTextoCabecera = '<span style="color:#b91c1c; font-weight:700;">A definir</span>';
+                    } else if (estAc.porcFinal === 100) {
+                        acuerdoTextoCabecera = '100% Escuela' + (estAc.esManual ? ' (Manual)' : '');
+                    } else {
+                        acuerdoTextoCabecera = `${estAc.porcFinal}% Escuela / ${100 - estAc.porcFinal}% Venue` + (estAc.esManual ? ' (Manual)' : '');
+                    }
+                }
+            } else {
+                const porcEsc = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[id] && ingresosFestivalesDB[id].porcEscuela !== undefined)
+                    ? Number(ingresosFestivalesDB[id].porcEscuela)
+                    : 70;
+                acuerdoTextoCabecera = `${porcEsc}% Escuela / ${100 - porcEsc}% Venue`;
+            }
+            const sub = `<strong>Fecha:</strong> ${fecha} &nbsp;·&nbsp; <strong>Venue:</strong> ${venue} &nbsp;·&nbsp; <strong>Acuerdo:</strong> ${acuerdoTextoCabecera}`;
 
             let claseEstado = 'estado-programado';
             if (estado === 'Lapiz') claseEstado = 'estado-lapiz';
@@ -7376,12 +7528,51 @@
 
 
 
+        function establecerOrientacionImpresion(orientacion) {
+            let styleEl = document.getElementById('print-orientation-style');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'print-orientation-style';
+                document.head.appendChild(styleEl);
+            }
+            const o = (orientacion === 'landscape') ? 'landscape' : 'portrait';
+            styleEl.innerHTML = `@media print { @page { size: ${o} !important; margin: 8mm 10mm !important; } }`;
+        }
+        window.establecerOrientacionImpresion = establecerOrientacionImpresion;
+
+        function imprimirRiderTecnico() {
+            establecerOrientacionImpresion('landscape');
+            setTimeout(() => {
+                window.print();
+            }, 60);
+        }
+        window.imprimirRiderTecnico = imprimirRiderTecnico;
+
+        function imprimirChecklistEquipamiento() {
+            establecerOrientacionImpresion('portrait');
+            setTimeout(() => {
+                window.print();
+            }, 60);
+        }
+        window.imprimirChecklistEquipamiento = imprimirChecklistEquipamiento;
+
+        window.addEventListener('beforeprint', () => {
+            const subtabChecklist = document.getElementById('rider-subtab-checklist');
+            if (subtabChecklist && subtabChecklist.style.display !== 'none') {
+                establecerOrientacionImpresion('portrait');
+            } else {
+                establecerOrientacionImpresion('landscape');
+            }
+        });
+
         function switchRiderSubTab(subTabId) {
             document.getElementById('rider-subtab-bandas').style.display = subTabId === 'bandas' ? 'block' : 'none';
             document.getElementById('rider-subtab-checklist').style.display = subTabId === 'checklist' ? 'block' : 'none';
 
             document.getElementById('btn-subtab-bandas').classList.toggle('active', subTabId === 'bandas');
             document.getElementById('btn-subtab-checklist').classList.toggle('active', subTabId === 'checklist');
+
+            establecerOrientacionImpresion(subTabId === 'checklist' ? 'portrait' : 'landscape');
         }
 
         // Alternar entre tarjetas detalladas de cuotas y tabla de cobros de cobertura por banda
@@ -7473,7 +7664,7 @@
             // Sincronizar dirección y capacidad en rango del venue
             const venueObj = Object.values(venuesData).find(v => v.nombre === venueSeleccionado);
             const dirVenue = venueObj ? venueObj.direccion : (document.getElementById('det-ev-direccion')?.textContent || '-');
-            const capVenue = venueObj ? `👥 ${formatoCapacidadRango(venueObj.capMin, venueObj.capMax)}` : (document.getElementById('det-ev-capacidad')?.textContent || '👥 100 - 130 pers.');
+            const capVenue = venueObj ? `👥 ${formatoCapacidadRango(venueObj.capMin, venueObj.capMax)}` : (document.getElementById('det-ev-capacidad')?.textContent || '👥 100 - 130');
 
             // 1. Actualizar DOM de la Ficha Detallada
             const nomEl = document.getElementById('det-ev-nombre');
@@ -7559,6 +7750,17 @@
             festInfo.cap = capVenue;
             festInfo.capacidad = capVenue;
             festInfo.anio = anio;
+
+            // Auto-aplicar acuerdo del venue si no fue modificado ad-hoc
+            const datosIng = obtenerDatosIngresosEventoActual();
+            if (!datosIng.porcEscuelaManual) {
+                const acTextoVenue = obtenerAcuerdoVenuePorNombre(venueSeleccionado);
+                const porcAutoVenue = parsearPorcentajeAcuerdoVenue(acTextoVenue);
+                datosIng.porcEscuela = porcAutoVenue;
+                if (typeof autoguardarDetalleFestivalFirestore === 'function') {
+                    autoguardarDetalleFestivalFirestore('finanzas', datosIng);
+                }
+            }
 
             if (typeof sincronizarCabeceraMaestraFestival === 'function') {
                 sincronizarCabeceraMaestraFestival(eventoActualId);
@@ -7875,6 +8077,18 @@
                 contratosAlumnosFestivalesDB[nuevoId] = JSON.parse(JSON.stringify(contrOrigen));
                 const srvOrigen = serviciosAdicionalesFestivalesDB[idOrigen] || {};
                 serviciosAdicionalesFestivalesDB[nuevoId] = JSON.parse(JSON.stringify(srvOrigen));
+
+                // Herencia de Checklist de equipamiento (con checks en blanco / listos para usar)
+                const chkOrigen = checklistFestivalesDB[idOrigen] || [];
+                const chkLimpio = chkOrigen.map(it => ({
+                    item: it.item || '',
+                    origen: it.origen || 'MANDALA HOUSE',
+                    notas: it.notas || '',
+                    preparado: false,
+                    listo: false,
+                    regreso: false
+                }));
+                checklistFestivalesDB[nuevoId] = chkLimpio;
             } else {
                 tarifasFestivales[nuevoId] = obtenerTarifasVigentesProductora();
                 entradasFestivales[nuevoId] = obtenerEntradasVigentesPorDefecto();
@@ -7886,6 +8100,7 @@
                 coberturaFestivalesDB[nuevoId] = {};
                 contratosAlumnosFestivalesDB[nuevoId] = [];
                 serviciosAdicionalesFestivalesDB[nuevoId] = {};
+                checklistFestivalesDB[nuevoId] = [];
             }
 
             let estadoClass = 'estado-programado';
@@ -7898,7 +8113,7 @@
             // Registrar metadatos descriptivos en el almacén de festivales
             const venueObj = Object.values(venuesData).find(v => v.nombre === venue);
             const dirVenue = venueObj ? venueObj.direccion : 'A confirmar';
-            const capVenue = venueObj ? `👥 ${formatoCapacidadRango(venueObj.capMin, venueObj.capMax)}` : '👥 100 - 130 pers.';
+            const capVenue = venueObj ? `👥 ${formatoCapacidadRango(venueObj.capMin, venueObj.capMax)}` : '👥 100 - 130';
             let anioEvento = '2026';
             if (fechaHora && fechaHora.length >= 4) {
                 anioEvento = fechaHora.slice(0, 4);
@@ -7946,10 +8161,11 @@
                     cobertura: coberturaFestivalesDB[nuevoId] || {},
                     contratosAlumnos: contratosAlumnosFestivalesDB[nuevoId] || [],
                     serviciosAdicionales: serviciosAdicionalesFestivalesDB[nuevoId] || {},
+                    checklist: checklistFestivalesDB[nuevoId] || [],
                     finanzas: {
                         brutoOnline: 0,
                         porcSadaic: 3,
-                        porcEscuela: 70,
+                        porcEscuela: (parsearPorcentajeAcuerdoVenue(obtenerAcuerdoVenuePorNombre(venue)) !== null) ? parsearPorcentajeAcuerdoVenue(obtenerAcuerdoVenuePorNombre(venue)) : 70,
                         ventasEspeciales: []
                     }
                 };
@@ -8178,7 +8394,7 @@
                     nombre: fest.nombre || 'Festival',
                     venue: fest.venue || 'Venue',
                     dir: fest.direccion || fest.venue || '-',
-                    cap: fest.capacidad || (fest.entradasVendidas ? `${fest.entradasVendidas} pers.` : '-'),
+                    cap: fest.capacidad ? String(fest.capacidad).replace(/\s*pers\.?/gi, '').trim() : (fest.entradasVendidas ? String(fest.entradasVendidas) : '-'),
                     fecha: fechaDisplay,
                     fechaRaw: fest.fechaHora || fest.fecha || '',
                     anio: festAnio,
@@ -8373,6 +8589,13 @@
                 }
             });
 
+            // Propagación asistida única del Checklist de VOL 5 2026 hacia eventos 2026 programados o en curso
+            try {
+                propagarChecklistVol5AOtrosEventos2026(festivalesList);
+            } catch (eProp) {
+                console.warn('[Checklist] Error en propagación asistida de checklist:', eProp);
+            }
+
             // Actualizar contadores y aplicar filtros
             actualizarBadgeEventosSidebar();
             if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
@@ -8529,7 +8752,13 @@
                 if (cantTaq === 0 && Number(fin.brutoOnline) > 0 && fin._migradoTaquilla !== true) {
                     brutoTaq = Number(fin.brutoOnline);
                 }
-                const porcEsc = Math.max(0, parseFloat(fin.porcEscuela !== undefined ? fin.porcEscuela : 70) || 0);
+                let porcEsc = 70;
+                if (typeof obtenerEstadoAcuerdoFestival === 'function') {
+                    const estAc = obtenerEstadoAcuerdoFestival(fId);
+                    porcEsc = (estAc && estAc.porcFinal !== null && !isNaN(estAc.porcFinal)) ? estAc.porcFinal : 0;
+                } else {
+                    porcEsc = Math.max(0, parseFloat(fin.porcEscuela !== undefined ? fin.porcEscuela : 70) || 0);
+                }
                 const sadaicRes = calcularMontoSadaicFestival(fId, brutoTaq);
                 const montoSadaic = sadaicRes.monto;
                 const basePostSadaic = Math.max(0, brutoTaq - montoSadaic);
@@ -11290,6 +11519,60 @@
             const nombresCols = ['Preparado', 'Listo para Salir', 'De Regreso'];
             mostrarToast(`${nombresCols[colIdx] || 'Columna'}: ${checked ? 'todos tildados' : 'todos destildados'}`, 'info');
         }
+
+        // =======================================================================
+        // PROPAGACIÓN DE CHECKLIST DE EQUIPAMIENTO ENTRE EVENTOS 2026
+        // =======================================================================
+        function propagarChecklistVol5AOtrosEventos2026(festivalesList) {
+            if (!Array.isArray(festivalesList) || festivalesList.length === 0) return;
+            
+            // 1. Identificar evento VOL 5 2026
+            const festVol5 = festivalesList.find(f => {
+                if (!f) return false;
+                const nom = String(f.nombre || '').toUpperCase();
+                const anio = String(f.anio || f.fecha || '');
+                return nom.includes('VOL 5') || nom.includes('VOL V') || nom.includes('VOL. 5') || nom.includes('VOL. V');
+            });
+            if (!festVol5 || !festVol5.id) return;
+
+            const chkVol5 = checklistFestivalesDB[festVol5.id] || festVol5.checklist;
+            if (!Array.isArray(chkVol5) || chkVol5.length === 0) return;
+
+            // Template limpio con checks en falso
+            const chkPlantillaLimpia = chkVol5.map(it => ({
+                item: it.item || '',
+                origen: it.origen || 'MANDALA HOUSE',
+                notas: it.notas || '',
+                preparado: false,
+                listo: false,
+                regreso: false
+            }));
+
+            // 2. Propagar a los demás eventos 2026 que estén 'En Curso' o 'Programado'
+            festivalesList.forEach(fest => {
+                if (!fest || !fest.id || fest.id === festVol5.id) return;
+                const estado = String(fest.estado || '').trim();
+                const anio = String(fest.anio || fest.fecha || '');
+                const es2026 = anio.includes('2026') || (!anio.includes('2024') && !anio.includes('2025'));
+                const esActivo = (estado === 'En Curso' || estado === 'Programado');
+
+                if (es2026 && esActivo) {
+                    const chkDestino = checklistFestivalesDB[fest.id];
+                    // Si el festival no tiene checklist o está vacío, le cargamos la plantilla limpia de Vol 5
+                    if (!Array.isArray(chkDestino) || chkDestino.length === 0) {
+                        const copia = JSON.parse(JSON.stringify(chkPlantillaLimpia));
+                        checklistFestivalesDB[fest.id] = copia;
+                        fest.checklist = copia;
+                        if (typeof autoguardarDetalleFestivalFirestore === 'function') {
+                            autoguardarDetalleFestivalFirestore('checklist', copia, fest.id);
+                        } else if (window.MandalaApp && window.MandalaApp.festivales && typeof window.MandalaApp.festivales.actualizarCampos === 'function') {
+                            window.MandalaApp.festivales.actualizarCampos(fest.id, { checklist: copia }).catch(() => {});
+                        }
+                    }
+                }
+            });
+        }
+        window.propagarChecklistVol5AOtrosEventos2026 = propagarChecklistVol5AOtrosEventos2026;
         window.toggleColumnaChecklist = toggleColumnaChecklist;
 
         function sincronizarHeadersChecklist() {
@@ -13109,13 +13392,19 @@
         // =========================================================
         function obtenerDatosIngresosEventoActual() {
             if (!ingresosFestivalesDB[eventoActualId]) {
+                const fInfo = (typeof infoFestivales !== 'undefined') ? infoFestivales[eventoActualId] : null;
+                const acTexto = obtenerAcuerdoVenuePorNombre(fInfo?.venue);
+                const porcAuto = parsearPorcentajeAcuerdoVenue(acTexto);
+                const porcInicial = (porcAuto !== null) ? porcAuto : null;
+
                 ingresosFestivalesDB[eventoActualId] = {
                     cantPreventa: 0,
                     cantGeneral: 0,
                     cantPuerta: 0,
                     categoriasExtra: [],
                     brutoOnline: 0,
-                    porcEscuela: 70,
+                    porcEscuela: porcInicial,
+                    porcEscuelaManual: false,
                     ventasEspeciales: [],
                     gastosOperativos: [],
                     coberturaEscuelaPagada: false,
@@ -13128,7 +13417,27 @@
             if (d.cantGeneral === undefined) d.cantGeneral = 0;
             if (d.cantPuerta === undefined) d.cantPuerta = 0;
             if (!Array.isArray(d.categoriasExtra)) d.categoriasExtra = [];
-            if (d.porcEscuela === undefined) d.porcEscuela = 70;
+            
+            // Sincronización inteligente de acuerdo de venue
+            if (d.porcEscuelaManual === undefined) {
+                const fInfo = (typeof infoFestivales !== 'undefined') ? infoFestivales[eventoActualId] : null;
+                const acTexto = obtenerAcuerdoVenuePorNombre(fInfo?.venue);
+                const porcAuto = parsearPorcentajeAcuerdoVenue(acTexto);
+                if (porcAuto !== null) {
+                    d.porcEscuela = porcAuto;
+                    d.porcEscuelaManual = false;
+                } else {
+                    d.porcEscuelaManual = false;
+                    d.porcEscuela = null;
+                }
+            } else if (!d.porcEscuelaManual) {
+                // Modo automático: heredar siempre del venue si cambia en la configuración
+                const fInfo = (typeof infoFestivales !== 'undefined') ? infoFestivales[eventoActualId] : null;
+                const acTexto = obtenerAcuerdoVenuePorNombre(fInfo?.venue);
+                const porcAuto = parsearPorcentajeAcuerdoVenue(acTexto);
+                d.porcEscuela = porcAuto;
+            }
+
             if (!Array.isArray(d.ventasEspeciales)) d.ventasEspeciales = [];
             if (!Array.isArray(d.gastosOperativos)) d.gastosOperativos = [];
             if (d.coberturaEscuelaPagada === undefined) d.coberturaEscuelaPagada = false;
@@ -13338,7 +13647,7 @@
             const elTotal = document.getElementById('txt-cierre-taquilla-cant-total');
             const elBadge = document.getElementById('badge-total-taquilla-cierre');
             if (elTotal) elTotal.textContent = `${total} ent.`;
-            if (elBadge) elBadge.textContent = `Total Taquilla: ${total} ent.`;
+            if (elBadge) elBadge.textContent = `Total Entradas: ${total} ent.`;
         }
         window.actualizarTotalesCierreTaquilla = actualizarTotalesCierreTaquilla;
 
@@ -13440,19 +13749,131 @@
         function renderizarIngresosFestival() {
             const datos = obtenerDatosIngresosEventoActual();
 
-            const inpEscuela = document.getElementById('inp-ingresos-porc-escuela');
-            if (inpEscuela) inpEscuela.value = datos.porcEscuela;
-
-            const badgeAcuerdo = document.getElementById('badge-acuerdo-ingresos');
-            if (badgeAcuerdo) badgeAcuerdo.textContent = `Acuerdo: ${datos.porcEscuela}% Escuela / ${100 - datos.porcEscuela}% Venue`;
-
             if (typeof renderizarTablaEntradasFestival === 'function') {
                 renderizarTablaEntradasFestival();
             }
             renderizarTablaTaquillaTipos();
             renderizarTablaVentasEspeciales();
             recalcularIngresosFestival(false);
+            actualizarBadgesAcuerdoUI();
         }
+
+        function actualizarBadgesAcuerdoUI() {
+            const estado = obtenerEstadoAcuerdoFestival(eventoActualId);
+            const inpEscuela = document.getElementById('inp-ingresos-porc-escuela');
+            const wrapBadge = document.getElementById('wrap-badge-acuerdo-venue');
+            const btnRestablecer = document.getElementById('btn-restablecer-acuerdo-venue');
+            const alertaIndefinido = document.getElementById('alerta-acuerdo-a-definir');
+            const badgeAcuerdoSup = document.getElementById('badge-acuerdo-ingresos');
+
+            if (estado.tipo === 'indefinido') {
+                if (inpEscuela && document.activeElement !== inpEscuela) {
+                    inpEscuela.value = '';
+                }
+                if (inpEscuela) {
+                    inpEscuela.placeholder = '%';
+                    inpEscuela.style.border = '2px solid #ef4444';
+                    inpEscuela.style.background = '#fef2f2';
+                }
+                if (wrapBadge) {
+                    wrapBadge.innerHTML = `<span class="pill-status pill-danger" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-size:11px; font-weight:700;">⚠️ Venue: A definir</span>`;
+                }
+                if (badgeAcuerdoSup) {
+                    badgeAcuerdoSup.textContent = `Acuerdo: A definir (${estado.venueNombre || 'Venue'})`;
+                    badgeAcuerdoSup.className = 'pill-status pill-danger';
+                }
+                if (btnRestablecer) btnRestablecer.style.display = 'none';
+                if (alertaIndefinido) {
+                    alertaIndefinido.style.display = 'block';
+                    alertaIndefinido.innerHTML = `⚠️ <strong>${estado.venueNombre || 'El venue'}</strong> tiene acuerdo <em>A definir</em>. Ingresá el % pactado para liquidar este festival.`;
+                }
+            } else if (estado.tipo === 'manual') {
+                if (inpEscuela && document.activeElement !== inpEscuela) {
+                    inpEscuela.value = estado.porcFinal;
+                }
+                if (inpEscuela) {
+                    inpEscuela.style.border = '1px solid #f59e0b';
+                    inpEscuela.style.background = '#fffbeb';
+                }
+                if (wrapBadge) {
+                    wrapBadge.innerHTML = `<span class="pill-status pill-warning" style="font-size:11px; font-weight:700;">⚠️ Excepción manual (${estado.porcFinal}%)</span>`;
+                }
+                if (badgeAcuerdoSup) {
+                    badgeAcuerdoSup.textContent = `Acuerdo: ${estado.porcFinal}% Escuela (Excepción manual)`;
+                    badgeAcuerdoSup.className = 'pill-status pill-warning';
+                }
+                if (btnRestablecer) {
+                    if (estado.porcAuto !== null) {
+                        btnRestablecer.style.display = 'inline-flex';
+                        btnRestablecer.innerHTML = `↺ Restablecer a Venue (${estado.porcAuto}%)`;
+                    } else {
+                        btnRestablecer.style.display = 'none';
+                    }
+                }
+                if (alertaIndefinido) alertaIndefinido.style.display = 'none';
+            } else {
+                // Tipo 'auto'
+                if (inpEscuela && document.activeElement !== inpEscuela) {
+                    inpEscuela.value = estado.porcFinal;
+                }
+                if (inpEscuela) {
+                    inpEscuela.style.border = '1px solid #cbd5e1';
+                    inpEscuela.style.background = '#ffffff';
+                }
+                const colorBg = estado.porcFinal === 100 ? '#dcfce7' : '#e0f2fe';
+                const colorTxt = estado.porcFinal === 100 ? '#15803d' : '#0369a1';
+                const borderCol = estado.porcFinal === 100 ? '#86efac' : '#bae6fd';
+                const descTexto = estado.porcFinal === 100 ? '100% Escuela' : `${estado.porcFinal}% Escuela / ${100 - estado.porcFinal}% Venue`;
+                if (wrapBadge) {
+                    wrapBadge.innerHTML = `<span class="pill-status" style="background:${colorBg}; color:${colorTxt}; border:1px solid ${borderCol}; font-size:11px; font-weight:700;">🏷️ Acuerdo Venue: ${descTexto} (Automático)</span>`;
+                }
+                if (badgeAcuerdoSup) {
+                    badgeAcuerdoSup.textContent = `Acuerdo: ${descTexto}`;
+                    badgeAcuerdoSup.className = estado.porcFinal === 100 ? 'pill-status pill-success' : 'pill-status pill-info';
+                }
+                if (btnRestablecer) btnRestablecer.style.display = 'none';
+                if (alertaIndefinido) alertaIndefinido.style.display = 'none';
+            }
+        }
+        window.actualizarBadgesAcuerdoUI = actualizarBadgesAcuerdoUI;
+
+        function alCambiarPorcentajeEscuelaManual(val) {
+            const d = obtenerDatosIngresosEventoActual();
+            const estado = obtenerEstadoAcuerdoFestival(eventoActualId);
+            const num = parseFloat(val);
+            if (!isNaN(num) && num >= 0 && num <= 100) {
+                if (estado.porcAuto !== null && num === estado.porcAuto) {
+                    d.porcEscuelaManual = false;
+                    d.porcEscuela = estado.porcAuto;
+                } else {
+                    d.porcEscuelaManual = true;
+                    d.porcEscuela = num;
+                }
+            } else {
+                d.porcEscuela = null;
+                d.porcEscuelaManual = true;
+            }
+            recalcularIngresosFestival(true);
+            actualizarBadgesAcuerdoUI();
+        }
+        window.alCambiarPorcentajeEscuelaManual = alCambiarPorcentajeEscuelaManual;
+
+        function restablecerAcuerdoVenue() {
+            const d = obtenerDatosIngresosEventoActual();
+            d.porcEscuelaManual = false;
+            const estado = obtenerEstadoAcuerdoFestival(eventoActualId);
+            d.porcEscuela = (estado.porcAuto !== null) ? estado.porcAuto : null;
+            if (typeof mostrarToast === 'function') {
+                if (estado.porcAuto !== null) {
+                    mostrarToast(`Porcentaje restablecido al acuerdo del venue (${estado.porcAuto}%)`, 'info');
+                } else {
+                    mostrarToast('El venue tiene acuerdo "A definir".', 'warning');
+                }
+            }
+            renderizarIngresosFestival();
+            recalcularIngresosFestival(true);
+        }
+        window.restablecerAcuerdoVenue = restablecerAcuerdoVenue;
 
         function recalcularIngresosFestival(guardarEnFirestore = false) {
             const datos = obtenerDatosIngresosEventoActual();
@@ -13484,18 +13905,24 @@
                 datos.brutoOnline = brutoTaquilla;
             }
 
-            const inpEscuela = document.getElementById('inp-ingresos-porc-escuela');
-            const porcEscuela = Math.max(0, parseFloat(inpEscuela?.value || datos.porcEscuela || '70') || 0);
-            datos.porcEscuela = porcEscuela;
+            const estadoAcuerdo = obtenerEstadoAcuerdoFestival(eventoActualId);
+            let porcEscuela = 0;
+            let esIndefinido = (estadoAcuerdo.tipo === 'indefinido');
 
-            const badgeAcuerdo = document.getElementById('badge-acuerdo-ingresos');
-            if (badgeAcuerdo) badgeAcuerdo.textContent = `Acuerdo: ${porcEscuela}% Escuela / ${100 - porcEscuela}% Venue`;
+            if (esIndefinido) {
+                porcEscuela = 0;
+            } else {
+                porcEscuela = (estadoAcuerdo.porcFinal !== null && !isNaN(estadoAcuerdo.porcFinal)) 
+                    ? Math.max(0, Math.min(100, estadoAcuerdo.porcFinal)) 
+                    : 70;
+            }
+            datos.porcEscuela = esIndefinido ? null : porcEscuela;
 
             // Canon SADAIC configurable (por % o por cantidad de entradas)
             const sadaicRes = calcularMontoSadaicFestival(eventoActualId, brutoTaquilla);
             const montoSadaic = sadaicRes.monto;
             const basePostSadaic = Math.max(0, brutoTaquilla - montoSadaic);
-            const netoEscuelaOnline = Math.round(basePostSadaic * (porcEscuela / 100));
+            const netoEscuelaOnline = esIndefinido ? 0 : Math.round(basePostSadaic * (porcEscuela / 100));
 
             // Actualizar totales de tabla de taquilla y tarjetas de liquidación
             const elTaqCant = document.getElementById('txt-taquilla-cant-total');
@@ -13523,7 +13950,15 @@
             }
             if (txtBase) txtBase.textContent = formatearMonedaAr(basePostSadaic);
             if (txtNeto) txtNeto.textContent = formatearMonedaAr(netoEscuelaOnline);
-            if (txtSubNeto) txtSubNeto.textContent = `${porcEscuela}% del saldo posterior a SADAIC`;
+            if (txtSubNeto) {
+                if (esIndefinido) {
+                    txtSubNeto.innerHTML = `<span style="color:#b91c1c; font-weight:700;">⚠️ Pendiente ingresar % pactado</span>`;
+                } else if (porcEscuela === 100) {
+                    txtSubNeto.textContent = `100% del saldo posterior a SADAIC (Sin % para venue)`;
+                } else {
+                    txtSubNeto.textContent = `${porcEscuela}% del saldo posterior a SADAIC`;
+                }
+            }
 
             if (typeof actualizarTotalesCierreTaquilla === 'function') {
                 actualizarTotalesCierreTaquilla();
@@ -13572,7 +14007,8 @@
                     categoriasExtra: datos.categoriasExtra || [],
                     brutoOnline: brutoTaquilla,
                     montoSadaic,
-                    porcEscuela,
+                    porcEscuela: esIndefinido ? null : porcEscuela,
+                    porcEscuelaManual: Boolean(datos.porcEscuelaManual),
                     ventasEspeciales: datos.ventasEspeciales || [],
                     gastosOperativos: datos.gastosOperativos || [],
                     coberturaEscuelaPagada: Boolean(datos.coberturaEscuelaPagada),
@@ -14178,14 +14614,14 @@
                     if (esExcluido) {
                         tr.style.background = '#f8fafc';
                         tr.style.opacity = '0.7';
-                        celdaEstadoHtml = `<span class="pill-status pill-info" style="background:#e2e8f0; color:#475569; border:1px solid #cbd5e1;">🚫 Excluido (Exento)</span>`;
+                        celdaEstadoHtml = `<span class="pill-status pill-info" style="background:#e2e8f0; color:#475569; border:1px solid #cbd5e1;">Excluido</span>`;
                         celdaAccionHtml = `<button class="btn-app btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', 0, 0)">⚙️ Excluido</button>`;
                     } else if (esSes) {
                         celdaEstadoHtml = `<span class="pill-status pill-info" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">Sesionista (Exento)</span>`;
                         celdaAccionHtml = `<span style="font-size:11px; color:#0369a1; font-weight:700;">✓ Exento</span>`;
                     } else if (esTraspasoActivo) {
                         tr.style.background = '#faf5ff';
-                        celdaEstadoHtml = `<span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe; font-size:11px; font-weight:700;">🔄 Traspaso (${contGuardado.traspasoEntradas || 1} ent.)</span>`;
+                        celdaEstadoHtml = `<span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe; font-size:11px; font-weight:700;">🔄 Traspaso (${contGuardado.traspasoEntradas || 1})</span>`;
                         celdaAccionHtml = `
                             <div style="display:inline-flex; gap:5px; align-items:center; justify-content:center; flex-wrap:wrap;">
                                 <button class="btn-app btn-secondary" style="padding:3px 7px; font-size:11px; border-color:#d8b4fe; color:#7c3aed; font-weight:700;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', 0, ${contGuardado.traspasoEntradas || 1})">
@@ -14207,7 +14643,7 @@
 
                         if (totalCuotasPlan > 0 && cuotasPagadas === totalCuotasPlan) {
                             celdaEstadoHtml = `<span class="pill-status pill-success" title="Deuda saldada en Finanzas → Cobros">🟢 Pagado (${cuotasPagadas}/${totalCuotasPlan})</span>`;
-                            celdaAccionHtml = `<div style="display:inline-flex; gap:5px; align-items:center; justify-content:center; flex-wrap:wrap;"><button class="btn-app btn-secondary" style="padding:3px 7px; font-size:11px;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', ${deudaMonto}, ${faltantes})">⚙️ Plan</button><button type="button" class="link-jump-pill" onclick="irACobrosDesdeCierreEntradas('${idInt}')" title="Ver pago en Finanzas → Cobros & Cuotas Alumnos">💳 Cobros →</button></div>`;
+                            celdaAccionHtml = `<div style="display:inline-flex; gap:5px; align-items:center; justify-content:center; flex-wrap:wrap;"><button type="button" class="link-jump-pill" onclick="irACobrosDesdeCierreEntradas('${idInt}')" title="Ver pago en Finanzas → Cobros & Cuotas Alumnos">💳 Cobros →</button></div>`;
                         } else if (totalCuotasPlan > 0 && cuotasPagadas > 0) {
                             celdaEstadoHtml = `<span class="pill-status pill-warning" title="Pago parcial en Finanzas → Cobros">🟠 Parcial (${cuotasPagadas}/${totalCuotasPlan})</span>`;
                             celdaAccionHtml = `<div style="display:inline-flex; gap:5px; align-items:center; justify-content:center; flex-wrap:wrap;"><button class="btn-app btn-secondary" style="padding:3px 7px; font-size:11px;" onclick="configurarCobroCuotas('${idInt}', '${nom.replace(/'/g, "\\'")}', ${deudaMonto}, ${faltantes})">⚙️ Plan (${cuotasPagadas}/${totalCuotasPlan})</button><button type="button" class="link-jump-pill" onclick="irACobrosDesdeCierreEntradas('${idInt}')" title="Ir a cobrar cuota en Finanzas → Cobros & Cuotas Alumnos">💳 Cobros →</button></div>`;
@@ -14235,7 +14671,7 @@
                     const esTotalmentePagado = (totalCuotasPlan > 0 && cuotasPagadas === totalCuotasPlan);
 
                     if (esTraspasoActivo) {
-                        celdaDeudaInteriorHtml = `<span style="font-family:'Geist Mono'; font-weight:700; color:#64748b;">$ 0</span> <span style="font-size:10px; color:#64748b; display:block;">(${contGuardado.traspasoEntradas || 1} ent. próx. fest)</span>`;
+                        celdaDeudaInteriorHtml = `<span style="font-family:'Geist Mono'; font-weight:700; color:#64748b;">$ 0</span>`;
                     } else if (esTotalmentePagado) {
                         celdaDeudaInteriorHtml = `<span style="color:#94a3b8; text-decoration:line-through; font-family:'Geist Mono'; font-weight:600; text-align:right; display:block; padding-right:2px;">-$ ${deudaMonto.toLocaleString('es-AR')}</span>`;
                     } else if (tieneIncumplimiento) {
@@ -14411,9 +14847,9 @@
                 // Participante con traspaso activo a próximo festival
                 const faltantes = cupo - vendidas;
                 row.setAttribute('data-deuda-monto', 0);
-                celdaDeuda.innerHTML = `<span style="font-family:'Geist Mono'; font-weight:700; color:#64748b;">$ 0</span> <span style="font-size:10px; color:#64748b; display:block;">(${cont.traspasoEntradas || faltantes} ent. próx. fest)</span>`;
+                celdaDeuda.innerHTML = `<span style="font-family:'Geist Mono'; font-weight:700; color:#64748b;">$ 0</span>`;
                 celdaDeuda.style.color = '#64748b';
-                celdaEstado.innerHTML = `<span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe; font-size:11px; font-weight:700;">🔄 Traspaso (${cont.traspasoEntradas || faltantes} ent.)</span>`;
+                celdaEstado.innerHTML = `<span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe; font-size:11px; font-weight:700;">🔄 Traspaso (${cont.traspasoEntradas || faltantes})</span>`;
                 celdaAccion.innerHTML = `
                     <div style="display:inline-flex; gap:5px; align-items:center; justify-content:center; flex-wrap:wrap;">
                         <button class="btn-app btn-secondary" style="padding:3px 7px; font-size:11px; border-color:#d8b4fe; color:#7c3aed; font-weight:700;" onclick="configurarCobroCuotas('${id}', '${nombre.replace(/'/g, "\\'")}', 0, ${cont.traspasoEntradas || faltantes})">
@@ -14950,13 +15386,13 @@
                     tr.innerHTML = `
                         <td style="font-weight:700; color:var(--text-main);">🏫 ${banda}</td>
                         <td>🔄 <strong>${nombre}</strong></td>
-                        <td style="text-align:center;"><span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe; font-size:11px; font-weight:700;">🔄 Traspaso (${cont.traspasoEntradas || 1} ent.)</span></td>
+                        <td style="text-align:center;"><span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe; font-size:11px; font-weight:700;">🔄 ${cont.traspasoEntradas || 1} ent.</span></td>
                         <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#64748b;">$ 0</td>
                         <td style="text-align:center; font-size:12px; color:var(--text-muted);">-</td>
                         <td style="text-align:center; font-size:12px; color:var(--text-muted);">-</td>
                         <td style="text-align:center; font-size:12px; color:var(--text-muted);">-</td>
                         <td style="font-size:12px; color:#0f172a; font-style:normal;">Se salda con ${cont.traspasoEntradas || 1} entrada(s) extra en el próximo festival.</td>
-                        <td style="text-align:center;"><span style="font-size:11.5px; font-weight:700; color:#7c3aed;">🔄 Rollover</span></td>
+                        <td style="text-align:center;"><span style="font-size:11.5px; font-weight:700; color:#7c3aed;">🔄 Traspaso</span></td>
                     `;
                     tbody.appendChild(tr);
                     return;
@@ -15023,6 +15459,12 @@
                         tr.style.background = '#fffbeb';
                     }
 
+                    const badgeFaltantesHtml = p.pagada
+                        ? `<span class="pill-status" style="font-size:10.5px; background:#f1f5f9; color:#94a3b8; border:1px solid #cbd5e1;">Faltan ${faltantes} ent.</span>`
+                        : `<span class="pill-status pill-danger" style="font-size:10.5px;">Faltan ${faltantes} ent.</span>`;
+
+                    const montoStyleColor = p.pagada ? 'color:#94a3b8;' : 'color:var(--accent-red);';
+
                     tr.innerHTML = `
                         <td style="font-weight:700; color:var(--text-main);">
                             🏫 ${banda}
@@ -15031,11 +15473,11 @@
                             👤 <strong>${nombre}</strong>
                         </td>
                         <td style="text-align:center;">
-                            <span class="pill-status pill-danger" style="font-size:10.5px;">Faltan ${faltantes} ent.</span>
+                            ${badgeFaltantesHtml}
                             ${badgeCuota}
                         </td>
                         <td style="text-align:center;">
-                            <input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:700; color:var(--accent-red); font-size:12.5px; text-align:center; width:100px; border:none; cursor:pointer;" title="Click para editar el monto real de este cobro" value="${formatearMonedaAr(p.monto)}" onfocus="enfocarInputMontoCuotaContrato(this, '${safeId}', ${cIdx})" onblur="formatearInputMontoCuotaContrato(this, '${safeId}', ${cIdx})" onchange="actualizarMontoCuotaContratoAlumno('${safeId}', ${cIdx}, this.value)">
+                            <input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:700; ${montoStyleColor} font-size:12.5px; text-align:center; width:100px; border:none; cursor:pointer;" title="Click para editar el monto real de este cobro" value="${formatearMonedaAr(p.monto)}" onfocus="enfocarInputMontoCuotaContrato(this, '${safeId}', ${cIdx})" onblur="formatearInputMontoCuotaContrato(this, '${safeId}', ${cIdx})" onchange="actualizarMontoCuotaContratoAlumno('${safeId}', ${cIdx}, this.value)">
                         </td>
                         <td style="text-align:center;">
                             <input type="date" class="installment-date-inp" value="${p.fecha || ''}" onchange="actualizarDetallePagoContratoAlumno('${safeId}', ${cIdx}, 'fecha', this.value)">

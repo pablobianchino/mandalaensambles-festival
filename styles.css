@@ -1638,7 +1638,8 @@ tr.drag-over {
     th.col-drag-header, td.drag-handle, th.col-accion-header, td.col-accion-cell, .musico-cell-actions,
     th.col-chk-deudas, td.col-chk-deudas, th.col-accion-deudas, td.col-accion-deudas,
     .subtitulo-descriptivo-app, .screen-title, .artist-drag-handle, .group-arrow, .group-count-badge,
-    .col-header-action, .musico-screen-cell-wrap, .checklist-nota-inp {
+    .col-header-action, .musico-screen-cell-wrap, .checklist-nota-inp,
+    .festival-master-header, #banner-evento-master, .festival-header-left, .mode-switch-pill, .festival-title-block, .festival-meta-sub {
         display: none !important;
     }
 
@@ -1668,8 +1669,9 @@ tr.drag-over {
     .content-card {
         border: none !important;
         box-shadow: none !important;
-        padding: 4mm 6mm !important;
+        padding: 0 !important;
         margin: 0 !important;
+        background: transparent !important;
     }
 
     .spreadsheet-inp {
@@ -1821,8 +1823,8 @@ tr.drag-over {
     }
     .print-musico-val {
         display: inline-block !important;
-        font-size: 9.5pt !important;
-        font-weight: 700 !important;
+        font-size: 9pt !important;
+        font-weight: 400 !important; /* Regular, sin negrita para facilitar lectura rápida */
         color: #000000 !important;
         line-height: 1.15 !important;
         white-space: nowrap !important;
@@ -1875,52 +1877,61 @@ tr.drag-over {
     }
 
     /* =========================================================
-       CHECKLIST DE EQUIPAMIENTO EN IMPRESIÓN (OPCIÓN A + NOTAS GRISES)
+       CHECKLIST DE EQUIPAMIENTO EN IMPRESIÓN (FILAS COMPACTAS PARA MÁS ÍTEMS POR HOJA)
        ========================================================= */
     #tabla-checklist-interactiva {
-        width: auto !important;
-        min-width: 85% !important;
+        width: 100% !important;
         max-width: 100% !important;
         table-layout: auto !important;
         border-collapse: collapse !important;
         border: 1px solid #000000 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        margin: 0 !important;
     }
     #tabla-checklist-interactiva tr {
         border-top: 1px solid #000000 !important;
         border-bottom: 1px solid #000000 !important;
+        height: 22px !important;
+        min-height: 22px !important;
     }
     #tabla-checklist-interactiva th,
     #tabla-checklist-interactiva td {
         border: 1px solid #000000 !important;
-        padding: 3px 7px !important;
-        font-size: 9.5pt !important;
+        padding: 1.5px 6px !important;
+        font-size: 8.5pt !important;
         font-weight: 700 !important;
         color: #000000 !important;
         line-height: 1.15 !important;
         vertical-align: middle !important;
-        width: auto !important;
-        min-width: 0 !important;
-        height: auto !important;
-        min-height: 0 !important;
+        height: 22px !important;
+        min-height: 22px !important;
         white-space: nowrap !important;
+        box-sizing: border-box !important;
     }
     #tabla-checklist-interactiva th {
         background-color: #f1f5f9 !important;
-        font-size: 9pt !important;
+        font-size: 8pt !important;
         font-weight: 900 !important;
         text-transform: uppercase !important;
-        padding: 4px 7px !important;
+        padding: 3px 6px !important;
     }
-    #tabla-checklist-interactiva td input[type="text"] {
-        font-size: 9.5pt !important;
+    #tabla-checklist-interactiva td input[type="text"],
+    #tabla-checklist-interactiva .spreadsheet-inp {
+        font-size: 8.5pt !important;
         font-weight: 700 !important;
         color: #000000 !important;
         padding: 0 !important;
         margin: 0 !important;
-        width: auto !important;
-        min-width: 0 !important;
+        width: 100% !important;
+        height: 20px !important;
+        min-height: 20px !important;
+        line-height: 20px !important;
+    }
+    #tabla-checklist-interactiva td input[type="checkbox"] {
+        transform: scale(0.9) !important;
+        margin: 0 auto !important;
+        display: block !important;
     }
 
     /* Notas técnicas sombreadas con gris en negrita y cursiva (Rider y Checklist) */

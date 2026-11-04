@@ -72,10 +72,18 @@ export async function obtenerUsuarioPorEmail(email) {
 
 /**
  * Decide si un correo autenticado puede usar la app.
- * Estados: 'ok' | 'sin_perfil' | 'inactivo' | 'sin_permiso' | 'error'
+ * Estados: 'ok' | 'sin_perfil' | 'inactivo' | 'sin_rol_festivales' | 'sin_permiso' | 'error'
  * Nunca asume acceso: sin perfil activo en usuarios_sistema, no se ingresa
  * (salvo la cuenta de emergencia, que entra siempre como admin).
  */
+/** Roles que permiten usar Mandala Festivales: el administrador (acceso total) y el Gestor de Festivales */
+export const ROLES_CON_ACCESO_FESTIVALES = ['admin', 'gestor_festivales'];
+
+export function tieneAccesoFestivales(roles) {
+    const lista = (Array.isArray(roles) ? roles : [roles]).map(r => String(r || '').toLowerCase().trim());
+    return lista.some(r => ROLES_CON_ACCESO_FESTIVALES.includes(r));
+}
+
 export async function consultarAccesoUsuario(email) {
     const emailNorm = (email || '').trim().toLowerCase();
     const esEmergencia = emailNorm === EMAIL_CUENTA_EMERGENCIA;
@@ -83,11 +91,18 @@ export async function consultarAccesoUsuario(email) {
 
     try {
         const usuarios = await leerUsuariosSistema();
-        const perfil = usuarios.find(x => x.email === emailNorm) || null;
-        if (!perfil) {
+        // Puede haber varios documentos con el mismo email (altas duplicadas o dadas de baja):
+        // alcanza con que haya uno activo, y se unen los roles de todos los activos.
+        const coincidencias = usuarios.filter(x => x.email === emailNorm);
+        if (coincidencias.length === 0) {
             return esEmergencia ? { estado: 'ok', perfil: perfilEmergencia } : { estado: 'sin_perfil', perfil: null };
         }
-        if (perfil.activo === false) return { estado: 'inactivo', perfil };
+        const activos = coincidencias.filter(x => x.activo !== false);
+        if (activos.length === 0) return { estado: 'inactivo', perfil: coincidencias[0] };
+        const roles = [...new Set(activos.flatMap(x => x.roles))];
+        const perfil = { ...activos[0], roles };
+        // Solo entran los administradores y los usuarios con el perfil "Gestor de Festivales"
+        if (!tieneAccesoFestivales(roles)) return { estado: 'sin_rol_festivales', perfil };
         return { estado: 'ok', perfil };
     } catch (error) {
         console.warn("[Mandala Usuarios] No se pudo verificar el acceso:", error.code || error);

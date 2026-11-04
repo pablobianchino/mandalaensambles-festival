@@ -133,6 +133,7 @@ function mostrarPantallaLogin() {
 const MENSAJES_ACCESO_DENEGADO = {
     sin_perfil: 'Tu correo no está dado de alta en el sistema Mandala. Consultá con administración.',
     inactivo: 'Tu usuario se encuentra inactivo. Consultá con administración.',
+    sin_rol_festivales: 'Tu usuario no tiene el perfil "Gestor de Festivales". Pedile a administración que te lo asigne.',
     sin_permiso: 'Tu usuario no tiene permiso para acceder. Consultá con administración.',
     error: 'No se pudo verificar tu acceso. Revisá tu conexión y reintentá.'
 };

@@ -2,8 +2,10 @@
 // src/services/festivalesService.js — Servicio de Festivales en Firestore
 // =======================================================================
 
-import { db, collection, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, onSnapshot } from "../config/firebase.js";
+import { db, collection, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "../config/firebase.js";
 import { COLLECTIONS } from "../config/constants.js";
+import { notificarErrorPersistencia } from "../utils/errores.js";
+import { idHistoricoEstable, ejecutarEnLotes } from "../utils/ids.js";
 
 /**
  * Lote original de festivales históricos (Carga Masiva 2025 - 2026)
@@ -171,43 +173,58 @@ function procesarYConsolidarFestivales(listaDocs) {
         const tieneFechaReal = (f.fecha && f.fecha.trim() !== '' && f.fecha !== 'A definir') ||
                                (f.fechaHora && f.fechaHora.trim() !== '' && f.fechaHora !== 'A definir');
 
-        // Si no tiene nombre real ni fecha real, es un registro corrupto/fantasma. Purgar y descartar.
+        // Si no tiene nombre real ni fecha real, es un registro incompleto/fantasma: se oculta de la lista
+        // pero NUNCA se borra desde una lectura (podría ser un documento recién creado o a medio guardar).
         if (!tieneNombreReal && !tieneFechaReal) {
-            try {
-                const docRef = doc(db, COLLECTIONS.FESTIVALES, f.id);
-                deleteDoc(docRef);
-            } catch(e) {}
+            console.warn(`[Mandala Festivales] Documento incompleto ignorado (sin nombre ni fecha): ${f.id}`);
             return;
         }
 
-        // Deduplicar festivales que tengan el mismo nombre normalizado y año
+        // Identidad = id del documento (el Map de entrada ya garantiza ids únicos).
+        // Solo se fusionan los pares "espejo" del histórico: un documento 'hist-…' y su copia con el mismo
+        // nombre y año (o dos 'hist-' repetidos por una reimportación antigua). Dos festivales vigentes distintos con el mismo nombre NO se fusionan (antes se ocultaba uno
+        // y se mezclaban sus finanzas); se conservan ambos y se deja un aviso en la consola.
         const nombreNorm = (f.nombre || '').trim().toUpperCase();
         const anioNorm = String(f.anio || '2026');
-        const clave = `${nombreNorm}_${anioNorm}`;
+        const claveNombre = `${nombreNorm}_${anioNorm}`;
+        const esHist = String(f.id).startsWith('hist-');
 
-        if (mapaDeduplicado.has(clave)) {
-            const anterior = mapaDeduplicado.get(clave);
-            // Conservar el id original más consistente (prefiriendo hist- si existe)
-            const idConsolidado = anterior.id.startsWith('hist-') ? anterior.id : (f.id.startsWith('hist-') ? f.id : anterior.id);
-            mapaDeduplicado.set(clave, {
-                ...anterior,
-                ...f,
+        const previo = mapaDeduplicado.get(claveNombre);
+        const previoEsHist = previo ? String(previo.id).startsWith('hist-') : false;
+        if (previo && (esHist || previoEsHist)) {
+            // Par espejo o reimportación (al menos uno es 'hist-'): se fusionan.
+            // Se prioriza el id 'hist-' estable (los ids con marca de tiempo vienen de importaciones antiguas con id aleatorio).
+            const esIdAleatorio = (id) => /^hist-[0-9]{4}-[0-9]{10,}-[0-9]+$/.test(String(id));
+            let idConsolidado;
+            if (esHist && previoEsHist) idConsolidado = esIdAleatorio(previo.id) && !esIdAleatorio(f.id) ? f.id : previo.id;
+            else idConsolidado = esHist ? f.id : previo.id;
+            // El documento con el id consolidado (estable) tiene prioridad sobre el otro
+            const alto = idConsolidado === f.id ? f : previo;
+            const bajo = alto === f ? previo : f;
+            const pick = (altoV, bajoV, vacio) => (altoV !== undefined && altoV !== null && altoV !== vacio) ? altoV : bajoV;
+            mapaDeduplicado.set(claveNombre, {
+                ...bajo,
+                ...alto,
                 id: idConsolidado,
-                nombre: (f.nombre && f.nombre.trim().toLowerCase() !== 'festival') ? f.nombre : anterior.nombre,
-                fecha: (f.fecha && f.fecha !== 'A definir') ? f.fecha : anterior.fecha,
-                fechaHora: (f.fechaHora && f.fechaHora !== 'A definir') ? f.fechaHora : (anterior.fechaHora || anterior.fecha),
-                venue: (f.venue && f.venue !== 'Venue') ? f.venue : anterior.venue,
-                finanzas: f.finanzas || anterior.finanzas,
-                contratosAlumnos: f.contratosAlumnos || anterior.contratosAlumnos,
-                cobertura: f.cobertura || anterior.cobertura,
-                recaudacionBruta: f.recaudacionBruta || anterior.recaudacionBruta || 0,
-                gastosFestival: f.gastosFestival || anterior.gastosFestival || 0,
-                netoEscuela: f.netoEscuela || anterior.netoEscuela || 0,
-                entradasVendidas: f.entradasVendidas || anterior.entradasVendidas || 0,
-                estado: f.estado || anterior.estado || 'Finalizado'
+                nombre: (alto.nombre && alto.nombre.trim().toLowerCase() !== 'festival') ? alto.nombre : bajo.nombre,
+                fecha: pick(alto.fecha, bajo.fecha, 'A definir'),
+                fechaHora: pick(alto.fechaHora, bajo.fechaHora || bajo.fecha, 'A definir'),
+                venue: pick(alto.venue, bajo.venue, 'Venue'),
+                finanzas: alto.finanzas || bajo.finanzas,
+                contratosAlumnos: alto.contratosAlumnos || bajo.contratosAlumnos,
+                cobertura: alto.cobertura || bajo.cobertura,
+                // ?? en lugar de ||: un valor legítimo de 0 no debe reemplazarse por el del otro documento
+                recaudacionBruta: alto.recaudacionBruta ?? bajo.recaudacionBruta ?? 0,
+                gastosFestival: alto.gastosFestival ?? bajo.gastosFestival ?? 0,
+                netoEscuela: alto.netoEscuela ?? bajo.netoEscuela ?? 0,
+                entradasVendidas: alto.entradasVendidas ?? bajo.entradasVendidas ?? 0,
+                estado: alto.estado || bajo.estado || 'Finalizado'
             });
+        } else if (previo) {
+            console.warn(`[Mandala Festivales] Posible duplicado (mismo nombre y año, ids distintos): "${f.nombre}" → ${previo.id} y ${f.id}. Se conservan ambos.`);
+            mapaDeduplicado.set(`${claveNombre}__${f.id}`, f);
         } else {
-            mapaDeduplicado.set(clave, f);
+            mapaDeduplicado.set(claveNombre, f);
         }
     });
 
@@ -315,7 +332,9 @@ export async function guardarFestivalFirestore(festivalId, festivalData) {
                         }
                     }
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.warn(`[Mandala Festivales] No se pudieron recuperar los metadatos de ${festivalId}:`, e);
+            }
         }
 
         await setDoc(docRef, { ...festivalData, actualizadoEn: new Date().toISOString() }, { merge: true });
@@ -323,12 +342,15 @@ export async function guardarFestivalFirestore(festivalId, festivalData) {
             try {
                 const docRefHist = doc(db, COLLECTIONS.FESTIVALES_HISTORICO, festivalId);
                 await setDoc(docRefHist, { ...festivalData, actualizadoEn: new Date().toISOString() }, { merge: true });
-            } catch(e) {}
+            } catch(e) {
+                console.warn(`[Mandala Festivales] No se pudo reflejar ${festivalId} en el histórico:`, e);
+            }
         }
         console.log(`[Mandala Festivales] Festival ${festivalId} guardado con éxito en Firestore.`);
         return true;
     } catch (err) {
         console.error(`[Mandala Festivales] Error al guardar festival ${festivalId}:`, err);
+        notificarErrorPersistencia("el festival", err);
         return false;
     }
 }
@@ -345,27 +367,33 @@ export async function actualizarCamposFestivalFirestore(festivalId, patchData) {
  */
 export async function guardarLoteHistoricoFestivales(lote) {
     try {
-        for (const item of lote) {
-            const id = item.id || ('hist-' + (item.anio || '2025') + '-' + Date.now() + '-' + Math.floor(Math.random() * 1000));
-            // Guardar en colección histórica
-            const docRefHist = doc(db, COLLECTIONS.FESTIVALES_HISTORICO, id);
-            await setDoc(docRefHist, { ...item, id, importadoEn: new Date().toISOString() });
-            
-            // También reflejar en colección principal para interoperabilidad
-            const docRefFest = doc(db, COLLECTIONS.FESTIVALES, id);
-            await setDoc(docRefFest, {
-                ...item,
-                id,
-                fechaHora: item.fecha || 'A definir',
-                direccion: item.venue || '-',
-                capacidad: item.entradasVendidas ? `${item.entradasVendidas} pers.` : '-',
-                importadoEn: new Date().toISOString()
-            }, { merge: true });
+        // Cada festival escribe 2 documentos (histórico + principal). Se agrupan en lotes atómicos
+        // y el id es estable (mismo nombre/año/fecha = mismo documento), así reimportar no duplica.
+        const ahora = new Date().toISOString();
+        const ops = [];
+        lote.forEach(item => {
+            const id = item.id || idHistoricoEstable(item.anio || '2025', item.nombre, item.fecha);
+            ops.push((batch) => {
+                batch.set(doc(db, COLLECTIONS.FESTIVALES_HISTORICO, id), { ...item, id, importadoEn: ahora });
+                batch.set(doc(db, COLLECTIONS.FESTIVALES, id), {
+                    ...item,
+                    id,
+                    fechaHora: item.fecha || 'A definir',
+                    direccion: item.venue || '-',
+                    capacidad: item.entradasVendidas ? `${item.entradasVendidas} pers.` : '-',
+                    importadoEn: ahora
+                }, { merge: true });
+            });
+        });
+        // Cada operación escribe 2 docs: se procesan de a 200 para no pasar el límite de 500 por lote
+        for (let i = 0; i < ops.length; i += 200) {
+            await ejecutarEnLotes(db, writeBatch, ops.slice(i, i + 200).map(op => (b) => op(b)));
         }
         console.log(`[Mandala Festivales] Lote histórico de ${lote.length} festivales guardado en Firestore.`);
         return true;
     } catch (err) {
         console.error("[Mandala Festivales] Error al guardar lote histórico:", err);
+        notificarErrorPersistencia("el lote histórico", err);
         return false;
     }
 }
@@ -387,11 +415,14 @@ export async function eliminarFestivalFirestore(festivalId) {
         try {
             const docRefHist = doc(db, COLLECTIONS.FESTIVALES_HISTORICO, festivalId);
             await deleteDoc(docRefHist);
-        } catch(e) {}
+        } catch(e) {
+            console.warn(`[Mandala Festivales] No se pudo eliminar ${festivalId} del histórico:`, e);
+        }
         console.log(`[Mandala Festivales] Festival ${festivalId} eliminado de Firestore.`);
         return true;
     } catch (err) {
         console.error(`[Mandala Festivales] Error al eliminar festival ${festivalId}:`, err);
+        notificarErrorPersistencia("la eliminación del festival", err);
         return false;
     }
 }

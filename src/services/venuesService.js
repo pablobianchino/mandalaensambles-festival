@@ -2,8 +2,10 @@
 // src/services/venuesService.js — Servicio de Venues (Salas) en Firestore
 // =======================================================================
 
-import { db, collection, getDocs, doc, setDoc, deleteDoc } from "../config/firebase.js";
+import { db, collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from "../config/firebase.js";
 import { COLLECTIONS } from "../config/constants.js";
+import { notificarErrorPersistencia } from "../utils/errores.js";
+import { idVenueEstable, ejecutarEnLotes } from "../utils/ids.js";
 
 /**
  * Obtener todos los venues de Firestore
@@ -34,6 +36,7 @@ export async function guardarVenueFirestore(venueId, venueData) {
         return true;
     } catch (err) {
         console.error(`[Mandala Festivales] Error al guardar venue ${venueId}:`, err);
+        notificarErrorPersistencia("el venue", err);
         return false;
     }
 }
@@ -43,15 +46,19 @@ export async function guardarVenueFirestore(venueId, venueData) {
  */
 export async function guardarLoteVenues(lote) {
     try {
-        for (const item of lote) {
-            const id = 'venue-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-            const docRef = doc(db, COLLECTIONS.VENUES, id);
-            await setDoc(docRef, { ...item, importadoEn: new Date().toISOString() });
-        }
+        // Id estable por nombre: reimportar el mismo Excel actualiza en vez de duplicar.
+        // Se escribe en lotes atómicos: o entra todo el bloque o no entra nada.
+        const ahora = new Date().toISOString();
+        const ops = lote.map(item => (batch) => {
+            const id = idVenueEstable(item.nombre);
+            batch.set(doc(db, COLLECTIONS.VENUES, id), { ...item, id, importadoEn: ahora }, { merge: true });
+        });
+        await ejecutarEnLotes(db, writeBatch, ops);
         console.log(`[Mandala Festivales] Lote de ${lote.length} venues guardado en Firestore.`);
         return true;
     } catch (err) {
         console.error("[Mandala Festivales] Error al guardar lote de venues:", err);
+        notificarErrorPersistencia("el lote de venues", err);
         return false;
     }
 }
@@ -67,6 +74,7 @@ export async function eliminarVenueFirestore(venueId) {
         return true;
     } catch (err) {
         console.error(`[Mandala Festivales] Error al eliminar venue ${venueId}:`, err);
+        notificarErrorPersistencia("la eliminación del venue", err);
         return false;
     }
 }

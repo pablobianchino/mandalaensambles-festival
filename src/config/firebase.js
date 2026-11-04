@@ -16,15 +16,19 @@ import {
     query, 
     where,
     orderBy,
-    onSnapshot
+    onSnapshot,
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { 
     getAuth, 
     signInWithPopup, 
     signInWithEmailAndPassword,
     GoogleAuthProvider, 
-    onAuthStateChanged, 
-    signOut 
+    onAuthStateChanged,
+    signOut,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { firebaseConfig } from "./constants.js";
 
@@ -51,10 +55,14 @@ export {
     where,
     orderBy,
     onSnapshot,
+    writeBatch,
     getAuth,
     signInWithPopup,
     signInWithEmailAndPassword,
     GoogleAuthProvider,
     onAuthStateChanged,
-    signOut
+    signOut,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword
 };

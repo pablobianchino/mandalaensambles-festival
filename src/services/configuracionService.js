@@ -5,6 +5,7 @@
 
 import { db, doc, getDoc, setDoc } from "../config/firebase.js";
 import { COLLECTIONS } from "../config/constants.js";
+import { notificarErrorPersistencia } from "../utils/errores.js";
 
 const DOC_PRODUCTORA = "tarifas_maestras";
 const DOC_ENTRADAS = "entradas_defecto";
@@ -40,6 +41,7 @@ export async function guardarTarifasProductoraFirestore(tarifas) {
         return true;
     } catch (err) {
         console.error("[Mandala Festivales] Error al guardar tarifas de productora:", err);
+        notificarErrorPersistencia("las tarifas de productora", err);
         return false;
     }
 }
@@ -75,6 +77,7 @@ export async function guardarPreciosEntradasFirestore(precios) {
         return true;
     } catch (err) {
         console.error("[Mandala Festivales] Error al guardar precios por defecto:", err);
+        notificarErrorPersistencia("los precios por defecto", err);
         return false;
     }
 }

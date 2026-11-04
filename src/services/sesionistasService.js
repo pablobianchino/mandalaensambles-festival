@@ -4,6 +4,7 @@
 
 import { db, collection, getDocs, doc, setDoc, deleteDoc } from "../config/firebase.js";
 import { COLLECTIONS } from "../config/constants.js";
+import { notificarErrorPersistencia } from "../utils/errores.js";
 
 export async function obtenerSesionistasFirestore() {
     try {
@@ -27,6 +28,7 @@ export async function guardarSesionistaFirestore(sesId, data) {
         return true;
     } catch (err) {
         console.error(`[Mandala Festivales] Error al guardar sesionista ${sesId}:`, err);
+        notificarErrorPersistencia("el sesionista", err);
         return false;
     }
 }
@@ -38,6 +40,7 @@ export async function eliminarSesionistaFirestore(sesId) {
         return true;
     } catch (err) {
         console.error(`[Mandala Festivales] Error al eliminar sesionista ${sesId}:`, err);
+        notificarErrorPersistencia("la eliminación del sesionista", err);
         return false;
     }
 }

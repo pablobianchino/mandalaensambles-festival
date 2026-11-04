@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=beta3.0">
+    <link rel="stylesheet" href="styles.css?v=beta3.1">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -62,7 +62,7 @@
                 <div style="text-align:left;">
                     <label for="login-email" style="display:block; font-size:11.5px; font-weight:700; color:var(--text-main); margin-bottom:4px; text-transform:none;">Correo Electrónico</label>
                     <div style="position:relative; width:100%;">
-                        <input type="email" id="login-email" autocomplete="username" required placeholder="tu-correo@mandalahouse.com" value="pablo.mandalahouse@gmail.com" style="width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid var(--border-color); border-radius:10px; font-family:inherit; font-size:13px; outline:none; background:#ffffff; color:var(--text-main); transition:border-color 0.2s;">
+                        <input type="email" id="login-email" autocomplete="username" required placeholder="tu-correo@mandalahouse.com" style="width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid var(--border-color); border-radius:10px; font-family:inherit; font-size:13px; outline:none; background:#ffffff; color:var(--text-main); transition:border-color 0.2s;">
                     </div>
                 </div>
 
@@ -71,7 +71,7 @@
                         <label for="login-password" style="font-size:11.5px; font-weight:700; color:var(--text-main); margin:0; text-transform:none;">Contraseña</label>
                     </div>
                     <div style="position:relative; width:100%;">
-                        <input type="password" id="login-password" autocomplete="current-password" required placeholder="••••••••" value="mandala333" style="width:100%; box-sizing:border-box; padding:10px 38px 10px 14px; border:1px solid var(--border-color); border-radius:10px; font-family:inherit; font-size:13px; outline:none; background:#ffffff; color:var(--text-main); transition:border-color 0.2s;">
+                        <input type="password" id="login-password" autocomplete="current-password" required placeholder="••••••••" style="width:100%; box-sizing:border-box; padding:10px 38px 10px 14px; border:1px solid var(--border-color); border-radius:10px; font-family:inherit; font-size:13px; outline:none; background:#ffffff; color:var(--text-main); transition:border-color 0.2s;">
                         <button type="button" id="btn-toggle-login-pass" class="btn-toggle-eye" onclick="toggleVerPassword()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:14px; padding:2px; filter:grayscale(100%); opacity:0.6;" title="Mostrar u ocultar contraseña">👁️</button>
                     </div>
                 </div>
@@ -1286,7 +1286,7 @@
                                 <div>
                                     <h3 class="card-title">🔒 Seguridad y Credenciales de Acceso</h3>
                                     <span style="font-size:12px; color:var(--text-muted);">
-                                        Gestión de contraseña maestra de administración y control de acceso.
+                                        Cambiá la contraseña de tu cuenta de acceso a Mandala Festivales.
                                     </span>
                                 </div>
                                 <button class="btn-app btn-primary" onclick="guardarNuevaPasswordDesdeConfig()">💾 Actualizar Contraseña</button>
@@ -1299,7 +1299,11 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Nueva Contraseña (mínimo 6 caracteres)</label>
-                                    <input type="password" id="cfg-pass-nueva" class="form-control" placeholder="Nueva contraseña...">
+                                    <input type="password" id="cfg-pass-nueva" class="form-control" placeholder="Nueva contraseña..." autocomplete="new-password">
+                                </div>
+                                <div class="form-group">
+                                    <label>Confirmar Nueva Contraseña</label>
+                                    <input type="password" id="cfg-pass-confirmar" class="form-control" placeholder="Repetí la nueva contraseña" autocomplete="new-password">
                                 </div>
                             </div>
                         </div>
@@ -2646,21 +2650,27 @@
         <div class="modal-box" style="width:400px;">
             <div class="modal-header">
                 <h3>🔒 Cambiar Contraseña</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" id="pass-btn-cerrar" onclick="cerrarModales()">&times;</button>
             </div>
             <div class="modal-body">
+                <div id="pass-aviso-forzado" style="display:none; padding:10px 12px; background:#fef3c7; border:1px solid #fde68a; border-radius:8px; color:#92400e; font-size:12.5px; font-weight:600; margin-bottom:12px; line-height:1.4;">Por seguridad, tenés que cambiar tu contraseña inicial antes de continuar.</div>
+                <div id="pass-error-msg" style="display:none; padding:8px 12px; background:#fee2e2; border:1px solid #fecaca; border-radius:8px; color:#991b1b; font-size:12px; font-weight:600; margin-bottom:12px;"></div>
                 <div class="form-group">
                     <label>Contraseña Actual</label>
-                    <input type="password" id="pass-actual" class="form-control" placeholder="mandala333">
+                    <input type="password" id="pass-actual" class="form-control" placeholder="Contraseña actual" autocomplete="current-password">
                 </div>
                 <div class="form-group">
                     <label>Nueva Contraseña</label>
-                    <input type="password" id="pass-nueva" class="form-control" placeholder="Nueva contraseña">
+                    <input type="password" id="pass-nueva" class="form-control" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Confirmar Nueva Contraseña</label>
+                    <input type="password" id="pass-confirmar" class="form-control" placeholder="Repetí la nueva contraseña" autocomplete="new-password">
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
-                <button class="btn-app btn-primary" onclick="guardarNuevaPassword()">Actualizar</button>
+                <button class="btn-app btn-secondary" id="pass-btn-cancelar" onclick="cerrarModales()">Cancelar</button>
+                <button class="btn-app btn-primary" id="pass-btn-guardar" onclick="guardarNuevaPassword()">Actualizar</button>
             </div>
         </div>
     </div>
@@ -3451,6 +3461,25 @@
         // =========================================================
         // SISTEMA GLOBAL DE TOASTS & MODALES MANDALA (UX MODERNA)
         // =========================================================
+        // =========================================================
+        // ESCAPE DE HTML: todo texto ingresado por usuarios o importado desde Excel
+        // debe pasar por esc() antes de insertarse en innerHTML o en atributos.
+        // escJs() además protege valores dentro de handlers inline: onclick="fn('${escJs(x)}')"
+        // =========================================================
+        function esc(valor) {
+            return String(valor === null || valor === undefined ? '' : valor)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        function escJs(valor) {
+            return esc(String(valor === null || valor === undefined ? '' : valor).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
+        }
+        window.esc = esc;
+        window.escJs = escJs;
+
         function mostrarToast(mensaje, tipo = 'success', duracion = 3200) {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -3466,7 +3495,7 @@
 
             toast.innerHTML = `
                 <span class="mandala-toast-icon">${icon}</span>
-                <div class="mandala-toast-content">${mensaje}</div>
+                <div class="mandala-toast-content">${esc(mensaje)}</div>
                 <button class="mandala-toast-close" onclick="this.parentElement.remove()" title="Cerrar">✕</button>
             `;
 
@@ -4214,8 +4243,8 @@
                     <option value="Encargado" ${tipo === 'Encargado' ? 'selected' : ''}>Encargado</option>
                     <option value="Sonidista" ${tipo === 'Sonidista' ? 'selected' : ''}>Sonidista</option>
                 </select>
-                <input type="text" class="form-control inp-cont-nombre" placeholder="Nombre..." value="${nombre}" style="flex:1; font-size:12px; padding:4px 8px;">
-                <input type="text" class="form-control inp-cont-tel" placeholder="Tel / WhatsApp..." value="${telefono}" style="flex:1; font-size:12px; padding:4px 8px; font-family:'Geist Mono';">
+                <input type="text" class="form-control inp-cont-nombre" placeholder="Nombre..." value="${esc(nombre)}" style="flex:1; font-size:12px; padding:4px 8px;">
+                <input type="text" class="form-control inp-cont-tel" placeholder="Tel / WhatsApp..." value="${esc(telefono)}" style="flex:1; font-size:12px; padding:4px 8px; font-family:'Geist Mono';">
                 <button type="button" class="btn-row-del" onclick="this.closest('.contacto-venue-item').remove()" title="Quitar contacto" style="font-size:14px; padding:2px 6px;">✕</button>
             `;
             cont.appendChild(div);
@@ -4336,7 +4365,7 @@
             const nom = v ? v.nombre : 'este venue';
             const conf = await mostrarModalConfirmacion({
                 titulo: 'Eliminar Venue',
-                mensaje: `¿Estás seguro de que deseas eliminar el venue <strong>"${nom}"</strong> de la base de datos?`,
+                mensaje: `¿Estás seguro de que deseas eliminar el venue <strong>"${esc(nom)}"</strong> de la base de datos?`,
                 icono: '🗑️',
                 textoConfirmar: 'Eliminar Venue',
                 esPeligroso: true
@@ -4441,10 +4470,10 @@
                                 <option value="Productor" ${c.tipo === 'Productor' ? 'selected' : ''}>Productor</option>
                                 <option value="Sonidista" ${c.tipo === 'Sonidista' ? 'selected' : ''}>Sonidista</option>
                             </select>
-                            <input type="text" class="spreadsheet-inp text-left" style="width:130px; min-width:130px; font-size:12px; font-weight:400; padding:4px 8px; border:1px solid #e2e8f0; border-radius:6px;" value="${c.nombre || ''}" placeholder="Nombre..." onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'nombre', this.value)">
+                            <input type="text" class="spreadsheet-inp text-left" style="width:130px; min-width:130px; font-size:12px; font-weight:400; padding:4px 8px; border:1px solid #e2e8f0; border-radius:6px;" value="${esc(c.nombre || '')}" placeholder="Nombre..." onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'nombre', this.value)">
                             <div style="display:inline-flex; align-items:center; gap:4px;">
-                                <input type="text" class="spreadsheet-inp text-left" style="width:155px; min-width:155px; font-size:11.5px; font-weight:400; font-family:'Geist Mono'; padding:4px 8px; border:1px solid #e2e8f0; border-radius:6px;" value="${c.telefono || ''}" placeholder="+54 9 11..." onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'telefono', this.value); renderizarTablaVenues();">
-                                <button type="button" class="btn-ws-icon ${hasTel ? '' : 'disabled'}" onclick="abrirWhatsAppDirecto('${(c.telefono || '').replace(/'/g, "\\'")}', '${(c.nombre || '').replace(/'/g, "\\'")}')" title="Enviar WhatsApp a ${c.nombre || 'este contacto'}">💬</button>
+                                <input type="text" class="spreadsheet-inp text-left" style="width:155px; min-width:155px; font-size:11.5px; font-weight:400; font-family:'Geist Mono'; padding:4px 8px; border:1px solid #e2e8f0; border-radius:6px;" value="${esc(c.telefono || '')}" placeholder="+54 9 11..." onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'telefono', this.value); renderizarTablaVenues();">
+                                <button type="button" class="btn-ws-icon ${hasTel ? '' : 'disabled'}" onclick="abrirWhatsAppDirecto('${escJs(c.telefono || '')}', '${escJs(c.nombre || '')}')" title="Enviar WhatsApp a ${esc(c.nombre || 'este contacto')}">💬</button>
                             </div>
                             <button type="button" class="btn-row-del" style="font-size:11.5px; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px;" onclick="eliminarContactoVenueInSitu('${v.id}', ${cIdx})" title="Quitar contacto">✕</button>
                         </div>
@@ -4455,10 +4484,10 @@
 
                 tr.innerHTML = `
                     <td style="vertical-align:middle; padding:8px 12px; background:#ffffff; border:1px solid #cbd5e1; font-weight:800; font-size:13.5px; color:var(--accent-blue);">
-                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13.5px; color:var(--accent-blue); padding:4px 6px;" value="${v.nombre || ''}" placeholder="Nombre Venue..." onchange="actualizarCampoVenueInSitu('${v.id}', 'nombre', this.value)">
+                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13.5px; color:var(--accent-blue); padding:4px 6px;" value="${esc(v.nombre || '')}" placeholder="Nombre Venue..." onchange="actualizarCampoVenueInSitu('${v.id}', 'nombre', this.value)">
                     </td>
                     <td style="vertical-align:middle; padding:8px 12px; background:#ffffff; border:1px solid #cbd5e1;">
-                        <input type="text" class="spreadsheet-inp text-left" style="font-size:12px; font-weight:400; padding:4px 6px;" value="${v.direccion || ''}" placeholder="Dirección..." onchange="actualizarCampoVenueInSitu('${v.id}', 'direccion', this.value)">
+                        <input type="text" class="spreadsheet-inp text-left" style="font-size:12px; font-weight:400; padding:4px 6px;" value="${esc(v.direccion || '')}" placeholder="Dirección..." onchange="actualizarCampoVenueInSitu('${v.id}', 'direccion', this.value)">
                     </td>
                     <td style="vertical-align:middle; padding:8px 12px; border:1px solid #cbd5e1; background:#ffffff; min-width:470px;">
                         ${contactosHtml}
@@ -4708,7 +4737,7 @@
                         }
 
                         venuesParseados.push({
-                            id: 'venue-' + Date.now() + '-' + Math.floor(Math.random() * 10000),
+                            id: window.MandalaApp.ids.venue(nombre), // estable por nombre: reimportar no duplica
                             nombre,
                             direccion,
                             contactos,
@@ -4747,8 +4776,8 @@
                 const tr = document.createElement('tr');
                 const cttoTxt = v.contactos.length > 0 ? `${v.contactos[0].tipo}: ${v.contactos[0].nombre} (${v.contactos[0].telefono})` : '-';
                 tr.innerHTML = `
-                    <td><strong>${v.nombre}</strong></td>
-                    <td>${v.direccion || '-'}</td>
+                    <td><strong>${esc(v.nombre)}</strong></td>
+                    <td>${esc(v.direccion || '-')}</td>
                     <td>${cttoTxt}</td>
                     <td><span class="pill-status pill-info" style="font-size:11px;">${v.acuerdo}</span></td>
                     <td style="font-family:'Geist Mono'; font-weight:700;">${formatoCapacidadRango(v.capMin, v.capMax)}</td>
@@ -4781,7 +4810,11 @@
 
                 // Guardar en lote en Firestore
                 if (window.MandalaApp && window.MandalaApp.venues) {
-                    await window.MandalaApp.venues.guardarLote(window._venuesParaImportar);
+                    const okLote = await window.MandalaApp.venues.guardarLote(window._venuesParaImportar);
+                    if (okLote === false) {
+                        mostrarToast('No se pudieron guardar los venues en la base de datos. No se importó nada.', 'error');
+                        return;
+                    }
                 }
 
                 renderizarTablaVenues();
@@ -4968,7 +5001,7 @@
                         const estado = (fila.Estado || fila.estado || 'Finalizado').trim();
 
                         parseados.push({
-                            id: 'hist-' + anio + '-' + Date.now() + '-' + Math.floor(Math.random() * 10000),
+                            id: window.MandalaApp.ids.historico(anio, nombre, fecha), // estable: reimportar no duplica
                             nombre,
                             anio,
                             fecha,
@@ -5011,8 +5044,8 @@
                 tr.innerHTML = `
                     <td style="font-family:'Geist Mono'; font-weight:700;">${f.anio}</td>
                     <td style="color:var(--text-muted);">${f.fecha}</td>
-                    <td><strong>${f.nombre}</strong></td>
-                    <td>${f.venue}</td>
+                    <td><strong>${esc(f.nombre)}</strong></td>
+                    <td>${esc(f.venue)}</td>
                     <td style="text-align:center; font-family:'Geist Mono'; font-weight:700;">${f.entradasVendidas}</td>
                     <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--text-main);">$ ${f.recaudacionBruta.toLocaleString('es-AR')}</td>
                     <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red);">$ ${f.gastosFestival.toLocaleString('es-AR')}</td>
@@ -5041,7 +5074,11 @@
             try {
                 // 1. Guardar en Firestore colección festivales_historico y festivales
                 if (window.MandalaApp && window.MandalaApp.festivales) {
-                    await window.MandalaApp.festivales.guardarLoteHistorico(window._festivalesHistoricosParaImportar);
+                    const okLoteHist = await window.MandalaApp.festivales.guardarLoteHistorico(window._festivalesHistoricosParaImportar);
+                    if (okLoteHist === false) {
+                        mostrarToast('No se pudieron guardar los festivales en la base de datos. No se importó nada.', 'error');
+                        return;
+                    }
                 }
 
                 // 2. Poblar inmediatamente en las tablas visuales (Cronograma de Eventos y Finanzas)
@@ -5140,12 +5177,18 @@
         async function ejecutarLogin(e) {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
-            const pass = document.getElementById('login-password').value.trim();
+            const pass = document.getElementById('login-password').value;
             const errorDiv = document.getElementById('login-error-msg');
             const submitBtn = document.getElementById('btn-login-email-submit');
 
             if (!email.includes('@')) {
                 errorDiv.textContent = 'Por favor ingresá un correo válido.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (!window.MandalaApp || !window.MandalaApp.auth) {
+                errorDiv.textContent = 'El servicio de acceso todavía se está iniciando. Esperá unos segundos y reintentá.';
                 errorDiv.style.display = 'block';
                 return;
             }
@@ -5159,72 +5202,13 @@
             mostrarIndicadorCarga('Cargando datos...');
 
             try {
-                // Intentar login con Firebase Auth
-                if (window.MandalaApp && window.MandalaApp.auth) {
-                    const res = await window.MandalaApp.auth.loginConEmail(email, pass);
-                    if (!res.ok) {
-                        ocultarIndicadorCarga();
-                        errorDiv.textContent = res.error || 'Contraseña incorrecta o usuario no registrado.';
-                        errorDiv.style.display = 'block';
-                        return;
-                    }
-
-                    // Validar estado en usuarios_sistema si está disponible
-                    let nombreUsuario = res.user?.displayName || email.split('@')[0];
-                    let rolUsuario = 'Coordinador';
-                    if (window.MandalaApp.usuarios) {
-                        try {
-                            const perfil = await window.MandalaApp.usuarios.obtenerPorEmail(email);
-                            if (perfil) {
-                                if (perfil.activo === false) {
-                                    ocultarIndicadorCarga();
-                                    errorDiv.textContent = 'Tu usuario se encuentra inactivo. Consultá con administración.';
-                                    errorDiv.style.display = 'block';
-                                    await window.MandalaApp.auth.cerrarSesion();
-                                    return;
-                                }
-                                nombreUsuario = perfil.nombre || nombreUsuario;
-                                rolUsuario = perfil.rol ? (perfil.rol.charAt(0).toUpperCase() + perfil.rol.slice(1)) : 'Coordinador';
-                            }
-                        } catch (e) {
-                            console.warn("No se pudo consultar usuarios_sistema:", e);
-                        }
-                    }
-
-                    // Si fue exitoso o fallback local, activar UI y persistir sesión
-                    document.getElementById('login-container').style.display = 'none';
-                    document.getElementById('app-layout').classList.add('active');
-                    document.documentElement.classList.add('user-has-session');
-                    try {
-                        localStorage.setItem('mandala_festival_has_session', 'true');
-                        localStorage.setItem('mandala_has_session', 'true');
-                        localStorage.setItem('mandala_current_user_email', email);
-                        localStorage.setItem('mandala_current_user_name', nombreUsuario);
-                        localStorage.setItem('mandala_current_user_role', rolUsuario);
-                    } catch(e) {}
-                    actualizarInfoUsuarioUI(nombreUsuario, email, rolUsuario);
-                    sesionIniciada = true;
-                } else {
-                    // Fallback directo si Firebase aún está iniciando
-                    const passGuardada = localStorage.getItem('mandala_festival_pass') || 'mandala333';
-                    if (pass !== passGuardada) {
-                        ocultarIndicadorCarga();
-                        errorDiv.textContent = 'Contraseña incorrecta. (Por defecto: mandala333)';
-                        errorDiv.style.display = 'block';
-                        return;
-                    }
-                    document.getElementById('login-container').style.display = 'none';
-                    document.getElementById('app-layout').classList.add('active');
-                    document.documentElement.classList.add('user-has-session');
-                    try {
-                        localStorage.setItem('mandala_festival_has_session', 'true');
-                        localStorage.setItem('mandala_has_session', 'true');
-                        localStorage.setItem('mandala_current_user_email', email);
-                        localStorage.setItem('mandala_current_user_name', email.split('@')[0]);
-                        localStorage.setItem('mandala_current_user_role', 'Coordinador');
-                    } catch(e) {}
-                    actualizarInfoUsuarioUI(email.split('@')[0], email, 'Coordinador');
-                    sesionIniciada = true;
+                // Solo Firebase Auth: si las credenciales son válidas, onAuthStateChanged (src/app.js)
+                // verifica el perfil en usuarios_sistema y abre la app.
+                const res = await window.MandalaApp.auth.loginConEmail(email, pass);
+                if (!res.ok) {
+                    ocultarIndicadorCarga();
+                    errorDiv.textContent = res.error || 'No se pudo iniciar sesión.';
+                    errorDiv.style.display = 'block';
                 }
             } catch (err) {
                 ocultarIndicadorCarga();
@@ -5275,8 +5259,8 @@
         // WIDGET DE USUARIO Y POPOVER DE PERFIL (GOOGLE-STYLE)
         // =========================================================
         function actualizarInfoUsuarioUI(nombre, email, rol) {
-            const nom = nombre || (email ? email.split('@')[0] : 'Pablo Bianchino');
-            const em = email || 'pablo.mandalahouse@gmail.com';
+            const nom = nombre || (email ? email.split('@')[0] : 'Usuario');
+            const em = email || '';
             const iniciales = nom.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'PB';
             
             const elNom = document.getElementById('user-display-name');
@@ -5318,7 +5302,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta3.0";
+        const APP_VERSION = "beta3.1";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -5402,48 +5386,111 @@
             sesionIniciada = false;
         }
 
+        // ---------------------------------------------------------
+        // CAMBIO DE CONTRASEÑA (Firebase Auth real; la clave inicial debe cambiarse en el primer ingreso)
+        // ---------------------------------------------------------
+        let cambioClaveForzado = false;
+
         function abrirModalCambiarPassword() {
+            ['pass-actual', 'pass-nueva', 'pass-confirmar'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const err = document.getElementById('pass-error-msg');
+            if (err) err.style.display = 'none';
             document.getElementById('modal-cambiar-password').classList.add('active');
         }
 
-        function guardarNuevaPassword() {
-            const actual = document.getElementById('pass-actual').value;
-            const nueva = document.getElementById('pass-nueva').value;
-            const passGuardada = localStorage.getItem('mandala_festival_pass') || 'mandala333';
+        function exigirCambioClaveInicial() {
+            cambioClaveForzado = true;
+            abrirModalCambiarPassword();
+            const modal = document.getElementById('modal-cambiar-password');
+            modal.classList.add('modal-forzado');
+            const aviso = document.getElementById('pass-aviso-forzado');
+            if (aviso) aviso.style.display = 'block';
+            const btnX = document.getElementById('pass-btn-cerrar');
+            if (btnX) btnX.style.display = 'none';
+            const btnCancel = document.getElementById('pass-btn-cancelar');
+            if (btnCancel) { btnCancel.textContent = 'Cerrar sesión'; btnCancel.onclick = () => { liberarCambioClaveForzado(); cerrarSesion(); }; }
+        }
+        window.exigirCambioClaveInicial = exigirCambioClaveInicial;
 
-            if (actual !== passGuardada) {
-                mostrarToast('La contraseña actual no coincide.', 'error');
+        function liberarCambioClaveForzado() {
+            cambioClaveForzado = false;
+            const modal = document.getElementById('modal-cambiar-password');
+            if (modal) { modal.classList.remove('modal-forzado'); modal.classList.remove('active'); }
+            const aviso = document.getElementById('pass-aviso-forzado');
+            if (aviso) aviso.style.display = 'none';
+            const btnX = document.getElementById('pass-btn-cerrar');
+            if (btnX) btnX.style.display = '';
+            const btnCancel = document.getElementById('pass-btn-cancelar');
+            if (btnCancel) { btnCancel.textContent = 'Cancelar'; btnCancel.onclick = () => cerrarModales(); }
+        }
+
+        async function procesarCambioPassword(actual, nueva, confirmar) {
+            if (!actual || !nueva || !confirmar) return { ok: false, error: 'Completá todos los campos.' };
+            if (nueva.length < 6) return { ok: false, error: 'La nueva contraseña debe tener al menos 6 caracteres.' };
+            if (nueva === actual) return { ok: false, error: 'La nueva contraseña debe ser distinta de la actual.' };
+            if (nueva !== confirmar) return { ok: false, error: 'La confirmación no coincide con la nueva contraseña.' };
+            if (!window.MandalaApp || !window.MandalaApp.auth) return { ok: false, error: 'El servicio de acceso no está disponible.' };
+
+            const res = await window.MandalaApp.auth.cambiarPassword(actual, nueva);
+            if (!res.ok) return res;
+
+            if (window.usuarioActual && window.usuarioActual.id) {
+                const marcado = await window.MandalaApp.usuarios.marcarPasswordModificada(window.usuarioActual.id);
+                if (!marcado) console.warn('[Mandala Festivales] La contraseña cambió pero no se pudo registrar en usuarios_sistema.');
+                window.usuarioActual.password_modificada = true;
+            }
+            return { ok: true };
+        }
+
+        async function guardarNuevaPassword() {
+            const errBox = document.getElementById('pass-error-msg');
+            const btn = document.getElementById('pass-btn-guardar');
+            if (errBox) errBox.style.display = 'none';
+            if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+            try {
+                const res = await procesarCambioPassword(
+                    document.getElementById('pass-actual').value,
+                    document.getElementById('pass-nueva').value,
+                    document.getElementById('pass-confirmar').value
+                );
+                if (!res.ok) {
+                    if (errBox) { errBox.textContent = res.error; errBox.style.display = 'block'; }
+                    return;
+                }
+                liberarCambioClaveForzado();
+                cerrarModales();
+                mostrarToast('¡Contraseña actualizada con éxito!', 'success');
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'Actualizar'; }
+            }
+        }
+
+        async function guardarNuevaPasswordDesdeConfig() {
+            const actual = document.getElementById('cfg-pass-actual')?.value;
+            const nueva = document.getElementById('cfg-pass-nueva')?.value;
+            const confirmar = document.getElementById('cfg-pass-confirmar')?.value;
+            const res = await procesarCambioPassword(actual, nueva, confirmar);
+            if (!res.ok) {
+                mostrarToast(res.error, 'error');
                 return;
             }
-            if (!nueva || nueva.length < 6) {
-                mostrarToast('La nueva contraseña debe tener al menos 6 caracteres.', 'warning');
-                return;
-            }
-
-            localStorage.setItem('mandala_festival_pass', nueva);
-            cerrarModales();
+            ['cfg-pass-actual', 'cfg-pass-nueva', 'cfg-pass-confirmar'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
             mostrarToast('¡Contraseña actualizada con éxito!', 'success');
         }
 
-        function guardarNuevaPasswordDesdeConfig() {
-            const actual = document.getElementById('cfg-pass-actual')?.value;
-            const nueva = document.getElementById('cfg-pass-nueva')?.value;
-            const passGuardada = localStorage.getItem('mandala_festival_pass') || 'mandala333';
-
-            if (actual !== passGuardada) {
-                mostrarToast('La contraseña actual no coincide.', 'error');
-                return;
-            }
-            if (!nueva || nueva.length < 6) {
-                mostrarToast('La nueva contraseña debe tener al menos 6 caracteres.', 'warning');
-                return;
-            }
-
-            localStorage.setItem('mandala_festival_pass', nueva);
-            if (document.getElementById('cfg-pass-actual')) document.getElementById('cfg-pass-actual').value = '';
-            if (document.getElementById('cfg-pass-nueva')) document.getElementById('cfg-pass-nueva').value = '';
-            mostrarToast('¡Contraseña maestra actualizada con éxito!', 'success');
-        }
+        window.addEventListener('mandala:error-persistencia', (ev) => {
+            const ahora = Date.now();
+            if (window._ultimoAvisoPersistencia && ahora - window._ultimoAvisoPersistencia < 4000) return;
+            window._ultimoAvisoPersistencia = ahora;
+            const ctx = (ev.detail && ev.detail.contexto) || 'los datos';
+            mostrarToast(`No se pudo guardar ${ctx} en la base de datos (permisos o conexión). Los cambios pueden perderse al recargar.`, 'error', 7000);
+        });
 
         let historialNavegacion = [];
         let vistaActual = { tipo: 'panel', id: 'eventos' };
@@ -5590,7 +5637,7 @@
                                     <div class="user-avatar-circle" style="width:26px; height:26px; font-size:11px; flex-shrink:0;">
                                         ${(u.nombre || 'U').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase()}
                                     </div>
-                                    <span>${u.nombre}</span>
+                                    <span>${esc(u.nombre)}</span>
                                 </div>
                             </td>
                             <td style="padding:10px 14px; vertical-align:middle; font-family:'Geist Mono'; font-size:12.5px; color:var(--text-muted);">
@@ -5896,7 +5943,7 @@
 
             tbody.innerHTML = items.map(item => `
                 <tr>
-                    <td style="font-weight:700; padding:10px 14px; vertical-align:middle;">${item.concepto}</td>
+                    <td style="font-weight:700; padding:10px 14px; vertical-align:middle;">${esc(item.concepto)}</td>
                     <td style="text-align:right; padding:8px 14px; vertical-align:middle; cursor:pointer;" 
                         title="Hacé click para editar el precio"
                         onclick="activarEdicionPrecioEntrada(this, '${item.key}', ${item.precio})">
@@ -5906,10 +5953,10 @@
             `).join('') + `
                 <tr style="background:#fff1f2;">
                     <td style="font-weight:700; padding:10px 14px; vertical-align:middle; color:#9f1239;">
-                        🎶 Canon SADAIC <span style="font-weight:600; font-size:11.5px; color:#be123c;">(${resSadaic.descripcion})</span>
+                        🎶 Canon SADAIC <span style="font-weight:600; font-size:11.5px; color:#be123c;">(${esc(resSadaic.descripcion)})</span>
                     </td>
                     <td style="text-align:right; padding:8px 14px; vertical-align:middle;">
-                        <span style="font-family:'Geist Mono'; font-weight:800; font-size:13.5px; color:var(--accent-red);" title="${resSadaic.descripcion}">-${formatearMonedaAr(resSadaic.monto)}</span>
+                        <span style="font-family:'Geist Mono'; font-weight:800; font-size:13.5px; color:var(--accent-red);" title="${esc(resSadaic.descripcion)}">-${formatearMonedaAr(resSadaic.monto)}</span>
                     </td>
                 </tr>
             `;
@@ -6101,7 +6148,7 @@
                     : 70;
                 acuerdoTextoCabecera = `${porcEsc}% Escuela / ${100 - porcEsc}% Venue`;
             }
-            const sub = `<strong>Fecha:</strong> ${fecha} &nbsp;·&nbsp; <strong>Venue:</strong> ${venue} &nbsp;·&nbsp; <strong>Acuerdo:</strong> ${acuerdoTextoCabecera}`;
+            const sub = `<strong>Fecha:</strong> ${fecha} &nbsp;·&nbsp; <strong>Venue:</strong> ${esc(venue)} &nbsp;·&nbsp; <strong>Acuerdo:</strong> ${acuerdoTextoCabecera}`;
 
             let claseEstado = 'estado-programado';
             if (estado === 'Lapiz') claseEstado = 'estado-lapiz';
@@ -6940,7 +6987,7 @@
                         if (item.esSaldoAnterior) {
                             tr.innerHTML = `
                                 <td style="text-align:center; font-family:'Geist Mono'; font-weight:500; color:var(--text-muted); padding:6px;">${item.fecha}</td>
-                                <td style="font-weight:600; color:var(--text-main); padding:6px;">${item.concepto}</td>
+                                <td style="font-weight:600; color:var(--text-main); padding:6px;">${esc(item.concepto)}</td>
                                 <td style="text-align:right; font-family:'Geist Mono'; font-weight:500; color:var(--accent-green); padding:6px;">${formatearMonedaAr(montoNum)}</td>
                                 <td style="text-align:center; padding:6px;"></td>
                             `;
@@ -6955,7 +7002,7 @@
                                         <input type="date" class="caja-date-native-input" value="${isoFest}" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}" onchange="cambiarFechaCalendarioCaja('festival', '${idFest}', this.value)">
                                     </div>
                                 </td>
-                                <td style="font-weight:500; color:#0f172a; padding:6px;">🎪 ${item.concepto}</td>
+                                <td style="font-weight:500; color:#0f172a; padding:6px;">🎪 ${esc(item.concepto)}</td>
                                 <td style="text-align:right; padding:4px 6px;">
                                     <span class="cell-caja-editable cell-caja-monto" data-monto="${montoNum}" title="Click para ajustar el ingreso neto del festival" style="font-family:'Geist Mono'; font-weight:500; color:var(--accent-green); width:100%; text-align:right; display:block;" contenteditable="true" onfocus="iniciarEdicionMonto(this, 'festival', '${idFest}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionMonto(this, '${idFest}', 'festival')">${formatearMonedaAr(montoNum)}</span>
                                 </td>
@@ -7459,7 +7506,7 @@
                             tr.innerHTML = `
                                 <td style="text-align:center; font-family:'Geist Mono'; font-weight:700; color:var(--text-main);">${item.anio}</td>
                                 <td style="text-align:center; font-family:'Geist Mono'; color:#475569;">${item.fecha || '-'}</td>
-                                <td style="font-weight:600; color:var(--text-main);">${item.concepto}</td>
+                                <td style="font-weight:600; color:var(--text-main);">${esc(item.concepto)}</td>
                                 <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red);">${formatearMonedaAr(item.monto)}</td>
                             `;
                             tbody.appendChild(tr);
@@ -7773,7 +7820,7 @@
                 filaEv.setAttribute('data-estado', nuevoEstado);
                 const tds = filaEv.querySelectorAll('td');
                 if (tds[0]) tds[0].textContent = fechaInp;
-                if (tds[1]) tds[1].innerHTML = `<strong style="color:var(--accent-blue); font-size:13.5px;">${nombre.toUpperCase()}</strong>`;
+                if (tds[1]) tds[1].innerHTML = `<strong style="color:var(--accent-blue); font-size:13.5px;">${esc(nombre.toUpperCase())}</strong>`;
                 if (tds[2]) tds[2].textContent = venueSeleccionado;
                 if (tds[3]) tds[3].innerHTML = `<span class="pill-status ${estadoClass}">${nuevoEstado}</span>`;
             }
@@ -7785,7 +7832,7 @@
                 filaFin.setAttribute('data-estado', nuevoEstado);
                 const tdsFin = filaFin.querySelectorAll('td');
                 if (tdsFin[1]) tdsFin[1].textContent = fechaInp;
-                if (tdsFin[2]) tdsFin[2].innerHTML = `<strong style="color:var(--accent-blue); font-size:13.5px;">${nombre.toUpperCase()}</strong>`;
+                if (tdsFin[2]) tdsFin[2].innerHTML = `<strong style="color:var(--accent-blue); font-size:13.5px;">${esc(nombre.toUpperCase())}</strong>`;
                 const celdaEst = filaFin.querySelector('.celda-fin-estado') || tdsFin[tdsFin.length - 1];
                 if (celdaEst) celdaEst.innerHTML = `<span class="pill-status ${estadoClass}">${nuevoEstado}</span>`;
             }
@@ -7818,6 +7865,7 @@
                 } catch (err) {
                     console.error("[Mandala Festivales] Error actualizando festival en Firestore:", err);
                     mostrarToast('Error al persistir en base de datos: ' + err.message, 'error');
+                    return; // el modal queda abierto para reintentar; no se muestra el aviso de éxito
                 }
             }
 
@@ -8021,7 +8069,10 @@
         }
 
         function cerrarModales() {
-            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.modal-overlay').forEach(m => {
+                if (m.classList.contains('modal-forzado')) return; // cambio de clave obligatorio: solo se cierra cambiando la clave o cerrando sesión
+                m.classList.remove('active');
+            });
             if (confirmResolver) {
                 confirmResolver(false);
                 confirmResolver = null;
@@ -8169,7 +8220,9 @@
                         ventasEspeciales: []
                     }
                 };
-                window.MandalaApp.festivales.guardar(nuevoId, festivalDoc).catch(e => console.warn('Error guardando en Firestore:', e));
+                window.MandalaApp.festivales.guardar(nuevoId, festivalDoc).then(ok => {
+                    if (ok === false) console.warn('[Mandala Festivales] El festival nuevo no se pudo guardar en Firestore.');
+                }).catch(e => console.warn('Error guardando en Firestore:', e));
             }
 
             cerrarModales();
@@ -8384,8 +8437,8 @@
                 }
                 if (!festAnio) festAnio = '2026';
 
-                // Deduplicar para que no aparezcan dos filas para el mismo festival
-                const claveDeduplicacion = `${(fest.nombre || '').trim().toUpperCase()}_${festAnio}`;
+                // Deduplicar por id (la fusión de pares espejo hist-/copia ya se resolvió en festivalesService)
+                const claveDeduplicacion = String(fId);
                 if (clavesVistas.has(claveDeduplicacion)) return;
                 clavesVistas.add(claveDeduplicacion);
 
@@ -8467,8 +8520,8 @@
                     const estActualMenu = fest.estado || 'Programado';
                     tr.innerHTML = `
                         <td style="font-family:'Geist Mono'; font-weight:700; color:#0f172a;">${fechaDisplay}</td>
-                        <td><strong style="color:var(--accent-blue); font-size:13.5px;">${(fest.nombre || 'FESTIVAL').toUpperCase()}</strong></td>
-                        <td>${fest.venue || 'Venue'}</td>
+                        <td><strong style="color:var(--accent-blue); font-size:13.5px;">${esc((fest.nombre || 'FESTIVAL').toUpperCase())}</strong></td>
+                        <td>${esc(fest.venue || 'Venue')}</td>
                         <td class="celda-ev-estado"><span class="pill-status ${estadoClass}">${estActualMenu}</span></td>
                         <td style="text-align:center; position:relative;" onclick="event.stopPropagation()">
                             <button type="button" class="btn-icon-dots" onclick="toggleMenuAccionesEvento(event, '${fId}')" title="Opciones">⋮</button>
@@ -8476,7 +8529,7 @@
                                 <button type="button" class="dropdown-item" onclick="abrirDetalleFinanzasFestival('${fId}')">
                                     💵 Ver Finanzas
                                 </button>
-                                <button type="button" class="dropdown-item" onclick="duplicarEvento(event, '${fId}', '${(fest.nombre || 'Festival').replace(/'/g, "\\'")}', '${(fest.venue || 'Venue').replace(/'/g, "\\'")}')">
+                                <button type="button" class="dropdown-item" onclick="duplicarEvento(event, '${fId}', '${escJs(fest.nombre || 'Festival')}', '${escJs(fest.venue || 'Venue')}')">
                                     📋 Duplicar Festival
                                 </button>
                                 <div style="border-top:1px solid #f1f5f9; margin:4px 0;"></div>
@@ -8500,7 +8553,7 @@
                                     <span class="chk-est" style="font-weight:900; color:var(--text-muted);">${estActualMenu === 'Finalizado' ? '✓' : ''}</span>
                                 </button>
                                 <div style="border-top:1px solid #f1f5f9; margin:4px 0;"></div>
-                                <button type="button" class="dropdown-item danger" onclick="eliminarEventoFestival(event, '${fId}', '${(fest.nombre || 'Festival').replace(/'/g, "\\'")}')">
+                                <button type="button" class="dropdown-item danger" onclick="eliminarEventoFestival(event, '${fId}', '${escJs(fest.nombre || 'Festival')}')">
                                     🗑️ Eliminar Festival
                                 </button>
                             </div>
@@ -8538,7 +8591,7 @@
                             <button type="button" class="expand-btn-finanzas" id="btn-exp-fin-${fId}" onclick="toggleDetalleFilaFinanzas('${fId}', event)" title="Ver detalle">＋</button>
                         </td>
                         <td style="font-family:'Geist Mono'; font-weight:700; color:#0f172a;" onclick="abrirDetalleFinanzasFestival('${fId}')">${fechaDisplay}</td>
-                        <td onclick="abrirDetalleFinanzasFestival('${fId}')"><strong style="color:var(--accent-blue); font-size:13.5px;">${(fest.nombre || 'FESTIVAL').toUpperCase()}</strong></td>
+                        <td onclick="abrirDetalleFinanzasFestival('${fId}')"><strong style="color:var(--accent-blue); font-size:13.5px;">${esc((fest.nombre || 'FESTIVAL').toUpperCase())}</strong></td>
                         <td class="celda-fin-ganancia" style="font-family:'Geist Mono'; font-weight:700; color:${colorGanancia}; font-size:13.5px; text-align:right;" onclick="abrirDetalleFinanzasFestival('${fId}')">${signoGanancia}${Math.abs(neto).toLocaleString('es-AR')}</td>
                         <td class="celda-fin-estado" style="text-align:center;" onclick="abrirDetalleFinanzasFestival('${fId}')"><span class="pill-status ${estadoClass}">${fest.estado || 'Finalizado'}</span></td>
                     `;
@@ -8947,12 +9000,21 @@
 
             const conf = await mostrarModalConfirmacion({
                 titulo: 'Eliminar Festival',
-                mensaje: `¿Estás seguro de que deseás eliminar el festival <strong>"${nombre}"</strong>?<br><span style="font-size:12px; color:var(--text-muted); margin-top:4px; display:block;">Esta acción removerá el evento del cronograma y de la base de datos.</span>`,
+                mensaje: `¿Estás seguro de que deseás eliminar el festival <strong>"${esc(nombre)}"</strong>?<br><span style="font-size:12px; color:var(--text-muted); margin-top:4px; display:block;">Esta acción removerá el evento del cronograma y de la base de datos.</span>`,
                 icono: '🗑️',
                 textoConfirmar: 'Eliminar Festival',
                 esPeligroso: true
             });
             if (!conf) return;
+
+            // 0. Persistir primero: si Firestore falla, el festival NO se quita de la pantalla
+            if (window.MandalaApp && window.MandalaApp.festivales && window.MandalaApp.festivales.eliminar) {
+                const okEliminado = await window.MandalaApp.festivales.eliminar(id);
+                if (okEliminado === false) {
+                    mostrarToast('No se pudo eliminar el festival de la base de datos. Reintentá.', 'error');
+                    return;
+                }
+            }
 
             // 1. Registrar ID en la lista persistente de eliminados para que no vuelva a reaparecer al refrescar
             registrarFestivalEliminadoId(id);
@@ -8972,14 +9034,7 @@
             const subfilaFin = document.getElementById('subfila-fin-' + id);
             if (subfilaFin) subfilaFin.remove();
 
-            // 5. Eliminar de Firestore
-            if (window.MandalaApp && window.MandalaApp.festivales && window.MandalaApp.festivales.eliminar) {
-                try {
-                    await window.MandalaApp.festivales.eliminar(id);
-                } catch (err) {
-                    console.warn("[Mandala Festivales] Error al eliminar en Firestore:", err);
-                }
-            }
+            // 5. (La eliminación en Firestore ya se realizó en el paso 0)
 
             // 6. Actualizar contadores, filtros dinámicos y caja
             actualizarOpcionesFiltroAnio();
@@ -9048,7 +9103,7 @@
                         <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; color:var(--text-main);" value="${item.hito}" onchange="guardarCronogramaAutomatico()">
                     </td>
                     <td>
-                        <input type="text" class="spreadsheet-inp text-left inp-crono-detalle" style="font-weight:400; color:var(--text-main);" value="${item.detalle}" onchange="guardarCronogramaAutomatico()">
+                        <input type="text" class="spreadsheet-inp text-left inp-crono-detalle" style="font-weight:400; color:var(--text-main);" value="${esc(item.detalle)}" onchange="guardarCronogramaAutomatico()">
                     </td>
                     <td style="text-align:center;">
                         <button class="btn-row-del" onclick="eliminarFilaCronograma(this)" title="Borrar hito">✕</button>
@@ -9196,7 +9251,7 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:700; color:var(--text-main);" value="${ses.nombre}" onchange="sesionistasDB[${idx}].nombre = this.value; actualizarBadgeSesionistas(); guardarSesionistaEnFirestore(sesionistasDB[${idx}]);">
+                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:700; color:var(--text-main);" value="${esc(ses.nombre)}" onchange="sesionistasDB[${idx}].nombre = this.value; actualizarBadgeSesionistas(); guardarSesionistaEnFirestore(sesionistasDB[${idx}]);">
                     </td>
                     <td style="position:relative;">
                         <!-- Contenedor Desplegable Multi-Selección de Instrumentos -->
@@ -9230,8 +9285,8 @@
                     </td>
                     <td>
                         <div style="display:inline-flex; align-items:center; gap:3px;">
-                            <input type="text" class="spreadsheet-inp text-left" style="font-family:inherit; font-size:12.5px; font-weight:500; color:var(--text-main); width:125px; min-width:120px; padding:4px 6px;" value="${ses.tel || ''}" placeholder="+54 9 11..." onchange="sesionistasDB[${idx}].tel = this.value; guardarSesionistaEnFirestore(sesionistasDB[${idx}]); renderizarTablaSesionistas();">
-                            <button type="button" class="btn-ws-icon ${String(ses.tel||'').replace(/\D/g,'').length >= 6 ? '' : 'disabled'}" onclick="abrirWhatsAppDirecto('${(ses.tel || '').replace(/'/g, "\\'")}', '${(ses.nombre || '').replace(/'/g, "\\'")}')" title="Enviar WhatsApp a ${ses.nombre}">💬</button>
+                            <input type="text" class="spreadsheet-inp text-left" style="font-family:inherit; font-size:12.5px; font-weight:500; color:var(--text-main); width:125px; min-width:120px; padding:4px 6px;" value="${esc(ses.tel || '')}" placeholder="+54 9 11..." onchange="sesionistasDB[${idx}].tel = this.value; guardarSesionistaEnFirestore(sesionistasDB[${idx}]); renderizarTablaSesionistas();">
+                            <button type="button" class="btn-ws-icon ${String(ses.tel||'').replace(/\D/g,'').length >= 6 ? '' : 'disabled'}" onclick="abrirWhatsAppDirecto('${escJs(ses.tel || '')}', '${escJs(ses.nombre || '')}')" title="Enviar WhatsApp a ${esc(ses.nombre)}">💬</button>
                         </div>
                     </td>
                     <td style="text-align:center;">
@@ -9480,7 +9535,7 @@
             const nom = ses ? ses.nombre : 'este músico';
             const conf = await mostrarModalConfirmacion({
                 titulo: 'Eliminar Sesionista',
-                mensaje: `¿Deseás eliminar a <strong>"${nom}"</strong> de la lista de músicos sesionistas?`,
+                mensaje: `¿Deseás eliminar a <strong>"${esc(nom)}"</strong> de la lista de músicos sesionistas?`,
                 icono: '🗑️',
                 textoConfirmar: 'Eliminar Sesionista',
                 esPeligroso: true
@@ -9622,7 +9677,7 @@
                             <div>
                                 <div style="display:flex; align-items:center; gap:6px;">
                                     <span style="font-size:15px;">👤</span>
-                                    <strong style="color:var(--text-main); font-size:13px;">${t.alumnoNombre}</strong>
+                                    <strong style="color:var(--text-main); font-size:13px;">${esc(t.alumnoNombre)}</strong>
                                 </div>
                                 <div style="font-size:11.5px; color:#15803d; font-weight:600; margin-top:2px;">
                                     Arrastra <strong>+${t.cantEntradas} ent.</strong> de <em>${t.origenFestNombre}</em>
@@ -9645,7 +9700,7 @@
                             <div>
                                 <div style="display:flex; align-items:center; gap:6px;">
                                     <span style="font-size:15px;">🔄</span>
-                                    <strong style="color:#5b21b6; font-size:13px;">${t.alumnoNombre}</strong>
+                                    <strong style="color:#5b21b6; font-size:13px;">${esc(t.alumnoNombre)}</strong>
                                     <span style="background:#ede9fe; color:#6d28d9; border:1px solid #ddd6fe; border-radius:10px; font-size:10.5px; font-weight:700; padding:1px 6px;">Pendiente</span>
                                 </div>
                                 <div style="font-size:11.5px; color:#6d28d9; font-weight:600; margin-top:2px;">
@@ -9756,7 +9811,7 @@
                 });
             }
 
-            dl.innerHTML = Array.from(nombresSet).sort().map(nom => `<option value="${nom}">`).join('');
+            dl.innerHTML = Array.from(nombresSet).sort().map(nom => `<option value="${esc(nom)}">`).join('');
 
             if (lista.length === 0) {
                 tbody.innerHTML = `
@@ -9790,7 +9845,7 @@
                         <div class="group-header-content">
                             <div class="group-header-left" style="flex:1; display:flex; align-items:center; gap:8px;">
                                 <span class="group-arrow" id="arrow-ens-${artIdx}" onclick="toggleEnsambleGrupo(${artIdx})" title="${expandido ? 'Comprimir' : 'Expandir'}">${expandido ? '▼' : '▶'}</span>
-                                <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13px; color:var(--accent-blue); background:#ffffff; border:1px solid var(--border-color); border-radius:6px; padding:3px 8px; width:auto; min-width:160px; max-width:280px;" value="${art.nombre || ''}" placeholder="Nombre Banda / Artista..." onchange="actualizarNombreArtistaEnTabla(${artIdx}, this.value)" oninput="actualizarNombreArtistaEnTabla(${artIdx}, this.value)">
+                                <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13px; color:var(--accent-blue); background:#ffffff; border:1px solid var(--border-color); border-radius:6px; padding:3px 8px; width:auto; min-width:160px; max-width:280px;" value="${esc(art.nombre || '')}" placeholder="Nombre Banda / Artista..." onchange="actualizarNombreArtistaEnTabla(${artIdx}, this.value)" oninput="actualizarNombreArtistaEnTabla(${artIdx}, this.value)">
                                 <select class="form-control" style="width:auto; padding:3px 8px; font-size:12px; font-weight:700; height:28px; border-radius:6px; background:#f8fafc; border:1px solid var(--border-color);" onchange="cambiarTipoArtistaEnTabla(${artIdx}, this.value)" title="Tipo de participante para cupo contractual y cobertura">
                                     <option value="ensamble" ${art.tipo === 'ensamble' || !art.tipo ? 'selected' : ''}>🏫 Banda de la Escuela</option>
                                     <option value="invitado" ${art.tipo === 'invitado' ? 'selected' : ''}>⭐ Invitado</option>
@@ -10258,7 +10313,7 @@
             const listaAlumnos = (window.MandalaApp && window.MandalaApp.alumnos && window.MandalaApp.alumnos.buscar) 
                 ? window.MandalaApp.alumnos.buscar() 
                 : (alumnosMandalaDB || []);
-            return listaAlumnos.map(a => `<option value="${a.nombre}">`).join('');
+            return listaAlumnos.map(a => `<option value="${esc(a.nombre)}">`).join('');
         }
 
         function agregarFilaAlumnoEnsambleModal(nombreInit = '', instInit = '') {
@@ -10412,7 +10467,7 @@
             const nom = part ? part.nombre : 'este artista';
             const conf = await mostrarModalConfirmacion({
                 titulo: 'Eliminar Artista',
-                mensaje: `¿Deseás eliminar a <strong>"${nom}"</strong> de la lista de participantes del festival?`,
+                mensaje: `¿Deseás eliminar a <strong>"${esc(nom)}"</strong> de la lista de participantes del festival?`,
                 icono: '🗑️',
                 textoConfirmar: 'Eliminar Artista',
                 esPeligroso: true
@@ -10616,11 +10671,11 @@
 
                 th.innerHTML = `
                     <div class="print-col-note">${colObj.nota ? colObj.nota : ''}</div>
-                    <div class="print-col-inst-head"><span class="print-inst-emoji">${emoji}</span><span class="print-inst-name">${colObj.nombre}</span></div>
+                    <div class="print-col-inst-head"><span class="print-inst-emoji">${emoji}</span><span class="print-inst-name">${esc(colObj.nombre)}</span></div>
                     <div class="col-header-action" style="display:flex; align-items:center; justify-content:center; gap:1px;">
-                        <span class="col-inst-emoji" title="Instrumento asociado: ${colObj.instrumento}" style="font-size:12px; cursor:default; user-select:none; margin-right:1px;">${emoji}</span>
+                        <span class="col-inst-emoji" title="Instrumento asociado: ${esc(colObj.instrumento)}" style="font-size:12px; cursor:default; user-select:none; margin-right:1px;">${emoji}</span>
                         <span class="rider-col-name-wrapper rider-hover-target" ${colObj.nota ? `data-nota="${notaColAttr}"` : ''} style="display:inline-block; position:relative;">
-                            <input type="text" class="spreadsheet-inp text-center inp-col-title" value="${colObj.nombre}" style="font-weight:800; font-size:11px; background:transparent; border:none; text-transform:uppercase; color:inherit; width:52px; padding:0 1px;" onchange="renombrarColumnaInstrumento(${cIdx}, this.value)">
+                            <input type="text" class="spreadsheet-inp text-center inp-col-title" value="${esc(colObj.nombre)}" style="font-weight:800; font-size:11px; background:transparent; border:none; text-transform:uppercase; color:inherit; width:52px; padding:0 1px;" onchange="renombrarColumnaInstrumento(${cIdx}, this.value)">
                         </span>
                         <button type="button" class="btn-col-nota ${colObj.nota ? 'has-note' : ''}" onclick="abrirModalEditarNotaColumna(${cIdx})" title="${colObj.nota ? 'Ver / Editar / Borrar Nota: ' + colObj.nota : 'Agregar Nota Técnica'}" style="font-size:10px; padding:1px 1px;">📝</button>
                         <button class="btn-del-col" onclick="eliminarColumnaInstrumento(${cIdx})" title="Borrar instrumento" style="font-size:10px; padding:1px 1px;">✕</button>
@@ -10677,7 +10732,7 @@
                             <div class="group-header-left">
                                 <span class="artist-drag-handle" title="Arrastrar para mover artista y canciones con el mouse">⠿</span>
                                 <span class="group-arrow" id="arrow-rider-${bIdx}" onclick="toggleRiderBandaGrupo(${bIdx})" title="${expandidoRider ? 'Comprimir' : 'Expandir'}">${expandidoRider ? '▼' : '▶'}</span>
-                                <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13px; color:var(--accent-blue); background:#ffffff; border:1px solid var(--border-color); border-radius:6px; padding:3px 8px; width:auto; min-width:180px; max-width:300px; text-transform:uppercase;" value="${banda.nombre || ''}" placeholder="Nombre Banda / Artista..." onchange="actualizarNombreArtistaEnTabla(${bIdx}, this.value)">
+                                <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13px; color:var(--accent-blue); background:#ffffff; border:1px solid var(--border-color); border-radius:6px; padding:3px 8px; width:auto; min-width:180px; max-width:300px; text-transform:uppercase;" value="${esc(banda.nombre || '')}" placeholder="Nombre Banda / Artista..." onchange="actualizarNombreArtistaEnTabla(${bIdx}, this.value)">
                                 <span class="group-count-badge">🎵 ${canciones.length} canción(es)</span>
                                 <button type="button" class="btn-table-pill" onclick="agregarCancionABanda(${bIdx})" title="Agregar una nueva canción">＋ Canción</button>
                             </div>
@@ -10740,7 +10795,7 @@
                             <td class="celda-instrumento-drop ${esVacia ? 'rider-celda-vacia' : ''}" data-col="${colKey}" data-key="${keyTema}" ondragover="handleCellDragOver(event)" ondrop="handleCellDrop(event, this)" style="border:1px solid #cbd5e1; padding:2px 3px; width:90px; min-width:82px; max-width:115px;">
                                 <span class="print-musico-val">${valorActual}</span>
                                 <div class="musico-screen-cell-wrap" style="display:flex; align-items:center; gap:1px; justify-content:center;">
-                                    <span class="musico-draggable-tag" draggable="true" ondragstart="handleMusicoDragStart(event, this)" data-banda="${banda.nombre}" data-tema="${tema}" data-col="${colKey}" data-musico="${valorActual}" title="Arrastrá este músico sobre otro para intercambiar posiciones" style="cursor:grab; font-size:10px; color:var(--text-muted); padding:0 1px;">⠿</span>
+                                    <span class="musico-draggable-tag" draggable="true" ondragstart="handleMusicoDragStart(event, this)" data-banda="${esc(banda.nombre)}" data-tema="${esc(tema)}" data-col="${colKey}" data-musico="${valorActual}" title="Arrastrá este músico sobre otro para intercambiar posiciones" style="cursor:grab; font-size:10px; color:var(--text-muted); padding:0 1px;">⠿</span>
                                     <select class="spreadsheet-inp sel-musico-rider text-left" style="font-size:11.5px; font-weight:600; width:100%; min-width:0; border:none; background:transparent; padding:2px 0;" onchange="cambiarMusicoEnRider('${safeKeyTema}', '${safeColKey}', this.value, this)">
                                         ${generarOpcionesMusicosRider(banda, colObj, valorActual)}
                                     </select>
@@ -10759,12 +10814,12 @@
                         <td class="rider-tema-nombre-cell" style="border:1px solid #cbd5e1; width:${anchoSetlist}px; min-width:${anchoSetlist}px; padding:2px 6px; vertical-align:middle; position:relative; white-space:nowrap;">
                             <div class="rider-tema-screen-content" style="display:flex; align-items:center; gap:6px; width:100%;">
                                 <span class="rider-song-name-wrapper rider-hover-target" ${notaTema ? `data-nota="${notaTemaAttr}"` : ''} style="flex:1; min-width:0; display:inline-block; position:relative;">
-                                    <input type="text" class="spreadsheet-inp text-left" value="${tema}" style="font-weight:700; color:var(--accent-teal); width:100%; min-width:0; font-size:12px; padding:2px 4px;" placeholder="Título de canción..." onchange="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onblur="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onkeydown="if(event.key==='Enter') this.blur();">
+                                    <input type="text" class="spreadsheet-inp text-left" value="${esc(tema)}" style="font-weight:700; color:var(--accent-teal); width:100%; min-width:0; font-size:12px; padding:2px 4px;" placeholder="Título de canción..." onchange="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onblur="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onkeydown="if(event.key==='Enter') this.blur();">
                                 </span>
                                 <button type="button" class="btn-tema-nota ${notaTema ? 'has-note' : ''}" onclick="abrirModalEditarNotaCancion('${keyTema.replace(/'/g, "\\'")}', ${bIdx}, ${tIdx})" title="${notaTema ? 'Ver / Editar / Borrar Nota: ' + notaTema : 'Agregar Nota a la Canción'}">📝</button>
                             </div>
                             <div class="rider-tema-print-content">
-                                <span class="print-tema-title">${tema}</span>${notaTema ? `<span class="print-tema-note">${notaTema}</span>` : ''}
+                                <span class="print-tema-title">${esc(tema)}</span>${notaTema ? `<span class="print-tema-note">${notaTema}</span>` : ''}
                             </div>
                         </td>
                         ${celdasInstHtml}
@@ -10812,13 +10867,13 @@
                 if (coincidentes.length > 0) {
                     opts += `<optgroup label="Músicos JAM (${instColumna})">`;
                     coincidentes.forEach(m => {
-                        opts += `<option value="${m.nombre}" ${valorActual === m.nombre ? 'selected' : ''}>${m.nombre}</option>`;
+                        opts += `<option value="${esc(m.nombre)}" ${valorActual === m.nombre ? 'selected' : ''}>${esc(m.nombre)}</option>`;
                     });
                     opts += `</optgroup>`;
                 }
             } else if (banda.tipo === 'invitado') {
                 opts += `<optgroup label="Artista Invitado">`;
-                opts += `<option value="${banda.nombre}" ${valorActual === banda.nombre ? 'selected' : ''}>${banda.nombre}</option>`;
+                opts += `<option value="${esc(banda.nombre)}" ${valorActual === banda.nombre ? 'selected' : ''}>${esc(banda.nombre)}</option>`;
                 opts += `</optgroup>`;
             }
 
@@ -11028,7 +11083,7 @@
                 const tema = banda.canciones[temaIdx];
                 const conf = await mostrarModalConfirmacion({
                     titulo: 'Eliminar Canción',
-                    mensaje: `¿Estás seguro de que deseás eliminar <strong>"${tema}"</strong> del setlist de <strong>${banda.nombre}</strong>?`,
+                    mensaje: `¿Estás seguro de que deseás eliminar <strong>"${esc(tema)}"</strong> del setlist de <strong>${esc(banda.nombre)}</strong>?`,
                     icono: '🗑️',
                     textoConfirmar: 'Eliminar Canción',
                     esPeligroso: true
@@ -11093,7 +11148,7 @@
             const nombre = col ? col.nombre : `Columna ${colIdx + 1}`;
             const conf = await mostrarModalConfirmacion({
                 titulo: 'Eliminar Columna de Instrumento',
-                mensaje: `¿Eliminar la columna <strong>"${nombre}"</strong> de todo el Rider Técnico de este festival?`,
+                mensaje: `¿Eliminar la columna <strong>"${esc(nombre)}"</strong> de todo el Rider Técnico de este festival?`,
                 icono: '🗑️',
                 textoConfirmar: 'Eliminar Columna',
                 esPeligroso: true
@@ -11425,7 +11480,7 @@
                                 <td style="text-align:center;">${prep ? '✅' : '⬜'}</td>
                                 <td style="text-align:center;">${listo ? '✅' : '⬜'}</td>
                                 <td style="text-align:center;">${regr ? '✅' : '⬜'}</td>
-                                <td style="color:#64748b;">${notas || '-'}</td>
+                                <td style="color:#64748b;">${esc(notas || '-')}</td>
                             `;
                             tbodyPreview.appendChild(tr);
                         }
@@ -12117,7 +12172,7 @@
                     }
 
                     tr.innerHTML = `
-                        <td>${tipo === 'invitado' ? '🌟' : '🎸'} <strong>${nombre}</strong></td>
+                        <td>${tipo === 'invitado' ? '🌟' : '🎸'} <strong>${esc(nombre)}</strong></td>
                         <td>
                             <span class="pill-status ${tipo === 'invitado' ? 'pill-warning' : 'pill-info'}" style="font-size:10.5px;">
                                 ${tipo === 'invitado' ? 'Artista Invitado' : 'Alumnos'}
@@ -12334,7 +12389,7 @@
                                     const inst = Array.isArray(s.instrumentos) ? s.instrumentos.join(', ') : (s.instrumento || 'Sesionista');
                                     const optVal = `${s.nombre} (${inst})`;
                                     const selected = (srv.proveedor === optVal || srv.proveedor === s.nombre || srv.proveedor?.startsWith(s.nombre)) ? 'selected' : '';
-                                    return `<option value="${optVal}" ${selected}>🎵 ${s.nombre} (${inst})</option>`;
+                                    return `<option value="${esc(optVal)}" ${selected}>🎵 ${esc(s.nombre)} (${inst})</option>`;
                                 }).join('');
                                 const esOtro = srv.proveedor && !listaSesionistas.some(s => srv.proveedor?.startsWith(s.nombre));
                                 sesOpts += `<option value="__otro__" ${esOtro ? 'selected' : ''}>＋ Otro músico...</option>`;
@@ -12379,7 +12434,7 @@
                                     ${proveedorHtml}
                                 </td>
                                 <td>
-                                    <input type="text" class="table-inp" value="${srv.obs || ''}" placeholder="Comentario o detalle..." onchange="actualizarServicioAdicional('${safeNombre}', ${sIdx}, 'obs', this.value)">
+                                    <input type="text" class="table-inp" value="${esc(srv.obs || '')}" placeholder="Comentario o detalle..." onchange="actualizarServicioAdicional('${safeNombre}', ${sIdx}, 'obs', this.value)">
                                 </td>
                                 <td style="text-align:center; font-family:'Geist Mono';">
                                     <strong style="color:#15803d; font-size:13px;">$ ${cuotaRedondeada.toLocaleString('es-AR')}</strong>
@@ -12585,7 +12640,7 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="spreadsheet-inp text-left" style="font-size:12px; width:100%; color:#0f172a; font-style:normal;" value="${pago.obs || ''}" placeholder="Detalle u observaciones..." onchange="actualizarDetalleCobroServicioFinanzas('${safeBanda}', ${sIdx}, '${safeIntg}', 'obs', this.value)">
+                                <input type="text" class="spreadsheet-inp text-left" style="font-size:12px; width:100%; color:#0f172a; font-style:normal;" value="${esc(pago.obs || '')}" placeholder="Detalle u observaciones..." onchange="actualizarDetalleCobroServicioFinanzas('${safeBanda}', ${sIdx}, '${safeIntg}', 'obs', this.value)">
                             </td>
                             <td style="text-align:center;">
                                 ${pago.pagada
@@ -13054,7 +13109,7 @@
                         <input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; text-align:center;" value="${g.fecha || ''}" placeholder="dd/mm/aaaa" oninput="actualizarGastoOperativoFestival(${idx}, 'fecha', this.value)">
                     </td>
                     <td style="padding:6px 8px;">
-                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${g.concepto || ''}" placeholder="Ej: Flete / Alquiler sonido / Staff..." oninput="actualizarGastoOperativoFestival(${idx}, 'concepto', this.value)">
+                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${esc(g.concepto || '')}" placeholder="Ej: Flete / Alquiler sonido / Staff..." oninput="actualizarGastoOperativoFestival(${idx}, 'concepto', this.value)">
                     </td>
                     <td style="padding:6px 8px;">
                         <input type="text" class="spreadsheet-inp text-left" value="${g.proveedor || ''}" placeholder="Ej: Proveedor o destinatario..." oninput="actualizarGastoOperativoFestival(${idx}, 'proveedor', this.value)">
@@ -13193,7 +13248,7 @@
             const nom = datos.gastosOperativos[idx].concepto || 'este gasto';
             const conf = await mostrarModalConfirmacion({
                 titulo: 'Eliminar Gasto del Festival',
-                mensaje: `¿Deseás eliminar el registro de <strong>"${nom}"</strong>?`,
+                mensaje: `¿Deseás eliminar el registro de <strong>"${esc(nom)}"</strong>?`,
                 icono: '🗑️',
                 textoConfirmar: 'Eliminar',
                 esPeligroso: true
@@ -13472,7 +13527,7 @@
                 tr.innerHTML = `
                     <td style="font-weight:700; color:var(--text-main); padding:8px 12px;">
                         ${f.icono} ${f.nombre}
-                        ${f.nota ? `<span style="font-size:10.5px; color:var(--text-muted); font-weight:600; margin-left:4px;">${f.nota}</span>` : ''}
+                        ${f.nota ? `<span style="font-size:10.5px; color:var(--text-muted); font-weight:600; margin-left:4px;">${esc(f.nota)}</span>` : ''}
                     </td>
                     <td style="text-align:right; padding:6px 10px;">
                         <input type="number" class="input-inline-price" value="${f.precio}" min="0" step="500" title="Editar precio unitario para este festival" oninput="previsualizarPrecioBaseDesdeTaquilla('${f.campoPrecio}', '${f.key}', this.value)" onchange="actualizarPrecioBaseDesdeTaquilla('${f.campoPrecio}', '${f.key}', this.value)">
@@ -13496,7 +13551,7 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="padding:6px 10px;">
-                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${ext.nombre || ''}" placeholder="Ej: Tanda Especial / VIP..." oninput="actualizarEntradaExtraTaquilla(${idx}, 'nombre', this.value)">
+                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${esc(ext.nombre || '')}" placeholder="Ej: Tanda Especial / VIP..." oninput="actualizarEntradaExtraTaquilla(${idx}, 'nombre', this.value)">
                     </td>
                     <td style="padding:6px 10px; text-align:right;">
                         <input type="number" class="input-inline-price" value="${precioExt}" min="0" step="500" oninput="actualizarEntradaExtraTaquilla(${idx}, 'precio', this.value)">
@@ -13607,7 +13662,7 @@
                 tr.innerHTML = `
                     <td style="font-weight:700; color:var(--text-main); padding:8px 12px;">
                         ${f.icono} ${f.nombre}
-                        ${f.nota ? `<span style="font-size:10.5px; color:var(--text-muted); font-weight:600; margin-left:4px;">${f.nota}</span>` : ''}
+                        ${f.nota ? `<span style="font-size:10.5px; color:var(--text-muted); font-weight:600; margin-left:4px;">${esc(f.nota)}</span>` : ''}
                     </td>
                     <td style="text-align:center; padding:6px 10px;">
                         <input type="number" id="inp-cierre-cant-${f.key}" class="spreadsheet-inp inp-cierre-taquilla-sync" style="font-family:'Geist Mono'; font-weight:800; text-align:center; width:95px; color:var(--accent-blue); background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:4px 6px;" value="${f.cantidad}" min="0" step="1" oninput="actualizarCantidadDesdeCierre('${f.key}', this.value)">
@@ -13785,7 +13840,7 @@
                 if (btnRestablecer) btnRestablecer.style.display = 'none';
                 if (alertaIndefinido) {
                     alertaIndefinido.style.display = 'block';
-                    alertaIndefinido.innerHTML = `⚠️ <strong>${estado.venueNombre || 'El venue'}</strong> tiene acuerdo <em>A definir</em>. Ingresá el % pactado para liquidar este festival.`;
+                    alertaIndefinido.innerHTML = `⚠️ <strong>${esc(estado.venueNombre || 'El venue')}</strong> tiene acuerdo <em>A definir</em>. Ingresá el % pactado para liquidar este festival.`;
                 }
             } else if (estado.tipo === 'manual') {
                 if (inpEscuela && document.activeElement !== inpEscuela) {
@@ -14696,7 +14751,7 @@
 
                     tr.innerHTML = `
                         <td style="padding-left:28px;">
-                            ${esExcluido ? '🚫' : (esSes ? '🎷' : (esTraspasoActivo ? '🔄' : '👤'))} <strong style="${esExcluido ? 'color:var(--text-muted); text-decoration:line-through;' : ''}">${nom}</strong> ${esSes ? '<span style="font-size:10.5px; color:#0284c7; font-weight:600;">(Sesionista)</span>' : ''}
+                            ${esExcluido ? '🚫' : (esSes ? '🎷' : (esTraspasoActivo ? '🔄' : '👤'))} <strong style="${esExcluido ? 'color:var(--text-muted); text-decoration:line-through;' : ''}">${esc(nom)}</strong> ${esSes ? '<span style="font-size:10.5px; color:#0284c7; font-weight:600;">(Sesionista)</span>' : ''}
                         </td>
                         <td style="text-align:center; font-family:'Geist Mono';">${cupoColHtml}</td>
                         <td>
@@ -15384,8 +15439,8 @@
                     const tr = document.createElement('tr');
                     tr.style.background = '#faf5ff';
                     tr.innerHTML = `
-                        <td style="font-weight:700; color:var(--text-main);">🏫 ${banda}</td>
-                        <td>🔄 <strong>${nombre}</strong></td>
+                        <td style="font-weight:700; color:var(--text-main);">🏫 ${esc(banda)}</td>
+                        <td>🔄 <strong>${esc(nombre)}</strong></td>
                         <td style="text-align:center;"><span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe; font-size:11px; font-weight:700;">🔄 ${cont.traspasoEntradas || 1} ent.</span></td>
                         <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:#64748b;">$ 0</td>
                         <td style="text-align:center; font-size:12px; color:var(--text-muted);">-</td>
@@ -15407,8 +15462,8 @@
                     const tr = document.createElement('tr');
                     tr.style.opacity = '0.75';
                     tr.innerHTML = `
-                        <td style="font-weight:700; color:var(--text-main);">🏫 ${banda}</td>
-                        <td>👤 <strong>${nombre}</strong></td>
+                        <td style="font-weight:700; color:var(--text-main);">🏫 ${esc(banda)}</td>
+                        <td>👤 <strong>${esc(nombre)}</strong></td>
                         <td style="text-align:center;"><span class="pill-status pill-success">Cupo Completo (${vendidas}/${cupo})</span></td>
                         <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; color:var(--accent-green);">$ 0</td>
                         <td style="text-align:center; font-size:12px; color:var(--text-muted);">-</td>
@@ -15470,7 +15525,7 @@
                             🏫 ${banda}
                         </td>
                         <td>
-                            👤 <strong>${nombre}</strong>
+                            👤 <strong>${esc(nombre)}</strong>
                         </td>
                         <td style="text-align:center;">
                             ${badgeFaltantesHtml}
@@ -15497,7 +15552,7 @@
                             </select>
                         </td>
                         <td>
-                            <input type="text" class="spreadsheet-inp text-left" style="font-size:12px; width:100%; color:#0f172a; font-style:normal;" value="${p.obs || ''}" placeholder="Detalle u observaciones..." onchange="actualizarDetallePagoContratoAlumno('${safeId}', ${cIdx}, 'obs', this.value)">
+                            <input type="text" class="spreadsheet-inp text-left" style="font-size:12px; width:100%; color:#0f172a; font-style:normal;" value="${esc(p.obs || '')}" placeholder="Detalle u observaciones..." onchange="actualizarDetallePagoContratoAlumno('${safeId}', ${cIdx}, 'obs', this.value)">
                         </td>
                         <td style="text-align:center;">
                             <div style="display:inline-flex; align-items:center; justify-content:center; gap:4px;">
@@ -16004,7 +16059,7 @@
                 const valActual = festivalesConDeuda.has(selFest.value) ? selFest.value : 'todos';
                 let optsHtml = `<option value="todos">🎪 Todos los festivales con deudas (${festivalesConDeuda.size})</option>`;
                 festivalesConDeuda.forEach((nombre, fid) => {
-                    optsHtml += `<option value="${fid}" ${valActual === fid ? 'selected' : ''}>${nombre}</option>`;
+                    optsHtml += `<option value="${fid}" ${valActual === fid ? 'selected' : ''}>${esc(nombre)}</option>`;
                 });
                 selFest.innerHTML = optsHtml;
                 selFest.value = valActual;
@@ -16129,7 +16184,7 @@
                     <td colspan="4" style="padding:10px 14px;">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span style="font-size:14px;">🎪</span>
-                            <strong onclick="irAFestivalDesdeDeudas('${grupo.festId}', event)" title="Ir a la ficha del evento ${grupo.festNombre}" style="color:var(--accent-blue); font-size:13.5px; cursor:pointer;">${grupo.festNombre.toUpperCase()}</strong>
+                            <strong onclick="irAFestivalDesdeDeudas('${grupo.festId}', event)" title="Ir a la ficha del evento ${esc(grupo.festNombre)}" style="color:var(--accent-blue); font-size:13.5px; cursor:pointer;">${esc(grupo.festNombre.toUpperCase())}</strong>
                             <span style="font-size:11.5px; color:var(--text-muted);">(${grupo.festFecha})</span>
                             <span class="group-count-badge" style="background:#e2e8f0; color:#334155; font-size:11px;">${grupo.items.length} pendientes</span>
                         </div>
@@ -16193,7 +16248,7 @@
                                     onchange="actualizarEstadoBotonSeleccionadosDeudas()">
                             </td>
                             <td style="padding-left:24px;">
-                                <span style="font-weight:400; font-size:12.5px; color:#0f172a;">${item.concepto}</span>
+                                <span style="font-weight:400; font-size:12.5px; color:#0f172a;">${esc(item.concepto)}</span>
                                 ${item.categoria ? `<div style="font-size:11px; color:#64748b; font-weight:400;">${item.categoria}</div>` : ''}
                             </td>
                             <td style="text-align:center;">
@@ -16213,7 +16268,7 @@
                                     <option value="Transferencia" ${item.medio === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
                                     <option value="Efectivo" ${item.medio === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
                                 </select>
-                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${item.medio}</span>
+                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${esc(item.medio)}</span>
                             </td>
                             <td style="text-align:center;">
                                 <select class="installment-select no-print" style="font-size:11.5px; padding:3px 6px; border-radius:6px; color:#0f172a; font-weight:400;" onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'responsable', this.value)">
@@ -16223,11 +16278,11 @@
                                     <option value="Pablo" ${item.responsable === 'Pablo' ? 'selected' : ''}>Pablo</option>
                                     <option value="Administración" ${item.responsable === 'Administración' ? 'selected' : ''}>Administración</option>
                                 </select>
-                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${item.responsable}</span>
+                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${esc(item.responsable)}</span>
                             </td>
                             <td>
-                                <input type="text" class="spreadsheet-inp text-left no-print" style="font-size:11.5px; width:100%; padding:3px 8px; border-radius:6px; color:#0f172a; font-weight:400;" value="${item.obs || ''}" placeholder="Obs..." onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'obs', this.value)">
-                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${item.obs || ''}</span>
+                                <input type="text" class="spreadsheet-inp text-left no-print" style="font-size:11.5px; width:100%; padding:3px 8px; border-radius:6px; color:#0f172a; font-weight:400;" value="${esc(item.obs || '')}" placeholder="Obs..." onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'obs', this.value)">
+                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${esc(item.obs || '')}</span>
                             </td>
                             <td class="col-accion-deudas col-accion-cell" style="text-align:center;">
                                 <button type="button" class="btn-app btn-primary" style="font-size:11px; padding:3px 8px; font-weight:600;" onclick="saldarDeudaIndividual('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}')">
@@ -16322,8 +16377,8 @@
                                     onchange="actualizarEstadoBotonSeleccionadosDeudas()">
                             </td>
                             <td style="padding-left:24px;">
-                                <span style="font-weight:400; font-size:12.5px; color:#0f172a;">${item.concepto}</span>
-                                ${item.tipo === 'alumno_entrada' && !esTraspasoItem ? `<button type="button" class="btn-wa-msg no-print" onclick="abrirComunicadoIncumplimientoDirecto('${item.festId}', '${(item.concepto || '').replace('👤 ', '').replace(/'/g, "\\'")}')" title="Enviar WhatsApp por entradas pendientes" style="background:none; border:none; cursor:pointer; font-size:12px; margin-left:4px; padding:0 2px;">💬</button>` : ''}
+                                <span style="font-weight:400; font-size:12.5px; color:#0f172a;">${esc(item.concepto)}</span>
+                                ${item.tipo === 'alumno_entrada' && !esTraspasoItem ? `<button type="button" class="btn-wa-msg no-print" onclick="abrirComunicadoIncumplimientoDirecto('${item.festId}', '${escJs(item.concepto || '').replace('👤 ', '')}')" title="Enviar WhatsApp por entradas pendientes" style="background:none; border:none; cursor:pointer; font-size:12px; margin-left:4px; padding:0 2px;">💬</button>` : ''}
                                 ${categoriaSubHtml}
                             </td>
                             <td style="text-align:center;">
@@ -16344,7 +16399,7 @@
                                     <option value="Transferencia" ${item.medio === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
                                     <option value="Efectivo" ${item.medio === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
                                 </select>
-                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${item.medio}</span>`}
+                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${esc(item.medio)}</span>`}
                             </td>
                             <td style="text-align:center;">
                                 ${esTraspasoItem ? '<span style="color:#0f172a; font-weight:400;">-</span>' : `
@@ -16355,11 +16410,11 @@
                                     <option value="Pablo" ${item.responsable === 'Pablo' ? 'selected' : ''}>Pablo</option>
                                     <option value="Administración" ${item.responsable === 'Administración' ? 'selected' : ''}>Administración</option>
                                 </select>
-                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${item.responsable}</span>`}
+                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${esc(item.responsable)}</span>`}
                             </td>
                             <td>
-                                <input type="text" class="spreadsheet-inp text-left no-print" style="font-size:11.5px; width:100%; padding:3px 8px; border-radius:6px; color:#0f172a; font-weight:400;" value="${item.obs || ''}" placeholder="Obs..." onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'obs', this.value)">
-                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${item.obs || ''}</span>
+                                <input type="text" class="spreadsheet-inp text-left no-print" style="font-size:11.5px; width:100%; padding:3px 8px; border-radius:6px; color:#0f172a; font-weight:400;" value="${esc(item.obs || '')}" placeholder="Obs..." onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'obs', this.value)">
+                                <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${esc(item.obs || '')}</span>
                             </td>
                             <td class="col-accion-deudas col-accion-cell" style="text-align:center;">
                                 ${htmlBotonAccion}
@@ -16918,7 +16973,7 @@
             tr.setAttribute('data-precio-entrada', '8500');
 
             tr.innerHTML = `
-                <td style="padding-left:28px;">👤 <strong>${nombre}</strong></td>
+                <td style="padding-left:28px;">👤 <strong>${esc(nombre)}</strong></td>
                 <td style="text-align:center; font-family:'Geist Mono';">${cupo} ent.</td>
                 <td>
                     <input type="number" class="spreadsheet-inp inp-entradas-vendidas" style="font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);" value="0" min="0" onchange="recalcularFilaContrato(this)">
@@ -16983,7 +17038,7 @@
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>${titulo} — Mandala Festivales</title>
+                    <title>${esc(titulo)} — Mandala Festivales</title>
                     <style>
                         body { font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif; text-align: center; padding: 40px; margin: 0; background: #fff; color: #1e293b; }
                         h2 { font-size: 22px; margin-bottom: 6px; color: #0f172a; font-weight: 800; }
@@ -16999,7 +17054,7 @@
                     </style>
                 </head>
                 <body>
-                    <h2>${titulo}</h2>
+                    <h2>${esc(titulo)}</h2>
                     <div class="subtitle">Mandala Festivales — Reporte Estadístico Anual</div>
                     <div class="chart-wrapper">
                         <img src="${imgData}" />

@@ -4,6 +4,7 @@
 
 import { db, doc, getDoc, setDoc, onSnapshot } from "../config/firebase.js";
 import { COLLECTIONS } from "../config/constants.js";
+import { notificarErrorPersistencia } from "../utils/errores.js";
 
 const DOC_GASTOS = "gastos";
 const DOC_INGRESOS_MANUALES = "ingresos_manuales";
@@ -43,6 +44,7 @@ export async function guardarGastosCajaFirestore(gastosData) {
         return true;
     } catch (err) {
         console.error("[Caja Service] Error al guardar gastos:", err);
+        notificarErrorPersistencia("los gastos de caja", err);
         return false;
     }
 }
@@ -82,6 +84,7 @@ export async function guardarIngresosManualesCajaFirestore(ingresosData) {
         return true;
     } catch (err) {
         console.error("[Caja Service] Error al guardar ingresos manuales:", err);
+        notificarErrorPersistencia("los ingresos de caja", err);
         return false;
     }
 }

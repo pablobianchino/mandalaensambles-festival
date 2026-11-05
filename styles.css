@@ -3192,3 +3192,147 @@ dialog.global-action-dialog::backdrop {
 
 
 
+
+/* =======================================================================
+   RIDER TÉCNICO: MODO VISTA (planilla limpia tipo Excel, igual que la impresión)
+   Se activa con la clase .rider-modo-vista en #card-rider-bandas.
+   ======================================================================= */
+.rider-modo-switch {
+    display: inline-flex;
+    background: #ebe5dc;
+    padding: 3px;
+    border-radius: 10px;
+    gap: 3px;
+    border: 1px solid var(--border-color);
+}
+.rider-modo-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+.rider-modo-btn:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.6); }
+.rider-modo-btn.active {
+    background: #ffffff;
+    color: var(--text-main);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Elementos de edición que se ocultan en Vista */
+#card-rider-bandas.rider-modo-vista .btn-col-nota,
+#card-rider-bandas.rider-modo-vista .btn-tema-nota,
+#card-rider-bandas.rider-modo-vista .btn-del-col,
+#card-rider-bandas.rider-modo-vista .musico-draggable-tag,
+#card-rider-bandas.rider-modo-vista .musico-cell-actions,
+#card-rider-bandas.rider-modo-vista .musico-screen-cell-wrap,
+#card-rider-bandas.rider-modo-vista .col-header-action,
+#card-rider-bandas.rider-modo-vista .rider-tema-screen-content,
+#card-rider-bandas.rider-modo-vista .artist-drag-handle,
+#card-rider-bandas.rider-modo-vista .group-arrow,
+#card-rider-bandas.rider-modo-vista .group-count-badge,
+#card-rider-bandas.rider-modo-vista .group-header-left .btn-table-pill,
+#card-rider-bandas.rider-modo-vista .btn-row-del,
+#card-rider-bandas.rider-modo-vista th.col-drag-header,
+#card-rider-bandas.rider-modo-vista td.drag-handle,
+#card-rider-bandas.rider-modo-vista th.col-accion-header,
+#card-rider-bandas.rider-modo-vista td.col-accion-cell,
+#card-rider-bandas.rider-modo-vista .subtitulo-descriptivo-app,
+#card-rider-bandas.rider-modo-vista .screen-title,
+#card-rider-bandas.rider-modo-vista #btn-rider-add-col,
+#card-rider-bandas.rider-modo-vista #btn-toggle-todos-rider {
+    display: none !important;
+}
+
+/* Elementos "de impresión" que se muestran en Vista */
+#card-rider-bandas.rider-modo-vista .print-rider-header {
+    display: block;
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #000000;
+}
+#card-rider-bandas.rider-modo-vista .print-rider-header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+#card-rider-bandas.rider-modo-vista .print-rider-title {
+    font-size: 17px; font-weight: 900; color: #000; text-transform: uppercase; margin: 0;
+}
+#card-rider-bandas.rider-modo-vista .print-rider-brand {
+    font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase;
+}
+#card-rider-bandas.rider-modo-vista .print-col-inst-head {
+    display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+    font-size: 12px; font-weight: 900; color: #000; text-transform: uppercase; white-space: nowrap; line-height: 1.2;
+}
+#card-rider-bandas.rider-modo-vista .print-col-note {
+    display: block; background-color: #cbd5e1; color: #000; font-weight: 800; font-style: italic;
+    font-size: 10.5px; text-transform: none; padding: 1px 5px; border-radius: 3px; margin-bottom: 2px; line-height: 1.2;
+}
+#card-rider-bandas.rider-modo-vista .print-col-note:empty { display: none; }
+#card-rider-bandas.rider-modo-vista .rider-tema-print-content {
+    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; line-height: 1.2;
+}
+#card-rider-bandas.rider-modo-vista .print-tema-title { font-size: 13px; font-weight: 700; color: #000; }
+#card-rider-bandas.rider-modo-vista .print-tema-note {
+    display: inline-block; background-color: #cbd5e1; color: #000; font-weight: 800; font-style: italic;
+    font-size: 11px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; line-height: 1.2;
+}
+#card-rider-bandas.rider-modo-vista .print-musico-val {
+    display: inline-block; font-size: 12.5px; font-weight: 400; color: #000; line-height: 1.2; white-space: nowrap;
+}
+
+/* Planilla estilo Excel */
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva {
+    width: auto; max-width: none; border-collapse: collapse; table-layout: auto;
+    background: #ffffff; border: 1px solid #000000;
+}
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva th,
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva td,
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva th.col-instrumento,
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva td.celda-instrumento-drop {
+    border: 1px solid #000000 !important;
+    padding: 4px 9px !important;
+    line-height: 1.2;
+    vertical-align: middle;
+    text-align: center;
+    color: #000;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    white-space: nowrap;
+    cursor: default;
+    position: static;
+    box-shadow: none;
+}
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva th {
+    background-color: #f1f5f9 !important;
+    text-transform: uppercase;
+}
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva th.col-setlist-header,
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva td.rider-tema-nombre-cell {
+    text-align: left;
+    width: 1% !important;
+    background: transparent;
+}
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva td.celda-instrumento-drop.rider-celda-vacia {
+    background-color: #d4d4d8 !important;
+}
+#card-rider-bandas.rider-modo-vista .rider-celda-vacia .print-musico-val { color: #52525b; }
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva .group-header-row td {
+    background-color: #e2e8f0 !important;
+    text-align: left;
+    padding: 4px 9px !important;
+}
+#card-rider-bandas.rider-modo-vista #tabla-rider-interactiva .group-header-row input {
+    border: none !important; background: transparent !important; font-size: 13px; font-weight: 900;
+    color: #000 !important; text-transform: uppercase; padding: 0; margin: 0; width: auto; min-width: 0;
+    pointer-events: none; cursor: default;
+}

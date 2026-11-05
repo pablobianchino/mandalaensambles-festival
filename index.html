@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=beta3.2">
+    <link rel="stylesheet" href="styles.css?v=beta3.3">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -570,14 +570,18 @@
                                             Cada canción tiene su fila. Arrastrá músicos entre columnas de instrumentos para intercambiar posiciones (ej. GTR 1 sobre GTR 2). Podés editar los nombres de las columnas directamente.
                                         </span>
                                     </div>
-                                    <div style="display:flex; gap:8px; align-items:center;">
+                                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                        <div class="rider-modo-switch" role="group" aria-label="Modo de la planilla">
+                                            <button type="button" id="btn-rider-modo-vista" class="rider-modo-btn" onclick="setRiderModo('vista')" title="Ver la planilla limpia, como se imprime">👁 Vista</button>
+                                            <button type="button" id="btn-rider-modo-edicion" class="rider-modo-btn active" onclick="setRiderModo('edicion')" title="Editar músicos, canciones y columnas">✏️ Edición</button>
+                                        </div>
                                         <button class="btn-table-pill" id="btn-toggle-todos-rider" onclick="toggleTodosRiderBandas()" title="Comprimir o descomprimir todas las bandas del rider">
                                             🔽 Expandir Todo
                                         </button>
                                         <button class="btn-table-pill" onclick="imprimirRiderTecnico()" title="Imprimir planilla de rider técnico (Horizontal)" style="padding:3px 8px;">
                                             🖨️
                                         </button>
-                                        <button class="btn-table-pill" onclick="agregarColumnaInstrumentoRider()" title="Agregar nueva columna de instrumento">
+                                        <button class="btn-table-pill" id="btn-rider-add-col" onclick="agregarColumnaInstrumentoRider()" title="Agregar nueva columna de instrumento">
                                             ＋ Instrumento
                                         </button>
                                         <button class="btn-table-pill" id="btn-rider-fullscreen" onclick="toggleRiderPantallaCompleta()" title="Agrandar planilla a pantalla completa para ver todas las columnas">
@@ -5302,7 +5306,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta3.2";
+        const APP_VERSION = "beta3.3";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -10489,6 +10493,27 @@
         let todosRiderBandasExpandidas = true;
         const estadoExpansionRider = {};
 
+        // Modo de la planilla del rider: 'edicion' (completo) o 'vista' (limpio, como la impresión).
+        // Es una preferencia de pantalla de cada persona: se recuerda en el navegador, sin tocar datos.
+        let riderModo = 'edicion';
+        try { if (localStorage.getItem('mandala_rider_modo') === 'vista') riderModo = 'vista'; } catch (e) { /* sin storage: queda en edición */ }
+
+        function aplicarRiderModoEnPantalla() {
+            const card = document.getElementById('card-rider-bandas');
+            if (card) card.classList.toggle('rider-modo-vista', riderModo === 'vista');
+            const bV = document.getElementById('btn-rider-modo-vista');
+            const bE = document.getElementById('btn-rider-modo-edicion');
+            if (bV) bV.classList.toggle('active', riderModo === 'vista');
+            if (bE) bE.classList.toggle('active', riderModo === 'edicion');
+        }
+
+        function setRiderModo(modo) {
+            riderModo = (modo === 'vista') ? 'vista' : 'edicion';
+            try { localStorage.setItem('mandala_rider_modo', riderModo); } catch (e) { /* ignorar */ }
+            renderizarRiderTecnicoFestival();
+        }
+        window.setRiderModo = setRiderModo;
+
         function toggleRiderBandaGrupo(bIdx) {
             const expandido = estadoExpansionRider[bIdx] !== undefined ? estadoExpansionRider[bIdx] : todosRiderBandasExpandidas;
             estadoExpansionRider[bIdx] = !expandido;
@@ -10635,6 +10660,9 @@
             const elTitleRider = document.getElementById('print-title-rider');
             if (elTitleRider) elTitleRider.textContent = `Rider Técnico para ${festNombre}`;
 
+            aplicarRiderModoEnPantalla();
+            const modoVista = (riderModo === 'vista');
+
             // Calcular ancho dinámico óptimo de la columna SETLIST basado en la canción con título más largo
             const bandas = participantesFestivalesDB[eventoActualId] || [];
             let maxLongitudCancion = 12;
@@ -10657,7 +10685,7 @@
             columnas.forEach((colObj, cIdx) => {
                 const th = document.createElement('th');
                 th.className = 'col-instrumento';
-                th.draggable = true;
+                th.draggable = !modoVista;
                 th.dataset.colIndex = cIdx;
                 th.setAttribute('ondragstart', `handleColDragStart(event, ${cIdx})`);
                 th.setAttribute('ondragover', `handleColDragOver(event, ${cIdx})`);
@@ -10670,7 +10698,7 @@
                 const notaColAttr = colObj.nota ? colObj.nota.replace(/"/g, '&quot;') : '';
 
                 th.innerHTML = `
-                    <div class="print-col-note">${colObj.nota ? colObj.nota : ''}</div>
+                    <div class="print-col-note">${colObj.nota ? esc(colObj.nota) : ''}</div>
                     <div class="print-col-inst-head"><span class="print-inst-emoji">${emoji}</span><span class="print-inst-name">${esc(colObj.nombre)}</span></div>
                     <div class="col-header-action" style="display:flex; align-items:center; justify-content:center; gap:1px;">
                         <span class="col-inst-emoji" title="Instrumento asociado: ${esc(colObj.instrumento)}" style="font-size:12px; cursor:default; user-select:none; margin-right:1px;">${emoji}</span>
@@ -10714,12 +10742,13 @@
                     banda.canciones = ['Tema 1'];
                 }
                 const canciones = banda.canciones;
-                const expandidoRider = estadoExpansionRider[bIdx] !== undefined ? estadoExpansionRider[bIdx] : todosRiderBandasExpandidas;
+                // En modo Vista se muestran todas las canciones (como en la impresión)
+                const expandidoRider = modoVista ? true : (estadoExpansionRider[bIdx] !== undefined ? estadoExpansionRider[bIdx] : todosRiderBandasExpandidas);
 
                 // 1. FILA DE CABECERA COMPLETA DE BANDA (DRAGGABLE CON BOTÓN ✕ ALINEADO)
                 const trHeader = document.createElement('tr');
                 trHeader.className = 'group-header-row rider-group-header';
-                trHeader.draggable = true;
+                trHeader.draggable = !modoVista;
                 trHeader.dataset.bandaIndex = bIdx;
                 trHeader.setAttribute('ondragstart', `handleArtistDragStart(event, ${bIdx})`);
                 trHeader.setAttribute('ondragover', `handleArtistDragOver(event, ${bIdx})`);
@@ -10732,7 +10761,7 @@
                             <div class="group-header-left">
                                 <span class="artist-drag-handle" title="Arrastrar para mover artista y canciones con el mouse">⠿</span>
                                 <span class="group-arrow" id="arrow-rider-${bIdx}" onclick="toggleRiderBandaGrupo(${bIdx})" title="${expandidoRider ? 'Comprimir' : 'Expandir'}">${expandidoRider ? '▼' : '▶'}</span>
-                                <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13px; color:var(--accent-blue); background:#ffffff; border:1px solid var(--border-color); border-radius:6px; padding:3px 8px; width:auto; min-width:180px; max-width:300px; text-transform:uppercase;" value="${esc(banda.nombre || '')}" placeholder="Nombre Banda / Artista..." onchange="actualizarNombreArtistaEnTabla(${bIdx}, this.value)">
+                                <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13px; color:var(--accent-blue); background:#ffffff; border:1px solid var(--border-color); border-radius:6px; padding:3px 8px; width:auto; min-width:180px; max-width:300px; text-transform:uppercase;" value="${esc(banda.nombre || '')}" ${modoVista ? 'readonly tabindex="-1"' : ''} placeholder="Nombre Banda / Artista..." onchange="actualizarNombreArtistaEnTabla(${bIdx}, this.value)">
                                 <span class="group-count-badge">🎵 ${canciones.length} canción(es)</span>
                                 <button type="button" class="btn-table-pill" onclick="agregarCancionABanda(${bIdx})" title="Agregar una nueva canción">＋ Canción</button>
                             </div>
@@ -10758,7 +10787,7 @@
                     const trTema = document.createElement('tr');
                     trTema.className = `draggable-row rider-tema-row child-rider-${bIdx}`;
                     trTema.style.cssText = 'border-bottom:1px solid #cbd5e1;';
-                    trTema.draggable = true;
+                    trTema.draggable = !modoVista;
                     trTema.dataset.bandaIndex = bIdx;
                     trTema.dataset.temaIndex = tIdx;
 
@@ -10793,7 +10822,7 @@
 
                         celdasInstHtml += `
                             <td class="celda-instrumento-drop ${esVacia ? 'rider-celda-vacia' : ''}" data-col="${colKey}" data-key="${keyTema}" ondragover="handleCellDragOver(event)" ondrop="handleCellDrop(event, this)" style="border:1px solid #cbd5e1; padding:2px 3px; width:90px; min-width:82px; max-width:115px;">
-                                <span class="print-musico-val">${valorActual}</span>
+                                <span class="print-musico-val">${esc(valorActual)}</span>
                                 <div class="musico-screen-cell-wrap" style="display:flex; align-items:center; gap:1px; justify-content:center;">
                                     <span class="musico-draggable-tag" draggable="true" ondragstart="handleMusicoDragStart(event, this)" data-banda="${esc(banda.nombre)}" data-tema="${esc(tema)}" data-col="${colKey}" data-musico="${valorActual}" title="Arrastrá este músico sobre otro para intercambiar posiciones" style="cursor:grab; font-size:10px; color:var(--text-muted); padding:0 1px;">⠿</span>
                                     <select class="spreadsheet-inp sel-musico-rider text-left" style="font-size:11.5px; font-weight:600; width:100%; min-width:0; border:none; background:transparent; padding:2px 0;" onchange="cambiarMusicoEnRider('${safeKeyTema}', '${safeColKey}', this.value, this)">
@@ -10819,7 +10848,7 @@
                                 <button type="button" class="btn-tema-nota ${notaTema ? 'has-note' : ''}" onclick="abrirModalEditarNotaCancion('${keyTema.replace(/'/g, "\\'")}', ${bIdx}, ${tIdx})" title="${notaTema ? 'Ver / Editar / Borrar Nota: ' + notaTema : 'Agregar Nota a la Canción'}">📝</button>
                             </div>
                             <div class="rider-tema-print-content">
-                                <span class="print-tema-title">${esc(tema)}</span>${notaTema ? `<span class="print-tema-note">${notaTema}</span>` : ''}
+                                <span class="print-tema-title">${esc(tema)}</span>${notaTema ? `<span class="print-tema-note">${esc(notaTema)}</span>` : ''}
                             </div>
                         </td>
                         ${celdasInstHtml}

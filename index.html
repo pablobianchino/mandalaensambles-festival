@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=beta3.3">
+    <link rel="stylesheet" href="styles.css?v=beta3.4">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -3653,13 +3653,13 @@
         }
 
         // Cálculo dinámico y unificado de Canon SADAIC por festival
-        function calcularMontoSadaicFestival(festId, brutoTaquilla = 0) {
+        function calcularMontoSadaicFestival(festId, brutoTaquilla = 0, entOverride = null) {
             const fId = festId || eventoActualId;
-            const ent = (fId && entradasFestivales[fId]) 
-                ? entradasFestivales[fId] 
-                : ((typeof obtenerEntradasEventoActual === 'function' && fId === eventoActualId) 
-                    ? obtenerEntradasEventoActual() 
-                    : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : { general: 8500, preventa: 6000 }));
+            const ent = entOverride || ((fId && entradasFestivales[fId])
+                ? entradasFestivales[fId]
+                : ((typeof obtenerEntradasEventoActual === 'function' && fId === eventoActualId)
+                    ? obtenerEntradasEventoActual()
+                    : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : { general: 8500, preventa: 6000 })));
 
             const tipo = ent.sadaicTipo || 'entradas'; // 'entradas' o 'porcentaje'
             
@@ -3699,6 +3699,76 @@
             }
         }
         window.calcularMontoSadaicFestival = calcularMontoSadaicFestival;
+
+        // Valores de respaldo (cuando el festival no tiene el dato cargado)
+        const PRECIO_GENERAL_RESPALDO = 8500;
+        const PORC_ESCUELA_RESPALDO = 70;
+
+        /**
+         * CÁLCULO ÚNICO DE LA TAQUILLA Y DEL NETO ONLINE DE UN FESTIVAL.
+         * Lo usan la pantalla del festival (recalcularIngresosFestival) y el resumen general / Finanzas / Caja
+         * (calcularBalanceGeneralFestival), para que ambos den siempre el mismo número.
+         * No modifica datos ni pantalla.
+         *  - fin: datos de ingresos del festival (cantidades, categorías extra, ventas especiales, brutoOnline)
+         *  - ent: precios de entradas del festival (preventa, general, puerta, SADAIC)
+         * Regla del % de la escuela: el del acuerdo con el venue o el manual; si no está definido se usa 70%
+         * (porcAsumido = true) y se puede editar en cualquier momento.
+         */
+        function calcularTaquillaFestival(festId, fin, ent) {
+            fin = fin || {};
+            ent = ent || (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : {});
+            const pPrev = Number(ent.preventa) || 0;
+            const pGen = Number(ent.general) || PRECIO_GENERAL_RESPALDO;
+            const pPue = Number(ent.puerta) || 0;
+            const cPrev = Math.max(0, parseInt(fin.cantPreventa || 0) || 0);
+            const cGen = Math.max(0, parseInt(fin.cantGeneral || 0) || 0);
+            const cPue = Math.max(0, parseInt(fin.cantPuerta || 0) || 0);
+
+            let cantTaquilla = cPrev + cGen + cPue;
+            let brutoTaquilla = (cPrev * pPrev) + (cGen * pGen) + (cPue * pPue);
+            (fin.categoriasExtra || []).forEach(ext => {
+                const c = Math.max(0, parseInt(ext.cantidad || 0) || 0);
+                const p = Math.max(0, parseFloat(ext.precio || 0) || 0);
+                cantTaquilla += c;
+                brutoTaquilla += (c * p);
+            });
+
+            // Festivales históricos con el bruto cargado sin desglose de cantidades
+            const usaBrutoHistorico = (cantTaquilla === 0 && Number(fin.brutoOnline) > 0 && fin._migradoTaquilla !== true);
+            if (usaBrutoHistorico) brutoTaquilla = Number(fin.brutoOnline);
+
+            const acuerdo = (typeof obtenerEstadoAcuerdoFestival === 'function') ? obtenerEstadoAcuerdoFestival(festId) : null;
+            const porcAsumido = Boolean(acuerdo && acuerdo.tipo === 'indefinido');
+            let porcEscuela = PORC_ESCUELA_RESPALDO;
+            if (acuerdo) {
+                const base = (acuerdo.porcFinal !== null && acuerdo.porcFinal !== undefined && !isNaN(acuerdo.porcFinal)) ? acuerdo.porcFinal : acuerdo.porcEfectivo;
+                if (base !== null && base !== undefined && !isNaN(base)) porcEscuela = Math.max(0, Math.min(100, Number(base)));
+            }
+
+            const sadaicRes = calcularMontoSadaicFestival(festId, brutoTaquilla, ent);
+            const montoSadaic = sadaicRes.monto;
+            const basePostSadaic = Math.max(0, brutoTaquilla - montoSadaic);
+            const netoEscuelaOnline = Math.round(basePostSadaic * (porcEscuela / 100));
+
+            let totVentasEspeciales = 0;
+            let cantVentasEspeciales = 0;
+            (fin.ventasEspeciales || []).forEach(v => {
+                totVentasEspeciales += Math.max(0, parseFloat(v.monto || 0) || 0);
+                const defCant = (v.tipoVenta === 'Promo 2x1') ? 2 : 1;
+                cantVentasEspeciales += Math.max(0, parseInt(v.cantEntradas !== undefined ? v.cantEntradas : defCant) || 0);
+            });
+
+            return {
+                cantPreventa: cPrev, cantGeneral: cGen, cantPuerta: cPue,
+                cantTaquilla, brutoTaquilla, usaBrutoHistorico,
+                porcEscuela, porcAsumido, acuerdo,
+                sadaicRes, montoSadaic, basePostSadaic, netoEscuelaOnline,
+                totVentasEspeciales, cantVentasEspeciales,
+                brutoTotal: brutoTaquilla + totVentasEspeciales,
+                recaudacionEntradas: netoEscuelaOnline + totVentasEspeciales
+            };
+        }
+        window.calcularTaquillaFestival = calcularTaquillaFestival;
 
         // Información descriptiva de festivales (cargados dinámicamente desde Firestore)
         const infoFestivales = {};
@@ -4216,6 +4286,8 @@
                 acuerdoTexto,
                 porcAuto,
                 porcFinal,
+                // % que se usa para liquidar: el definido o, si falta, 70% (editable)
+                porcEfectivo: (porcFinal !== null && !isNaN(porcFinal)) ? porcFinal : 70,
                 tipo,
                 esManual
             };
@@ -4991,9 +5063,9 @@
 
                         const venue = (fila.Venue || fila.venue || fila.VENUE || fila.Sala || '').trim() || 'Venue';
                         const entradas = parseInt(fila["Entradas_Vendidas"] || fila["Entradas"] || fila.entradas || 0) || 0;
-                        const bruto = parseFloat(String(fila["Recaudacion_Bruta"] || fila["Bruto"] || fila.bruto || 0).replace(/[^0-9.-]+/g, '')) || 0;
-                        const gastos = parseFloat(String(fila["Gastos_Festival"] || fila["Gastos"] || fila.gastos || fila.Gastos || fila["GASTOS"] || 0).replace(/[^0-9.-]+/g, '')) || 0;
-                        let neto = parseFloat(String(fila["Neto_Escuela"] || fila["Neto"] || fila.neto || 0).replace(/[^0-9.-]+/g, '')) || 0;
+                        const bruto = parseMontoAr(fila["Recaudacion_Bruta"] || fila["Bruto"] || fila.bruto || 0);
+                        const gastos = parseMontoAr(fila["Gastos_Festival"] || fila["Gastos"] || fila.gastos || fila.Gastos || fila["GASTOS"] || 0);
+                        let neto = parseMontoAr(fila["Neto_Escuela"] || fila["Neto"] || fila.neto || 0);
 
                         // Si no especificó neto pero sí bruto y gastos: neto = bruto - gastos
                         if (neto === 0 && bruto > 0 && gastos > 0) {
@@ -5306,7 +5378,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta3.3";
+        const APP_VERSION = "beta3.4";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -5883,6 +5955,10 @@
             const val = parseFloat(s);
             return isNaN(val) ? 0 : val;
         }
+        // Nombre oficial: TODOS los importes escritos a mano se interpretan con esta única función
+        // (60.000 -> 60000 · 60000,50 -> 60000.5 · 1.250.000,50 -> 1250000.5)
+        function parseMontoAr(valor) { return parsearMontoInput(valor); }
+        window.parseMontoAr = parseMontoAr;
         window.parsearMontoInput = parsearMontoInput;
 
         // Formateador estandarizado de moneda argentina ($x.xxx o $x.xxx,xx)
@@ -6139,7 +6215,7 @@
                 const estAc = obtenerEstadoAcuerdoFestival(id);
                 if (estAc) {
                     if (estAc.tipo === 'indefinido') {
-                        acuerdoTextoCabecera = '<span style="color:#b91c1c; font-weight:700;">A definir</span>';
+                        acuerdoTextoCabecera = `<span style="color:#b91c1c; font-weight:700;">A definir (se usa ${estAc.porcEfectivo}%)</span>`;
                     } else if (estAc.porcFinal === 100) {
                         acuerdoTextoCabecera = '100% Escuela' + (estAc.esManual ? ' (Manual)' : '');
                     } else {
@@ -6867,27 +6943,19 @@
                     const festAnio = String(f.anio || '2026');
                     if (festAnio !== anioStr) return;
 
-                    // Extraer ganancia neta o neto escuela
+                    // Regla de Caja: solo entran los festivales FINALIZADOS (los En Curso / Programados todavía no son resultado)
+                    if ((f.estado || '').trim() !== 'Finalizado') return;
+
+                    // Resultado neto de la escuela: el valor guardado (editable) o, si no hay, el cálculo único del festival.
+                    // Se incluyen también los resultados NEGATIVOS (festival que dio pérdida).
                     let neto = 0;
-                    if (typeof f.netoEscuela === 'number' && f.netoEscuela > 0) {
+                    if (typeof f.netoEscuela === 'number' && !isNaN(f.netoEscuela) && f.netoEscuela !== 0) {
                         neto = f.netoEscuela;
-                    } else {
-                        // Buscar en la fila visual de Finanzas si ya calculó ganancia
-                        const filaFin = document.querySelector(`#tabla-finanzas-resumen-filas tr[data-fest-id='${id}']`);
-                        if (filaFin) {
-                            const celdaGan = filaFin.querySelector('.celda-fin-ganancia');
-                            if (celdaGan) {
-                                neto = parsearMontoInput(celdaGan.innerText);
-                            } else {
-                                const celdas = filaFin.querySelectorAll('td');
-                                if (celdas.length >= 2) {
-                                    neto = parsearMontoInput(celdas[celdas.length - 2].innerText);
-                                }
-                            }
-                        }
+                    } else if (typeof calcularBalanceGeneralFestival === 'function') {
+                        neto = Number(calcularBalanceGeneralFestival(id, f).gananciaEscuela) || 0;
                     }
 
-                    if (neto > 0) {
+                    if (neto !== 0) {
                         let fechaCorta = 'A definir';
                         if (f.fecha) {
                             const match = f.fecha.match(/(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/);
@@ -7008,7 +7076,7 @@
                                 </td>
                                 <td style="font-weight:500; color:#0f172a; padding:6px;">🎪 ${esc(item.concepto)}</td>
                                 <td style="text-align:right; padding:4px 6px;">
-                                    <span class="cell-caja-editable cell-caja-monto" data-monto="${montoNum}" title="Click para ajustar el ingreso neto del festival" style="font-family:'Geist Mono'; font-weight:500; color:var(--accent-green); width:100%; text-align:right; display:block;" contenteditable="true" onfocus="iniciarEdicionMonto(this, 'festival', '${idFest}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionMonto(this, '${idFest}', 'festival')">${formatearMonedaAr(montoNum)}</span>
+                                    <span class="cell-caja-editable cell-caja-monto" data-monto="${montoNum}" title="${montoNum < 0 ? 'Festival con resultado negativo. ' : ''}Click para ajustar el resultado neto del festival" style="font-family:'Geist Mono'; font-weight:500; color:${montoNum < 0 ? 'var(--accent-red)' : 'var(--accent-green)'}; width:100%; text-align:right; display:block;" contenteditable="true" onfocus="iniciarEdicionMonto(this, 'festival', '${idFest}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionMonto(this, '${idFest}', 'festival')">${formatearMonedaAr(montoNum)}</span>
                                 </td>
                                 <td style="text-align:center; padding:6px;"></td>
                             `;
@@ -7895,7 +7963,7 @@
 
         function actualizarVistaPreviaPrecioGeneralConfig() {
             const inpGen = document.getElementById('cfg-precio-general');
-            const genVal = (inpGen ? parsearMontoInput(inpGen.value) : 0) || preciosEntradasPorDefecto.general || 8500;
+            const genVal = (inpGen ? parsearMontoInput(inpGen.value) : 0) || preciosEntradasPorDefecto.general || PRECIO_GENERAL_RESPALDO;
 
             const elRegla = document.getElementById('txt-cfg-regla-precio-general');
             if (elRegla) {
@@ -8791,39 +8859,13 @@
             let brutoTotal = Number(fest?.recaudacionBruta) || 0;
             let recaudacionEntradas = Math.round(brutoTotal * 0.7);
 
+            let montoSadaicUsado = null;
             if (tieneDatosIngresos && fin) {
-                const pPrev = Number(ent.preventa) || 0;
-                const pGen = Number(ent.general) || 8500;
-                const pPue = Number(ent.puerta) || 0;
-                const cPrev = Math.max(0, parseInt(fin.cantPreventa || 0));
-                const cGen = Math.max(0, parseInt(fin.cantGeneral || 0));
-                const cPue = Math.max(0, parseInt(fin.cantPuerta || 0));
-                let cantTaq = cPrev + cGen + cPue;
-                let brutoTaq = (cPrev * pPrev) + (cGen * pGen) + (cPue * pPue);
-                (fin.categoriasExtra || []).forEach(ext => {
-                    const c = Math.max(0, parseInt(ext.cantidad || 0));
-                    const p = Math.max(0, parseFloat(ext.precio || 0));
-                    cantTaq += c;
-                    brutoTaq += (c * p);
-                });
-                if (cantTaq === 0 && Number(fin.brutoOnline) > 0 && fin._migradoTaquilla !== true) {
-                    brutoTaq = Number(fin.brutoOnline);
-                }
-                let porcEsc = 70;
-                if (typeof obtenerEstadoAcuerdoFestival === 'function') {
-                    const estAc = obtenerEstadoAcuerdoFestival(fId);
-                    porcEsc = (estAc && estAc.porcFinal !== null && !isNaN(estAc.porcFinal)) ? estAc.porcFinal : 0;
-                } else {
-                    porcEsc = Math.max(0, parseFloat(fin.porcEscuela !== undefined ? fin.porcEscuela : 70) || 0);
-                }
-                const sadaicRes = calcularMontoSadaicFestival(fId, brutoTaq);
-                const montoSadaic = sadaicRes.monto;
-                const basePostSadaic = Math.max(0, brutoTaq - montoSadaic);
-                const netoTaq = Math.round(basePostSadaic * (porcEsc / 100));
-                const totEsp = (fin.ventasEspeciales || []).reduce((acc, v) => acc + (Math.max(0, parseFloat(v.monto || 0) || 0)), 0);
-
-                brutoTotal = brutoTaq + totEsp;
-                recaudacionEntradas = netoTaq + totEsp;
+                // Mismo cálculo que usa la pantalla del festival (una sola fuente de verdad)
+                const taq = calcularTaquillaFestival(fId, fin, ent);
+                brutoTotal = taq.brutoTotal;
+                recaudacionEntradas = taq.recaudacionEntradas;
+                montoSadaicUsado = taq.montoSadaic;
             }
 
             const incRes = (typeof calcularIngresosIncumplimientosFestival === 'function')
@@ -8838,13 +8880,16 @@
             }
 
             let gastosCobertura = 0;
+            let excedenteCobertura = 0;
             if (tieneDatosCobertura && typeof calcularResumenPresupuestoProductora === 'function') {
-                gastosCobertura = calcularResumenPresupuestoProductora(fId).saldoEscuela || 0;
+                const resCob = calcularResumenPresupuestoProductora(fId);
+                gastosCobertura = resCob.saldoEscuela || 0;
+                excedenteCobertura = resCob.excedenteCobertura || 0;
             }
 
             let gananciaEscuela = Number(fest?.netoEscuela) || (brutoTotal > 0 ? Math.max(0, brutoTotal - gastosOperativos) : 0);
             if (tieneDatosIngresos || tieneDatosGastosOp || tieneDatosCobertura || ingresosIncumplimientos > 0) {
-                gananciaEscuela = recaudacionNeta - gastosOperativos - gastosCobertura;
+                gananciaEscuela = recaudacionNeta + excedenteCobertura - gastosOperativos - gastosCobertura;
             }
 
             return {
@@ -8854,8 +8899,9 @@
                 recaudacionNeta,
                 gastosOperativos,
                 gastosCobertura,
+                excedenteCobertura,
                 gananciaEscuela,
-                montoSadaic: typeof montoSadaic !== 'undefined' ? montoSadaic : calcularMontoSadaicFestival(fId, brutoTotal).monto
+                montoSadaic: montoSadaicUsado !== null ? montoSadaicUsado : calcularMontoSadaicFestival(fId, brutoTotal).monto
             };
         }
         window.calcularBalanceGeneralFestival = calcularBalanceGeneralFestival;
@@ -12308,6 +12354,55 @@
         }
         window.toggleColapsoServiciosBanda = toggleColapsoServiciosBanda;
 
+        // Quién paga cada servicio: todos los integrantes menos los excluidos (srv.excluidos = nombres).
+        // Cuota = total / pagadores, redondeada hacia arriba al múltiplo de $ 1.000. Única fuente de este cálculo.
+        function resolverPagadoresServicio(srv, integrantes, bandaNombre) {
+            const lista = (Array.isArray(integrantes) && integrantes.length > 0) ? integrantes : [bandaNombre];
+            const nombres = lista.map((intg, i) => ({ idx: i, nombre: typeof intg === 'string' ? intg : (intg.nombre || `Integrante ${i + 1}`) }));
+            const excl = new Set(Array.isArray(srv && srv.excluidos) ? srv.excluidos : []);
+            const pagadores = nombres.filter(n => !excl.has(n.nombre));
+            const excluidos = nombres.filter(n => excl.has(n.nombre));
+            const total = Number((srv && srv.total) || Math.round(parseFloat((srv && srv.horas) || 1) * parseFloat((srv && srv.precioHora) || 0)) || 0);
+            const cuota = pagadores.length > 0 ? Math.ceil((total / pagadores.length) / 1000) * 1000 : 0;
+            return { nombres, pagadores, excluidos, cuota };
+        }
+        window.resolverPagadoresServicio = resolverPagadoresServicio;
+
+        const serviciosExclusionAbiertos = new Set();
+        function registrarAperturaExclusionServicio(bandaNombre, srvIdx, abierto) {
+            const k = `${bandaNombre}|${srvIdx}`;
+            if (abierto) serviciosExclusionAbiertos.add(k); else serviciosExclusionAbiertos.delete(k);
+        }
+        window.registrarAperturaExclusionServicio = registrarAperturaExclusionServicio;
+
+        function toggleExcluirIntegranteServicio(bandaNombre, srvIdx, intgIdx, excluir) {
+            const fid = eventoActualId;
+            const serviciosDB = obtenerServiciosAdicionalesFestival(fid);
+            const srv = serviciosDB[bandaNombre] && serviciosDB[bandaNombre][srvIdx];
+            if (!srv) return;
+            const banda = ((typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[fid]) || []).find(b => b && b.nombre === bandaNombre);
+            const integrantes = banda ? (Array.isArray(banda.alumnos) ? banda.alumnos : (Array.isArray(banda.integrantes) ? banda.integrantes : [])) : [];
+            const item = resolverPagadoresServicio(srv, integrantes, bandaNombre).nombres[intgIdx];
+            if (!item) return;
+            const nombre = item.nombre;
+            const set = new Set(Array.isArray(srv.excluidos) ? srv.excluidos : []);
+            if (excluir) {
+                if (srv.pagosIntegrantes && srv.pagosIntegrantes[nombre] && srv.pagosIntegrantes[nombre].pagada) {
+                    mostrarToast(`${nombre} ya pagó este servicio. Marcá su cobro como pendiente antes de excluirlo.`, 'warning');
+                    renderizarServiciosAdicionalesFestival(fid);
+                    return;
+                }
+                set.add(nombre);
+            } else {
+                set.delete(nombre);
+            }
+            srv.excluidos = Array.from(set);
+            if (srv.excluidos.length === 0) delete srv.excluidos;
+            guardarServiciosAdicionalesYRefrescar(fid);
+            mostrarToast(excluir ? `${nombre} excluido del pago de este servicio.` : `${nombre} vuelve a pagar su parte de este servicio.`, 'info');
+        }
+        window.toggleExcluirIntegranteServicio = toggleExcluirIntegranteServicio;
+
         function obtenerServiciosAdicionalesFestival(festId) {
             const fid = festId || eventoActualId;
             if (!serviciosAdicionalesFestivalesDB[fid]) {
@@ -12359,9 +12454,8 @@
                     const totalSrv = Math.round(horas * precioHora);
                     s.total = totalSrv;
 
-                    const cuotaExacta = totalSrv / cantIntegrantes;
-                    // REGLA DE NEGOCIO: Redondeo SIEMPRE para arriba al múltiplo de $ 1.000
-                    const cuotaRedondeada = Math.ceil(cuotaExacta / 1000) * 1000;
+                    // REGLA DE NEGOCIO: Redondeo SIEMPRE para arriba al múltiplo de $ 1.000; solo pagan los no excluidos
+                    const cuotaRedondeada = resolverPagadoresServicio(s, integrantes, bNombre).cuota;
                     s.cuotaIndividual = cuotaRedondeada;
 
                     subtotalBanda += totalSrv;
@@ -12408,8 +12502,25 @@
                             const horas = parseFloat(srv.horas || 1);
                             const precio = parseFloat(srv.precioHora || 0);
                             const total = Math.round(horas * precio);
-                            const cuotaExacta = total / cantIntegrantes;
-                            const cuotaRedondeada = srv.cuotaIndividual || (Math.ceil(cuotaExacta / 1000) * 1000);
+                            const resPag = resolverPagadoresServicio(srv, integrantes, bNombre);
+                            const cuotaRedondeada = resPag.cuota;
+                            const cuotaExacta = resPag.pagadores.length > 0 ? total / resPag.pagadores.length : 0;
+                            const claveExcl = `${bNombre}|${sIdx}`;
+                            const nombresUnicos = [];
+                            resPag.nombres.forEach(n => { if (!nombresUnicos.some(u => u.nombre === n.nombre)) nombresUnicos.push(n); });
+                            const hayExcluidos = resPag.excluidos.length > 0;
+                            const excluirHtml = integrantes.length > 1 ? `
+                                <details style="margin-top:4px; text-align:left;" ${serviciosExclusionAbiertos.has(claveExcl) ? 'open' : ''} ontoggle="registrarAperturaExclusionServicio('${safeNombre}', ${sIdx}, this.open)">
+                                    <summary style="cursor:pointer; font-size:11px; font-weight:700; color:${hayExcluidos ? '#b45309' : '#475569'};">👥 ${hayExcluidos ? `Pagan ${resPag.pagadores.length} de ${resPag.nombres.length}` : 'Excluir del pago'}</summary>
+                                    <div style="margin-top:4px; padding:6px 8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                                        ${nombresUnicos.map(n => `
+                                            <label style="display:flex; align-items:center; gap:6px; font-size:11.5px; font-family:inherit; padding:2px 0; cursor:pointer;">
+                                                <input type="checkbox" ${resPag.excluidos.some(e => e.nombre === n.nombre) ? '' : 'checked'} onchange="toggleExcluirIntegranteServicio('${safeNombre}', ${sIdx}, ${n.idx}, !this.checked)">
+                                                <span style="${resPag.excluidos.some(e => e.nombre === n.nombre) ? 'text-decoration:line-through; color:#94a3b8;' : ''}">${esc(n.nombre)}</span>
+                                            </label>`).join('')}
+                                        <div style="font-size:10.5px; color:#64748b; margin-top:3px;">Tildado = paga su parte. Destildá a quien no debe pagar este servicio.</div>
+                                    </div>
+                                </details>` : '';
 
                             // Select / input para "Pagar a"
                             let proveedorHtml = '';
@@ -12467,7 +12578,10 @@
                                 </td>
                                 <td style="text-align:center; font-family:'Geist Mono';">
                                     <strong style="color:#15803d; font-size:13px;">$ ${cuotaRedondeada.toLocaleString('es-AR')}</strong>
-                                    <span style="font-size:10.5px; color:#64748b; display:block;">($ ${Math.round(cuotaExacta).toLocaleString('es-AR')} → $ ${cuotaRedondeada.toLocaleString('es-AR')})</span>
+                                    ${resPag.pagadores.length > 0
+                                        ? `<span style="font-size:10.5px; color:#64748b; display:block;">($ ${Math.round(cuotaExacta).toLocaleString('es-AR')} → $ ${cuotaRedondeada.toLocaleString('es-AR')})</span>`
+                                        : `<span style="font-size:10.5px; color:#b45309; display:block; font-weight:700;">Sin pagadores: lo absorbe la escuela</span>`}
+                                    ${excluirHtml}
                                 </td>
                                 <td style="text-align:center;">
                                     <button type="button" class="btn-app" style="color:#dc2626; border-color:#fecaca; padding:2px 6px;" onclick="eliminarServicioAdicional('${safeNombre}', ${sIdx})" title="Eliminar servicio">✕</button>
@@ -12530,7 +12644,7 @@
             const srv = serviciosDB[bandaNombre][srvIdx];
 
             if (campo === 'precioHora') {
-                srv.precioHora = Math.max(0, parseFloat(String(valor).replace(/[^0-9]/g, '')) || 0);
+                srv.precioHora = Math.max(0, parseMontoAr(valor));
             } else if (campo === 'horas') {
                 srv.horas = parseFloat(valor || 1);
             } else if (campo === 'tipo') {
@@ -12614,7 +12728,9 @@
                     const totalSrv = Number(srv.total || 0);
                     if (totalSrv <= 0) return;
 
-                    const cuotaInd = srv.cuotaIndividual || (Math.ceil((totalSrv / cantIntegrantes) / 1000) * 1000);
+                    const resPag = resolverPagadoresServicio(srv, integrantes, bandaNombre);
+                    const cuotaInd = resPag.cuota;
+                    const nombresExcl = new Set(resPag.excluidos.map(e => e.nombre));
                     if (!srv.pagosIntegrantes) srv.pagosIntegrantes = {};
 
                     const safeBanda = bandaNombre.replace(/'/g, "\\'");
@@ -12622,6 +12738,7 @@
 
                     listaInt.forEach((intg, iIdx) => {
                         const intgNombre = typeof intg === 'string' ? intg : (intg.nombre || `Integrante ${iIdx + 1}`);
+                        if (nombresExcl.has(intgNombre)) return;
                         const safeIntg = intgNombre.replace(/'/g, "\\'");
 
                         if (!srv.pagosIntegrantes[intgNombre]) {
@@ -12816,7 +12933,7 @@
 
             const actual = deudores.find(d => d.nombre === alumnoSeleccionadoComunicado);
             if (badge && actual) {
-                const monto = actual.deudaMonto || (actual.faltantes * (actual.precioGeneral || 8500));
+                const monto = actual.deudaMonto || (actual.faltantes * (actual.precioGeneral || PRECIO_GENERAL_RESPALDO));
                 badge.textContent = `🚨 ${actual.faltantes} ent. ($ ${monto.toLocaleString('es-AR')})`;
             }
         }
@@ -12829,7 +12946,7 @@
             const actual = deudores.find(d => d.nombre === val);
             const badge = document.getElementById('badge-alumno-faltantes');
             if (badge && actual) {
-                const monto = actual.deudaMonto || (actual.faltantes * (actual.precioGeneral || 8500));
+                const monto = actual.deudaMonto || (actual.faltantes * (actual.precioGeneral || PRECIO_GENERAL_RESPALDO));
                 badge.textContent = `🚨 ${actual.faltantes} ent. ($ ${monto.toLocaleString('es-AR')})`;
             }
             actualizarVistaTextoComunicado();
@@ -12922,7 +13039,7 @@
                 }
 
                 const al = (alumnoNombreOpcional && deudores.find(d => d.nombre === alumnoNombreOpcional)) || deudores[0];
-                const precioGen = al.precioGeneral || (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto.general : 8500);
+                const precioGen = al.precioGeneral || (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto.general : PRECIO_GENERAL_RESPALDO);
                 const montoTotal = al.deudaMonto || (al.faltantes * precioGen);
 
                 return `Hola ${al.nombre}, cómo estas? Tengo registrado del último festi que cubriste ${al.vendidas} entradas de las ${al.cupo} que teníamos acordado. Avisame cualquier cosa si tengo mal los datos, pero de no ser así, te pediría por favor abonar el valor de las que quedaron pendientes.\n\n🎟 Entradas que no se vendieron: ${al.faltantes}\n💸 Valor a abonar: $${montoTotal.toLocaleString('es-AR')}\n👉 Alias: guidokerpel.mp\n\n_Aclaración: se tomó el valor de entrada general para realizar el calculo: $${precioGen.toLocaleString('es-AR')} _`;
@@ -13045,6 +13162,8 @@
             const costoCoberturaEscuela = (baseFotos + baseVideo) + costoReelsEscuela;
             const presupuestoProductora = costoCoberturaEscuela + costoEdicionReelsBandas;
             const saldoEscuela = Math.max(0, presupuestoProductora - totalBandas);
+            // Si lo cobrado a las bandas supera el costo, la diferencia es ganancia de la escuela (antes se perdía)
+            const excedenteCobertura = Math.max(0, totalBandas - presupuestoProductora);
 
             return {
                 baseFotos,
@@ -13057,7 +13176,8 @@
                 costoEdicionReelsBandas,
                 presupuestoProductora,
                 totalBandas,
-                saldoEscuela
+                saldoEscuela,
+                excedenteCobertura
             };
         }
 
@@ -13249,8 +13369,7 @@
             const datos = obtenerDatosIngresosEventoActual();
             if (!datos.gastosOperativos || !datos.gastosOperativos[idx]) return;
             if (campo === 'monto') {
-                const limpio = String(valor || '').replace(/[^0-9.]/g, '');
-                datos.gastosOperativos[idx].monto = Math.max(0, parseFloat(limpio || '0') || 0);
+                datos.gastosOperativos[idx].monto = Math.max(0, parseMontoAr(valor));
             } else {
                 datos.gastosOperativos[idx][campo] = valor;
             }
@@ -13458,9 +13577,13 @@
             if (elIncSubPendiente) elIncSubPendiente.textContent = incRes.cantPagosPendientes > 0 ? `${incRes.cantPagosPendientes} pago(s) pendiente(s) de cobro` : '100% cobrado · Al día';
 
             // Recalcular ganancia neta en la tarjeta de resumen (Ingresos Entradas + Cobros Incumplimientos - Gastos Operativos - Cobertura Escuela)
-            const ingBrutoTxt = document.getElementById('resumen-card-ingresos-tot')?.textContent || '0';
-            const ingBruto = parseInt(ingBrutoTxt.replace(/[^0-9]/g, '') || '0');
-            const gananciaFinal = ingBruto + incRes.cobrado - totalOperativos - saldoEscuela;
+            // Neto de entradas calculado con la misma función que Finanzas y Caja (antes se leía del texto de la tarjeta)
+            const ingBruto = calcularTaquillaFestival(
+                eventoActualId,
+                obtenerDatosIngresosEventoActual(),
+                (typeof obtenerEntradasEventoActual === 'function') ? obtenerEntradasEventoActual() : undefined
+            ).recaudacionEntradas;
+            const gananciaFinal = ingBruto + incRes.cobrado + (res.excedenteCobertura || 0) - totalOperativos - saldoEscuela;
             if (elCardGan) {
                 elCardGan.textContent = `${gananciaFinal >= 0 ? '+$ ' : '-$ '}${Math.abs(gananciaFinal).toLocaleString('es-AR')}`;
                 elCardGan.style.color = gananciaFinal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
@@ -13786,7 +13909,7 @@
             const ent = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : preciosEntradasPorDefecto;
             datos.categoriasExtra.push({
                 nombre: 'Entrada Especial',
-                precio: Number(ent.general) || 8500,
+                precio: Number(ent.general) || PRECIO_GENERAL_RESPALDO,
                 cantidad: 0
             });
             renderizarTablaTaquillaTipos();
@@ -13855,7 +13978,7 @@
                     inpEscuela.value = '';
                 }
                 if (inpEscuela) {
-                    inpEscuela.placeholder = '%';
+                    inpEscuela.placeholder = String(estado.porcEfectivo) + '%';
                     inpEscuela.style.border = '2px solid #ef4444';
                     inpEscuela.style.background = '#fef2f2';
                 }
@@ -13869,7 +13992,7 @@
                 if (btnRestablecer) btnRestablecer.style.display = 'none';
                 if (alertaIndefinido) {
                     alertaIndefinido.style.display = 'block';
-                    alertaIndefinido.innerHTML = `⚠️ <strong>${esc(estado.venueNombre || 'El venue')}</strong> tiene acuerdo <em>A definir</em>. Ingresá el % pactado para liquidar este festival.`;
+                    alertaIndefinido.innerHTML = `⚠️ <strong>${esc(estado.venueNombre || 'El venue')}</strong> tiene acuerdo <em>A definir</em>. Mientras tanto se liquida con <strong>${estado.porcEfectivo}%</strong> para la escuela. Ingresá el % pactado si es otro.`;
                 }
             } else if (estado.tipo === 'manual') {
                 if (inpEscuela && document.activeElement !== inpEscuela) {
@@ -13963,50 +14086,29 @@
             const datos = obtenerDatosIngresosEventoActual();
             const ent = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : preciosEntradasPorDefecto;
 
-            const precioPreventa = Number(ent.preventa) || 0;
-            const precioGeneral = Number(ent.general) || 8500;
-            const precioPuerta = Number(ent.puerta) || 0;
+            // Cálculo único (el mismo que usan Finanzas, Resumen y Caja)
+            const taq = calcularTaquillaFestival(eventoActualId, datos, ent);
+            const cantPrev = taq.cantPreventa;
+            const cantGen = taq.cantGeneral;
+            const cantPue = taq.cantPuerta;
+            const cantTaquilla = taq.cantTaquilla;
+            const brutoTaquilla = taq.brutoTaquilla;
 
-            const cantPrev = Math.max(0, parseInt(datos.cantPreventa || 0));
-            const cantGen = Math.max(0, parseInt(datos.cantGeneral || 0));
-            const cantPue = Math.max(0, parseInt(datos.cantPuerta || 0));
-
-            let cantTaquilla = cantPrev + cantGen + cantPue;
-            let brutoTaquilla = (cantPrev * precioPreventa) + (cantGen * precioGeneral) + (cantPue * precioPuerta);
-
-            (datos.categoriasExtra || []).forEach(ext => {
-                const c = Math.max(0, parseInt(ext.cantidad || 0));
-                const p = Math.max(0, parseFloat(ext.precio || 0));
-                cantTaquilla += c;
-                brutoTaquilla += (c * p);
-            });
-
-            // Si había un brutoOnline histórico cargado sin desglose de cantidades, preservarlo mientras cantTaquilla sea 0
-            if (cantTaquilla === 0 && Number(datos.brutoOnline) > 0 && datos._migradoTaquilla !== true) {
-                brutoTaquilla = Number(datos.brutoOnline);
-            } else {
+            // Si había un brutoOnline histórico cargado sin desglose de cantidades, se preserva; si no, se guarda el calculado
+            if (!taq.usaBrutoHistorico) {
                 datos._migradoTaquilla = true;
                 datos.brutoOnline = brutoTaquilla;
             }
 
-            const estadoAcuerdo = obtenerEstadoAcuerdoFestival(eventoActualId);
-            let porcEscuela = 0;
-            let esIndefinido = (estadoAcuerdo.tipo === 'indefinido');
-
-            if (esIndefinido) {
-                porcEscuela = 0;
-            } else {
-                porcEscuela = (estadoAcuerdo.porcFinal !== null && !isNaN(estadoAcuerdo.porcFinal)) 
-                    ? Math.max(0, Math.min(100, estadoAcuerdo.porcFinal)) 
-                    : 70;
-            }
+            const esIndefinido = Boolean(taq.porcAsumido);
+            const porcEscuela = taq.porcEscuela;
+            // Si el % no está definido se guarda vacío (sigue figurando "A definir"), pero se liquida con 70% editable
             datos.porcEscuela = esIndefinido ? null : porcEscuela;
 
-            // Canon SADAIC configurable (por % o por cantidad de entradas)
-            const sadaicRes = calcularMontoSadaicFestival(eventoActualId, brutoTaquilla);
-            const montoSadaic = sadaicRes.monto;
-            const basePostSadaic = Math.max(0, brutoTaquilla - montoSadaic);
-            const netoEscuelaOnline = esIndefinido ? 0 : Math.round(basePostSadaic * (porcEscuela / 100));
+            const sadaicRes = taq.sadaicRes;
+            const montoSadaic = taq.montoSadaic;
+            const basePostSadaic = taq.basePostSadaic;
+            const netoEscuelaOnline = taq.netoEscuelaOnline;
 
             // Actualizar totales de tabla de taquilla y tarjetas de liquidación
             const elTaqCant = document.getElementById('txt-taquilla-cant-total');
@@ -14036,7 +14138,7 @@
             if (txtNeto) txtNeto.textContent = formatearMonedaAr(netoEscuelaOnline);
             if (txtSubNeto) {
                 if (esIndefinido) {
-                    txtSubNeto.innerHTML = `<span style="color:#b91c1c; font-weight:700;">⚠️ Pendiente ingresar % pactado</span>`;
+                    txtSubNeto.innerHTML = `<span style="color:#b91c1c; font-weight:700;">⚠️ % no definido: se usa ${porcEscuela}% del saldo posterior a SADAIC (editable)</span>`;
                 } else if (porcEscuela === 100) {
                     txtSubNeto.textContent = `100% del saldo posterior a SADAIC (Sin % para venue)`;
                 } else {
@@ -14048,14 +14150,9 @@
                 actualizarTotalesCierreTaquilla();
             }
 
-            // Calcular total de ventas especiales ($ y cantidad de entradas)
-            let totVentasEspeciales = 0;
-            let cantVentasEspeciales = 0;
-            (datos.ventasEspeciales || []).forEach(v => {
-                totVentasEspeciales += Math.max(0, parseFloat(v.monto || 0) || 0);
-                const defCant = (v.tipoVenta === 'Promo 2x1') ? 2 : 1;
-                cantVentasEspeciales += Math.max(0, parseInt(v.cantEntradas !== undefined ? v.cantEntradas : defCant) || 0);
-            });
+            // Total de ventas especiales ($ y cantidad de entradas)
+            const totVentasEspeciales = taq.totVentasEspeciales;
+            const cantVentasEspeciales = taq.cantVentasEspeciales;
 
             const totalGeneralEntradas = cantTaquilla + cantVentasEspeciales;
 
@@ -14177,7 +14274,7 @@
         function agregarFilaVentaEspecial() {
             const datos = obtenerDatosIngresosEventoActual();
             const ent = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : preciosEntradasPorDefecto;
-            const precioGen = Number(ent.general) || 8500;
+            const precioGen = Number(ent.general) || PRECIO_GENERAL_RESPALDO;
             if (!datos.ventasEspeciales) datos.ventasEspeciales = [];
             datos.ventasEspeciales.push({
                 comprador: '',
@@ -14196,7 +14293,7 @@
             const datos = obtenerDatosIngresosEventoActual();
             if (datos.ventasEspeciales && datos.ventasEspeciales[idx]) {
                 const ent = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : preciosEntradasPorDefecto;
-                const precioGen = Number(ent.general) || 8500;
+                const precioGen = Number(ent.general) || PRECIO_GENERAL_RESPALDO;
 
                 if (campo === 'monto') {
                     datos.ventasEspeciales[idx].monto = parseFloat(valor || '0') || 0;
@@ -14429,23 +14526,148 @@
         }
         window.verificarSiTraspasoFueAbsorbido = verificarSiTraspasoFueAbsorbido;
 
+        // =========================================================
+        // IDENTIDAD DEL CONTRATO: UN CONTRATO POR ALUMNO Y POR BANDA
+        // Un alumno en 2 bandas del mismo festival tiene 2 contratos (cada uno con el cupo de su banda).
+        // Dentro de una misma banda un alumno se cuenta UNA sola vez, aunque figure con varios instrumentos.
+        // =========================================================
+        function normalizarNombreContrato(n) {
+            return String(n || '').trim().toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/\s+/g, ' ');
+        }
+        window.normalizarNombreContrato = normalizarNombreContrato;
+
+        // Id estable: no cambia si se reordenan bandas o integrantes
+        function idContratoEstable(banda, bIdx, nombre) {
+            const bk = String((banda && banda.id) || ('b' + bIdx));
+            const slug = normalizarNombreContrato(nombre).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'sin-nombre';
+            return `ct-${bk}-${slug}`;
+        }
+        window.idContratoEstable = idContratoEstable;
+
+        // Integrantes de una banda, sin repetir al mismo alumno (aunque toque varios instrumentos)
+        function obtenerIntegrantesBanda(banda) {
+            let integrantes = [];
+            if (Array.isArray(banda.alumnos) && banda.alumnos.length > 0) {
+                integrantes = banda.alumnos.map(al => typeof al === 'string' ? al : (al.nombre || '')).filter(Boolean);
+            } else if (Array.isArray(banda.musicos) && banda.musicos.length > 0) {
+                integrantes = banda.musicos.map(al => typeof al === 'string' ? al : (al.nombre || '')).filter(Boolean);
+            } else if ((banda.tipo || 'ensamble') === 'invitado') {
+                integrantes = [banda.nombre || 'Artista Invitado'];
+            }
+            const vistos = new Set();
+            return integrantes.filter(n => {
+                const k = normalizarNombreContrato(n);
+                if (vistos.has(k)) return false;
+                vistos.add(k);
+                return true;
+            });
+        }
+        window.obtenerIntegrantesBanda = obtenerIntegrantesBanda;
+
+        // Busca un contrato por id. Solo si el id no existe (datos viejos) acepta el nombre, y únicamente cuando es único.
+        function buscarContrato(lista, id, nombre) {
+            if (!Array.isArray(lista)) return undefined;
+            const porId = lista.find(c => c && c.id === id);
+            if (porId) return porId;
+            const n = normalizarNombreContrato(nombre);
+            if (!n) return undefined;
+            const porNombre = lista.filter(c => c && normalizarNombreContrato(c.nombre) === n);
+            return porNombre.length === 1 ? porNombre[0] : undefined;
+        }
+        window.buscarContrato = buscarContrato;
+
+        // Empareja cada integrante actual con su contrato guardado (id estable → formato anterior → nombre → renombrados)
+        function emparejarContratosGuardados(bandas, cacheGuardada) {
+            const usados = new Set();
+            const porPosicion = {};
+            const clave = (b, i) => b + '|' + i;
+            const listaBandas = bandas.map((banda, bIdx) => ({ banda, bIdx, ints: obtenerIntegrantesBanda(banda) }));
+
+            // 1) id estable
+            listaBandas.forEach(({ banda, bIdx, ints }) => ints.forEach((nom, iIdx) => {
+                const id = idContratoEstable(banda, bIdx, nom);
+                const c = cacheGuardada.find(x => x && x.id === id && !usados.has(x));
+                if (c) { usados.add(c); porPosicion[clave(bIdx, iIdx)] = c; }
+            }));
+            // 2) formato anterior (id por posición) confirmando que es la misma persona
+            listaBandas.forEach(({ banda, bIdx, ints }) => ints.forEach((nom, iIdx) => {
+                if (porPosicion[clave(bIdx, iIdx)]) return;
+                const n = normalizarNombreContrato(nom);
+                const c = cacheGuardada.find(x => x && !usados.has(x) && /^part-[0-9]+-[0-9]+$/.test(String(x.id)) && String(x.id).split('-')[1] === String(bIdx) && normalizarNombreContrato(x.nombre) === n);
+                if (c) { usados.add(c); porPosicion[clave(bIdx, iIdx)] = c; }
+            }));
+            // 3) mismo nombre dentro de la misma banda (única coincidencia)
+            listaBandas.forEach(({ banda, bIdx, ints }) => ints.forEach((nom, iIdx) => {
+                if (porPosicion[clave(bIdx, iIdx)]) return;
+                const n = normalizarNombreContrato(nom);
+                const nb = normalizarNombreContrato(banda.nombre);
+                const cand = cacheGuardada.filter(x => x && !usados.has(x) && normalizarNombreContrato(x.nombre) === n &&
+                    ((x.bandaId && x.bandaId === banda.id) || normalizarNombreContrato(x.banda) === nb));
+                if (cand.length === 1) { usados.add(cand[0]); porPosicion[clave(bIdx, iIdx)] = cand[0]; }
+            }));
+            // 4) alumnos renombrados: si en la banda sobran tantos contratos como integrantes sin contrato, se emparejan en orden
+            listaBandas.forEach(({ banda, bIdx, ints }) => {
+                const sinContrato = ints.map((nom, iIdx) => iIdx).filter(iIdx => !porPosicion[clave(bIdx, iIdx)]);
+                if (sinContrato.length === 0) return;
+                const sobrantes = cacheGuardada.filter(x => x && !usados.has(x) && (
+                    (x.bandaId && x.bandaId === banda.id) ||
+                    (!x.bandaId && /^part-[0-9]+-[0-9]+$/.test(String(x.id)) && String(x.id).split('-')[1] === String(bIdx))
+                ));
+                if (sobrantes.length === sinContrato.length) {
+                    sinContrato.forEach((iIdx, k) => { usados.add(sobrantes[k]); porPosicion[clave(bIdx, iIdx)] = sobrantes[k]; });
+                    console.warn(`[Contratos] Se emparejaron ${sobrantes.length} contrato(s) de "${banda.nombre}" por posición (nombre cambiado).`);
+                }
+            });
+            const huerfanos = cacheGuardada.filter(x => x && !usados.has(x));
+            return { porPosicion, huerfanos };
+        }
+
+        // Cuotas: una cuota ya cobrada NUNCA se modifica. Solo se ajusta lo pendiente.
+        function ajustarPagosDeuda(pagosOriginales, deudaMonto, faltantes) {
+            const pagos = (Array.isArray(pagosOriginales) ? pagosOriginales : []).filter(Boolean).map(p => ({ ...p }));
+            if (pagos.length === 0) {
+                return [{
+                    cuota: 1, monto: deudaMonto, fecha: '', medio: 'Transferencia', cobradoPor: 'Guido',
+                    obs: `Diferencia ${faltantes} entrada/s no cubiertas`, pagada: false
+                }];
+            }
+            const pagadoAcum = pagos.filter(p => p.pagada).reduce((acc, p) => acc + Number(p.monto || 0), 0);
+            const pendientes = pagos.filter(p => !p.pagada);
+            const saldo = Math.max(0, deudaMonto - pagadoAcum);
+            if (pendientes.length > 0) {
+                const unit = Math.round(saldo / pendientes.length);
+                pendientes.forEach((p, k) => {
+                    p.monto = (k === pendientes.length - 1) ? (saldo - unit * (pendientes.length - 1)) : unit;
+                    if (!p.obs) p.obs = `Diferencia ${faltantes} entrada/s no cubiertas`;
+                });
+            } else if (saldo > 0) {
+                // Todo lo anterior ya está cobrado pero la deuda creció: se agrega una cuota nueva por la diferencia
+                pagos.push({
+                    cuota: pagos.length + 1, monto: saldo, fecha: '', medio: 'Transferencia', cobradoPor: 'Guido',
+                    obs: 'Ajuste por diferencia de entradas', pagada: false
+                });
+            }
+            return pagos;
+        }
+        window.ajustarPagosDeuda = ajustarPagosDeuda;
+
         function obtenerListaParticipantesContratoFestival(festId = eventoActualId) {
             const bandas = (typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[festId]) ? participantesFestivalesDB[festId] : [];
             const cuposVigentes = (typeof obtenerCuposContratoVigentes === 'function') ? obtenerCuposContratoVigentes() : { alumno: 5, invitado: 3, jam: 2 };
             const entConf = (festId && typeof entradasFestivales !== 'undefined' && entradasFestivales[festId])
                 ? entradasFestivales[festId]
-                : ((typeof obtenerEntradasEventoActual === 'function' && festId === eventoActualId) ? obtenerEntradasEventoActual() : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : { general: 8500 }));
-            const precioEntrada = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || 8500);
-
-            const festObj = (typeof infoFestivales !== 'undefined' && infoFestivales[festId]) ? infoFestivales[festId] : null;
-            const esFestVol5 = Boolean(
-                (festId && String(festId).toLowerCase().includes('vol5')) ||
-                (festId && String(festId).toLowerCase().includes('vol_5')) ||
-                (festObj && String(festObj.nombre || '').toUpperCase().includes('VOL 5')) ||
-                (festObj && String(festObj.nombre || '').toUpperCase().includes('VOL. 5'))
-            );
+                : ((typeof obtenerEntradasEventoActual === 'function' && festId === eventoActualId) ? obtenerEntradasEventoActual() : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : { general: PRECIO_GENERAL_RESPALDO }));
+            const precioEntrada = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || PRECIO_GENERAL_RESPALDO);
 
             const cacheGuardada = (typeof contratosAlumnosFestivalesDB !== 'undefined' && Array.isArray(contratosAlumnosFestivalesDB[festId])) ? contratosAlumnosFestivalesDB[festId] : [];
+            const { porPosicion, huerfanos } = emparejarContratosGuardados(bandas, cacheGuardada);
+            if (!window.contratosHuerfanos) window.contratosHuerfanos = {};
+            window.contratosHuerfanos[festId] = huerfanos;
+            const huerfanosConCobros = huerfanos.filter(h => Array.isArray(h.pagosDeuda) && h.pagosDeuda.some(p => p && p.pagada));
+            if (huerfanosConCobros.length > 0) {
+                console.warn('[Contratos] Contratos con cobros registrados que ya no corresponden a ningún integrante:', huerfanosConCobros.map(h => `${h.nombre} (${h.banda})`));
+            }
+            const traspasoAplicadoA = new Set(); // la deuda traspasada de un alumno se suma una sola vez, aunque esté en varias bandas
             const listaConsolidada = [];
 
             bandas.forEach((banda, bIdx) => {
@@ -14453,39 +14675,34 @@
                 const tipoBanda = banda.tipo || 'ensamble';
                 const nombreUp = String(bandaNombre).trim().toUpperCase();
                 const esBandaJam = (
-                    tipoBanda === 'jam' || 
-                    banda.esJam === true || 
-                    nombreUp === 'JAM' || 
-                    nombreUp.startsWith('JAM ') || 
+                    tipoBanda === 'jam' ||
+                    banda.esJam === true ||
+                    nombreUp === 'JAM' ||
+                    nombreUp.startsWith('JAM ') ||
                     nombreUp.includes('JAM MANDALA') ||
                     nombreUp.includes(' JAM')
                 );
 
-                let integrantes = [];
-                if (Array.isArray(banda.alumnos) && banda.alumnos.length > 0) {
-                    integrantes = banda.alumnos.map(al => typeof al === 'string' ? al : (al.nombre || '')).filter(Boolean);
-                } else if (Array.isArray(banda.musicos) && banda.musicos.length > 0) {
-                    integrantes = banda.musicos.map(al => typeof al === 'string' ? al : (al.nombre || '')).filter(Boolean);
-                } else if (tipoBanda === 'invitado') {
-                    integrantes = [banda.nombre || 'Artista Invitado'];
-                }
+                const integrantes = obtenerIntegrantesBanda(banda);
 
                 let cupoBase = cuposVigentes.alumno;
                 if (tipoBanda === 'invitado') cupoBase = cuposVigentes.invitado;
                 if (esBandaJam) cupoBase = cuposVigentes.jam || 2;
 
                 integrantes.forEach((nom, iIdx) => {
-                    const idInt = `part-${bIdx}-${iIdx}`;
-                    const contGuardado = cacheGuardada.find(c => c && (c.id === idInt || c.nombre === nom));
+                    const idInt = idContratoEstable(banda, bIdx, nom);
+                    const contGuardado = porPosicion[bIdx + '|' + iIdx];
                     const esExcluido = Boolean(contGuardado && contGuardado.excluido);
                     const esSes = esMusicoSesionista(nom);
                     const esTraspasoActivoOrigen = Boolean(contGuardado && contGuardado.traspasoProximoFestival);
 
                     let cupoExtra = 0;
                     let cupoDetalle = null;
-                    if (!esSes && !esExcluido && !esTraspasoActivoOrigen) {
+                    const claveAlumno = normalizarNombreContrato(nom);
+                    if (!esSes && !esExcluido && !esTraspasoActivoOrigen && !traspasoAplicadoA.has(claveAlumno)) {
                         const traspaso = buscarTraspasoEntradasPendienteAlumno(nom, festId);
                         if (traspaso) {
+                            traspasoAplicadoA.add(claveAlumno);
                             cupoExtra = traspaso.cantEntradas;
                             cupoDetalle = {
                                 base: cupoBase,
@@ -14507,12 +14724,6 @@
                         ? Number(contGuardado.deudaMontoManual)
                         : null;
 
-                    // Valor real abonado por Jacques en 2026 Fest VOL 5 ($ 18.000) si aún no tenía override manual
-                    if (esFestVol5 && String(nom).trim().toLowerCase() === 'jacques' && faltantes > 0 && deudaMontoManual === null && precioEntradaManual === null) {
-                        precioEntradaManual = 18000;
-                        deudaMontoManual = 18000 * faltantes;
-                    }
-
                     const precioUnitarioReal = (precioEntradaManual !== null && precioEntradaManual > 0) ? precioEntradaManual : precioEntrada;
                     let deudaMonto = 0;
                     if (!esExcluido && !esTraspasoActivoOrigen && faltantes > 0) {
@@ -14522,46 +14733,19 @@
                     }
 
                     let cantCuotas = contGuardado?.cantCuotas || 1;
-                    let pagosDeuda = (contGuardado && Array.isArray(contGuardado.pagosDeuda) && contGuardado.pagosDeuda.length > 0)
-                        ? [...contGuardado.pagosDeuda]
-                        : [];
-
+                    let pagosDeuda = [];
                     if (!esExcluido && !esTraspasoActivoOrigen && faltantes > 0) {
-                        if (pagosDeuda.length === 0) {
-                            pagosDeuda = [{
-                                cuota: 1,
-                                monto: deudaMonto,
-                                fecha: '',
-                                medio: 'Transferencia',
-                                cobradoPor: 'Guido',
-                                obs: `Diferencia ${faltantes} entrada/s no cubiertas`,
-                                pagada: false
-                            }];
-                            cantCuotas = 1;
-                        } else if (pagosDeuda.length === 1) {
-                            // Sincronizar monto para pago único con deuda configurada (incluso si ya figura pagada y se ajustó el monto real)
-                            pagosDeuda[0].monto = deudaMonto;
-                            if (!pagosDeuda[0].obs) {
-                                pagosDeuda[0].obs = `Diferencia ${faltantes} entrada/s no cubiertas`;
-                            }
-                        } else {
-                            // Si son múltiples cuotas, balancear las cuotas no pagadas
-                            const cuotasPendientes = pagosDeuda.filter(p => !p.pagada);
-                            const pagadoAcum = pagosDeuda.filter(p => p.pagada).reduce((acc, p) => acc + Number(p.monto || 0), 0);
-                            const saldoRestante = Math.max(0, deudaMonto - pagadoAcum);
-                            if (cuotasPendientes.length > 0) {
-                                const montoUnit = Math.round(saldoRestante / cuotasPendientes.length);
-                                cuotasPendientes.forEach((p, pIdx) => {
-                                    p.monto = (pIdx === cuotasPendientes.length - 1) ? (saldoRestante - montoUnit * (cuotasPendientes.length - 1)) : montoUnit;
-                                });
-                            }
-                        }
-                    } else if (faltantes === 0 || esExcluido || esTraspasoActivoOrigen) {
-                        pagosDeuda = [];
+                        // Las cuotas ya cobradas no se tocan; solo se ajusta lo pendiente
+                        pagosDeuda = ajustarPagosDeuda(contGuardado && contGuardado.pagosDeuda, deudaMonto, faltantes);
+                        if (!(contGuardado && Array.isArray(contGuardado.pagosDeuda) && contGuardado.pagosDeuda.length > 0)) cantCuotas = 1;
+                    } else if (contGuardado && Array.isArray(contGuardado.pagosDeuda) && contGuardado.pagosDeuda.some(p => p && p.pagada)) {
+                        // Sin deuda vigente pero con cobros registrados: se conserva el historial de lo cobrado
+                        pagosDeuda = contGuardado.pagosDeuda.filter(p => p && p.pagada).map(p => ({ ...p }));
                     }
 
                     listaConsolidada.push({
                         id: idInt,
+                        bandaId: banda.id || null,
                         nombre: nom,
                         banda: bandaNombre,
                         tipo: esBandaJam ? 'jam' : tipoBanda,
@@ -14603,7 +14787,7 @@
 
             const cuposVigentes = obtenerCuposContratoVigentes();
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || 8500);
+            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || PRECIO_GENERAL_RESPALDO);
 
             // Lista consolidada garantizada (nunca vacía si hay participantes)
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
@@ -14623,14 +14807,7 @@
                     nombreUp.includes(' JAM')
                 );
 
-                let integrantes = [];
-                if (Array.isArray(banda.alumnos) && banda.alumnos.length > 0) {
-                    integrantes = banda.alumnos.map(al => typeof al === 'string' ? al : (al.nombre || '')).filter(Boolean);
-                } else if (Array.isArray(banda.musicos) && banda.musicos.length > 0) {
-                    integrantes = banda.musicos.map(al => typeof al === 'string' ? al : (al.nombre || '')).filter(Boolean);
-                } else if (tipoBanda === 'invitado') {
-                    integrantes = [banda.nombre || 'Artista Invitado'];
-                }
+                const integrantes = obtenerIntegrantesBanda(banda);
 
                 let cupoBase = cuposVigentes.alumno;
                 let iconoTipo = '🏫';
@@ -14668,8 +14845,8 @@
 
                 // Filas de integrantes
                 integrantes.forEach((nom, iIdx) => {
-                    const idInt = `part-${bIdx}-${iIdx}`;
-                    const contGuardado = cacheContratos.find(c => c && (c.id === idInt || c.nombre === nom));
+                    const idInt = idContratoEstable(banda, bIdx, nom);
+                    const contGuardado = cacheContratos.find(c => c && c.id === idInt);
                     const esExcluido = Boolean(contGuardado && contGuardado.excluido);
                     const esSes = esMusicoSesionista(nom);
                     const cupoInt = contGuardado ? Number(contGuardado.cupo) : ((esSes || esExcluido) ? 0 : cupoBase);
@@ -14828,8 +15005,7 @@
         window.formatearInputDeudaManualParticipante = formatearInputDeudaManualParticipante;
 
         async function actualizarDeudaManualParticipante(idInt, valorRaw) {
-            const limpio = String(valorRaw || '').replace(/[^0-9.]/g, '');
-            const nuevoMonto = Math.max(0, Math.round(parseFloat(limpio || '0') || 0));
+            const nuevoMonto = Math.max(0, Math.round(parseMontoAr(valorRaw)));
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
             const cont = cacheContratos.find(c => c && c.id === idInt);
             if (!cont) return;
@@ -14841,24 +15017,9 @@
 
             if (!Array.isArray(cont.pagosDeuda) || cont.pagosDeuda.length === 0) {
                 cont.cantCuotas = 1;
-                cont.pagosDeuda = [{
-                    cuota: 1,
-                    monto: nuevoMonto,
-                    fecha: '',
-                    medio: 'Transferencia',
-                    cobradoPor: 'Guido',
-                    obs: `Diferencia ${faltantes} entrada/s no cubiertas`,
-                    pagada: false
-                }];
-            } else if (cont.pagosDeuda.length === 1) {
-                cont.pagosDeuda[0].monto = nuevoMonto;
-            } else {
-                const cuotas = cont.pagosDeuda.length;
-                const montoUnit = Math.round(nuevoMonto / cuotas);
-                cont.pagosDeuda.forEach((p, idx) => {
-                    p.monto = (idx === cuotas - 1) ? (nuevoMonto - montoUnit * (cuotas - 1)) : montoUnit;
-                });
             }
+            // Las cuotas ya cobradas no cambian; el nuevo monto se reparte solo entre las pendientes
+            cont.pagosDeuda = ajustarPagosDeuda(cont.pagosDeuda, nuevoMonto, faltantes);
 
             contratosAlumnosFestivalesDB[eventoActualId] = cacheContratos;
             if (typeof persistirCambiosFestivalDirecto === 'function') {
@@ -14887,7 +15048,7 @@
             const cupo = parseInt(row.getAttribute('data-cupo') || '0');
             const vendidas = parseInt(input.value || '0');
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || 8500);
+            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || PRECIO_GENERAL_RESPALDO);
             const celdaDeuda = row.querySelector('.celda-deuda-pesos');
             const celdaEstado = row.querySelector('.celda-estado-cupo');
             const celdaAccion = row.querySelector('.celda-accion-cobro');
@@ -14896,7 +15057,7 @@
             const nombre = row.getAttribute('data-nombre');
 
             const cacheContratos = contratosAlumnosFestivalesDB[eventoActualId] || [];
-            let cont = cacheContratos.find(c => c && (c.id === id || c.nombre === nombre));
+            let cont = buscarContrato(cacheContratos, id, nombre);
 
             if (esMusicoSesionista(nombre)) {
                 row.setAttribute('data-deuda-monto', 0);
@@ -14925,7 +15086,8 @@
                     cont.vendidas = vendidas;
                     cont.faltantes = 0;
                     cont.deudaMonto = 0;
-                    cont.pagosDeuda = [];
+                    // Se conserva el historial de cuotas ya cobradas; solo se descartan las pendientes
+                    cont.pagosDeuda = (Array.isArray(cont.pagosDeuda) ? cont.pagosDeuda : []).filter(p => p && p.pagada);
                 }
             } else if (cont && cont.traspasoProximoFestival) {
                 // Participante con traspaso activo a próximo festival
@@ -14988,9 +15150,12 @@
                             obs: `Diferencia ${faltantes} entrada/s no cubiertas`,
                             pagada: false
                         }];
-                    } else if (cont.pagosDeuda.length === 1) {
+                    } else if (cont.pagosDeuda.length === 1 && !cont.pagosDeuda[0].pagada) {
                         cont.pagosDeuda[0].monto = deudaPesos;
                         cont.pagosDeuda[0].obs = `Diferencia ${faltantes} entrada/s no cubiertas`;
+                    } else if (cont.pagosDeuda.some(p => p && p.pagada)) {
+                        // Ya hay cobros: lo cobrado no se toca; si la deuda creció se agrega una cuota por la diferencia
+                        cont.pagosDeuda = ajustarPagosDeuda(cont.pagosDeuda, deudaPesos, faltantes);
                     }
                 }
             }
@@ -15006,7 +15171,7 @@
             const filas = document.querySelectorAll('.banda-child-row');
             const cacheActual = contratosAlumnosFestivalesDB[eventoActualId] || [];
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || 8500);
+            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || PRECIO_GENERAL_RESPALDO);
 
             if (filas.length > 0) {
                 filas.forEach(f => {
@@ -15014,7 +15179,7 @@
                     const nombre = f.getAttribute('data-nombre');
                     const cupo = parseInt(f.getAttribute('data-cupo') || '0');
                     const vendidas = parseInt(f.querySelector('.inp-entradas-vendidas')?.value || '0');
-                    const cont = cacheActual.find(c => c && (c.id === id || c.nombre === nombre));
+                    const cont = buscarContrato(cacheActual, id, nombre);
                     if (cont) {
                         cont.vendidas = vendidas;
                         cont.faltantes = Math.max(0, cupo - vendidas);
@@ -15028,7 +15193,7 @@
                         } else {
                             cont.deudaMonto = cont.faltantes * precioEntrada;
                         }
-                        if (Array.isArray(cont.pagosDeuda) && cont.pagosDeuda.length === 1) {
+                        if (Array.isArray(cont.pagosDeuda) && cont.pagosDeuda.length === 1 && !cont.pagosDeuda[0].pagada) {
                             cont.pagosDeuda[0].monto = cont.deudaMonto;
                             if (!cont.pagosDeuda[0].obs) {
                                 cont.pagosDeuda[0].obs = `Diferencia ${cont.faltantes} entrada/s no cubiertas`;
@@ -15045,7 +15210,7 @@
 
         function actualizarTotalesCabecerasBandas() {
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioGralFestival = entConf && entConf.general ? entConf.general : 8500;
+            const precioGralFestival = entConf && entConf.general ? entConf.general : PRECIO_GENERAL_RESPALDO;
 
             let grandCupoTot = 0;
             let grandVendidasTot = 0;
@@ -15183,9 +15348,9 @@
 
         function configurarCobroCuotas(id, nombre, monto, faltantes) {
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
-            const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === nombre));
+            const cont = buscarContrato(cacheContratos, id, nombre);
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || 8500);
+            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || PRECIO_GENERAL_RESPALDO);
 
             const faltantesReales = Math.max(1, Number(cont?.traspasoEntradas || cont?.faltantes || faltantes || 1));
             const montoReal = (cont && cont.deudaMonto !== undefined) ? Number(cont.deudaMonto) : Number(monto || 0);
@@ -15287,7 +15452,7 @@
         function restablecerMontoOficialDeudaModal() {
             if (!deudaActualConfig) return;
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || 8500);
+            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || PRECIO_GENERAL_RESPALDO);
             const falt = Math.max(1, Number(deudaActualConfig.faltantes || 1));
             const total = precioOficial * falt;
             deudaActualConfig.precioUnitarioManual = null;
@@ -15323,7 +15488,7 @@
             const esExcluido = Boolean(document.getElementById('modal-deuda-excluir')?.checked);
             const esTraspaso = !esExcluido && Boolean(document.getElementById('modal-deuda-traspaso')?.checked);
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
-            let cont = cacheContratos.find(c => c && (c.id === deudaActualConfig.id || c.nombre === deudaActualConfig.nombre));
+            let cont = buscarContrato(cacheContratos, deudaActualConfig.id, deudaActualConfig.nombre);
             if (!cont) {
                 cont = {
                     id: deudaActualConfig.id,
@@ -15629,7 +15794,7 @@
 
         function enfocarInputMontoCuotaContrato(inp, id, idxCuota) {
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
-            const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === id));
+            const cont = buscarContrato(cacheContratos, id, id);
             const m = Math.max(0, Number(cont?.pagosDeuda?.[idxCuota]?.monto || 0));
             inp.value = m > 0 ? String(m) : '';
             setTimeout(() => { try { inp.select(); } catch (_) {} }, 0);
@@ -15638,19 +15803,23 @@
 
         function formatearInputMontoCuotaContrato(inp, id, idxCuota) {
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
-            const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === id));
+            const cont = buscarContrato(cacheContratos, id, id);
             const m = Math.max(0, Number(cont?.pagosDeuda?.[idxCuota]?.monto || 0));
             inp.value = formatearMonedaAr(m);
         }
         window.formatearInputMontoCuotaContrato = formatearInputMontoCuotaContrato;
 
         async function actualizarMontoCuotaContratoAlumno(id, idxCuota, valorRaw) {
-            const limpio = String(valorRaw || '').replace(/[^0-9.]/g, '');
-            const nuevoMonto = Math.max(0, Math.round(parseFloat(limpio || '0') || 0));
+            const nuevoMonto = Math.max(0, Math.round(parseMontoAr(valorRaw)));
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
-            const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === id));
+            const cont = buscarContrato(cacheContratos, id, id);
             if (!cont || !Array.isArray(cont.pagosDeuda) || !cont.pagosDeuda[idxCuota]) return;
 
+            if (cont.pagosDeuda[idxCuota].pagada) {
+                mostrarToast('Esa cuota ya está cobrada: para cambiar su monto primero desmarcala como cobrada.', 'warning');
+                renderizarCobrosContratoUnificado();
+                return;
+            }
             cont.pagosDeuda[idxCuota].monto = nuevoMonto;
             const totalCuotasMonto = cont.pagosDeuda.reduce((acc, p) => acc + Math.max(0, Number(p.monto || 0)), 0);
             cont.deudaMonto = totalCuotasMonto;
@@ -15674,7 +15843,7 @@
 
         function cambiarEstadoPagoContratoAlumno(id, idxCuota, pagada) {
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
-            const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === id));
+            const cont = buscarContrato(cacheContratos, id, id);
             if (!cont || !Array.isArray(cont.pagosDeuda) || !cont.pagosDeuda[idxCuota]) return;
 
             cont.pagosDeuda[idxCuota].pagada = Boolean(pagada);
@@ -15699,7 +15868,7 @@
 
         function actualizarDetallePagoContratoAlumno(id, idxCuota, campo, valor) {
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
-            const cont = cacheContratos.find(c => c && (c.id === id || c.nombre === id));
+            const cont = buscarContrato(cacheContratos, id, id);
             if (!cont || !Array.isArray(cont.pagosDeuda) || !cont.pagosDeuda[idxCuota]) return;
 
             cont.pagosDeuda[idxCuota][campo] = valor;
@@ -15763,14 +15932,16 @@
                 const bNombre = banda.nombre;
                 const srvList = serviciosFest[bNombre] || [];
                 const integrantes = (Array.isArray(banda.alumnos) ? banda.alumnos : (Array.isArray(banda.integrantes) ? banda.integrantes : []));
-                const cantIntegrantes = Math.max(1, integrantes.length);
                 const listaInt = integrantes.length > 0 ? integrantes : [bNombre];
                 srvList.forEach(srv => {
                     const totalSrv = Number(srv.total || 0);
                     if (totalSrv <= 0) return;
-                    const cuotaInd = srv.cuotaIndividual || (Math.ceil((totalSrv / cantIntegrantes) / 1000) * 1000);
+                    const resPag = resolverPagadoresServicio(srv, integrantes, bNombre);
+                    const cuotaInd = resPag.cuota;
+                    const nombresExcl = new Set(resPag.excluidos.map(e => e.nombre));
                     listaInt.forEach(intg => {
                         const intgNombre = typeof intg === 'string' ? intg : (intg.nombre || '');
+                        if (nombresExcl.has(intgNombre)) return;
                         const pIntg = srv.pagosIntegrantes?.[intgNombre];
                         if (!pIntg || !pIntg.pagada) {
                             pendServicios += cuotaInd;
@@ -16010,8 +16181,6 @@
                         const bNombre = banda.nombre;
                         const srvList = serviciosFest[bNombre] || [];
                         const integrantes = Array.isArray(banda.alumnos) ? banda.alumnos : (Array.isArray(banda.integrantes) ? banda.integrantes : []);
-                        const cantIntegrantes = Math.max(1, integrantes.length);
-
                         srvList.forEach((srv, sIdx) => {
                             const totalSrv = Number(srv.total || 0);
                             if (totalSrv <= 0) return;
@@ -16040,10 +16209,13 @@
                             }
 
                             // B. Cobro pendiente individual a cada integrante de la banda
-                            const cuotaInd = srv.cuotaIndividual || (Math.ceil((totalSrv / cantIntegrantes) / 1000) * 1000);
+                            const resPag = resolverPagadoresServicio(srv, integrantes, bNombre);
+                            const cuotaInd = resPag.cuota;
+                            const nombresExcl = new Set(resPag.excluidos.map(e => e.nombre));
                             const listaInt = integrantes.length > 0 ? integrantes : [bNombre];
                             listaInt.forEach((intg, iIdx) => {
                                 const intgNombre = typeof intg === 'string' ? intg : (intg.nombre || `Integrante ${iIdx + 1}`);
+                                if (nombresExcl.has(intgNombre)) return;
                                 const pIntg = srv.pagosIntegrantes?.[intgNombre] || {};
                                 if (!pIntg.pagada) {
                                     deudas.push({
@@ -16537,7 +16709,7 @@
                 ? obtenerListaParticipantesContratoFestival(festId)
                 : ((typeof contratosAlumnosFestivalesDB !== 'undefined' && contratosAlumnosFestivalesDB[festId]) ? contratosAlumnosFestivalesDB[festId] : []);
             
-            const cont = cache.find(c => c && (c.id === itemId || c.nombre === itemId));
+            const cont = buscarContrato(cache, itemId, itemId);
             if (cont) {
                 const faltantes = Math.max(1, Number(cont.faltantes || cont.traspasoEntradas || 1));
                 const monto = Number(cont.deudaMonto || 0);

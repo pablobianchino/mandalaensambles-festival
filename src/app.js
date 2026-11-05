@@ -27,7 +27,7 @@ import {
 import { obtenerVenuesFirestore, guardarVenueFirestore, guardarLoteVenues, eliminarVenueFirestore } from "./services/venuesService.js";
 import { obtenerSesionistasFirestore, guardarSesionistaFirestore, eliminarSesionistaFirestore } from "./services/sesionistasService.js";
 import { obtenerUsuariosSistemaFirestore, obtenerUsuarioPorEmail, consultarAccesoUsuario, marcarPasswordModificada } from "./services/usuariosService.js";
-import { obtenerGastosCajaFirestore, guardarGastosCajaFirestore, obtenerIngresosManualesCajaFirestore, guardarIngresosManualesCajaFirestore, escucharCajaEnTiempoReal } from "./services/cajaService.js";
+import { obtenerGastosCajaFirestore, guardarGastosCajaFirestore, obtenerIngresosManualesCajaFirestore, guardarIngresosManualesCajaFirestore, escucharCajaEnTiempoReal, migrarCajaAFormato2, revertirCajaAFormato1, obtenerFormatoCaja, usarColeccionCaja } from "./services/cajaService.js";
 import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore } from "./services/configuracionService.js";
 import { obtenerInstrumentosFirestore, escucharInstrumentosEnTiempoReal, getEmojiParaInstrumento, obtenerInstrumentosActualesSync } from "./services/instrumentosService.js";
 
@@ -93,7 +93,12 @@ window.MandalaApp = {
         guardarGastos: guardarGastosCajaFirestore,
         obtenerIngresos: obtenerIngresosManualesCajaFirestore,
         guardarIngresos: guardarIngresosManualesCajaFirestore,
-        escuchar: escucharCajaEnTiempoReal
+        escuchar: escucharCajaEnTiempoReal,
+        // Formato de almacenamiento (ver cajaService.js): se migra a pedido y se puede revertir
+        formato: obtenerFormatoCaja,
+        migrarAFormato2: migrarCajaAFormato2,
+        revertirAFormato1: revertirCajaAFormato1,
+        usarColeccion: usarColeccionCaja
     },
     configuracion: {
         obtenerTarifasProductora: obtenerTarifasProductoraFirestore,

@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=beta3.5">
+    <link rel="stylesheet" href="styles.css?v=beta3.6">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -1116,7 +1116,7 @@
                             ⚙️ General
                         </button>
                         <button class="segmented-tab-btn" id="btn-tab-cfg-productora" onclick="cambiarTabConfiguracion('productora')">
-                            🎬 Productora Audiovisual
+                            🎬 Productoras
                         </button>
                         <button class="segmented-tab-btn" id="btn-tab-cfg-seguridad" onclick="cambiarTabConfiguracion('seguridad')">
                             🔒 Seguridad & Acceso
@@ -1196,92 +1196,21 @@
                     </div>
 
 
-                    <!-- PESTAÑA 2: PRODUCTORA AUDIOVISUAL (JODIDA PRODUCTORA) -->
+                    <!-- PESTAÑA 2: PRODUCTORAS AUDIOVISUALES (cada una con su lista de tarifas) -->
                     <div id="tab-cfg-productora" class="tab-cfg-content" style="display:none;">
-                        <div class="content-card">
+                        <div class="content-card" style="margin-bottom:12px;">
                             <div class="card-header-flex">
                                 <div>
-                                    <h3 class="card-title">🎬 Tarifas Vigentes de Productora Audiovisual</h3>
+                                    <h3 class="card-title">🎬 Productoras Audiovisuales</h3>
                                     <span style="font-size:12px; color:var(--text-muted);">
-                                        Precios de referencia y costos base de Jodida Productora. Al programar festivales se congela un snapshot inmutable para cada evento.
+                                        Cada productora tiene su propia lista de tarifas. Al crear un festival se elige la productora y se copian sus tarifas: si después cambian, el festival no se modifica solo (se puede actualizar a mano desde el festival).
                                     </span>
                                 </div>
-                                <button class="btn-app btn-primary" onclick="guardarTarifasProductora()">💾 Guardar Tarifas Vigentes</button>
-                            </div>
-
-                            <!-- 1. Presupuesto Base de la Productora -->
-                            <div style="margin-bottom:20px; margin-top:16px;">
-                                <h4 style="margin:0 0 10px 0; font-size:13.5px; font-weight:800; color:var(--accent-blue);">
-                                    🎥 1. Presupuesto Base de la Productora (Costo Operativo)
-                                </h4>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>Video Multipista / Registro Escenario ($)</label>
-                                        <input type="number" id="prod-base-video" class="form-control" value="100000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Fotografía Profesional Escénica ($)</label>
-                                        <input type="number" id="prod-base-fotos" class="form-control" value="100000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Costo Edición por Reel ($)</label>
-                                        <input type="number" id="prod-base-reel" class="form-control" value="20000">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 2. Presupuesto para Artistas Invitados -->
-                            <div style="margin-bottom:20px; padding-top:16px; border-top:1px solid var(--border-color);">
-                                <h4 style="margin:0 0 10px 0; font-size:13.5px; font-weight:800; color:var(--accent-purple);">
-                                    🌟 2. Presupuesto para Artistas Invitados
-                                </h4>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>Solo Fotos ($)</label>
-                                        <input type="number" id="prod-art-fotos" class="form-control" value="50000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Solo Reel ($)</label>
-                                        <input type="number" id="prod-art-reel" class="form-control" value="40000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Fotos + Reel Combo ($)</label>
-                                        <input type="number" id="prod-art-ambas" class="form-control" value="75000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Costo Edición por Reel ($)</label>
-                                        <input type="number" id="prod-art-edicion-reel" class="form-control" value="25000">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 3. Presupuesto para Alumnos Regulares -->
-                            <div style="padding-top:16px; border-top:1px solid var(--border-color);">
-                                <h4 style="margin:0 0 10px 0; font-size:13.5px; font-weight:800; color:var(--accent-teal);">
-                                    🎓 3. Presupuesto para Alumnos Regulares Mandala
-                                </h4>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>Solo Fotos ($)</label>
-                                        <input type="number" id="prod-alu-fotos" class="form-control" value="50000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Solo Reel ($)</label>
-                                        <input type="number" id="prod-alu-reel" class="form-control" value="35000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Fotos + Reel Combo ($)</label>
-                                        <input type="number" id="prod-alu-ambas" class="form-control" value="75000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Costo Edición por Reel ($)</label>
-                                        <input type="number" id="prod-alu-edicion-reel" class="form-control" value="25000">
-                                    </div>
-                                </div>
+                                <button class="btn-app btn-primary" onclick="abrirModalProductora(null)">+ Productora</button>
                             </div>
                         </div>
+                        <div id="lista-productoras"></div>
                     </div>
-
 
                     <!-- PESTAÑA 3: SEGURIDAD & ACCESO -->
                     <div id="tab-cfg-seguridad" class="tab-cfg-content" style="display:none;">
@@ -1705,18 +1634,26 @@
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-blue);" id="resumen-card-incumplimientos-tot">+$ 0</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>3. Gastos Operativos</strong></td>
+                                            <td><strong>3. Cobros de Servicios Adicionales</strong><div style="font-size:10.5px; color:#64748b; font-weight:500;" id="resumen-card-sub-serv-cobros">Sin servicios contratados</div></td>
+                                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);" id="resumen-card-serv-cobros-tot">+$ 0</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>4. Gastos Operativos</strong></td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red);" id="resumen-card-gastos-tot">-$ 0</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>4. Cobertura Neta de la Escuela</strong></td>
+                                            <td><strong>5. Servicios: Pago a Proveedores / Salas</strong><div style="font-size:10.5px; color:#64748b; font-weight:500;" id="resumen-card-sub-serv-costo">Sin servicios contratados</div></td>
+                                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red);" id="resumen-card-serv-costo-tot">-$ 0</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>6. Cobertura Neta de la Escuela</strong></td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-amber);" id="resumen-card-cobertura-tot">-$ 0</td>
                                         </tr>
                                     </tbody>
                                     <tfoot>
                                         <tr style="background:#f0fdf4; border-top:2px solid #86efac;">
                                             <td style="font-weight:800; color:#166534; font-size:12px; padding:9px 12px;">
-                                                5. GANANCIA
+                                                7. GANANCIA
                                             </td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:900; font-size:14px; color:var(--accent-green); padding:9px 12px;" id="resumen-card-ganancia-tot">
                                                 +$ 0
@@ -2059,8 +1996,7 @@
                                                         <option value="Guido">Guido</option>
                                                         <option value="Nacho">Nacho</option>
                                                         <option value="Belu">Belu</option>
-                                                        <option value="Pablo">Pablo</option>
-                                                        <option value="Administración">Administración</option>
+                                                        <option value="Ariel">Ariel</option>
                                                     </select>
                                                 </td>
                                                 <td style="text-align:center;">
@@ -2111,11 +2047,16 @@
                                             <td style="color:#64748b; font-size:11px;" id="kpi-cobros-cobertura-sub">Sincronizado con Cobertura</td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);" id="total-cobros-cobertura-txt">$ 0 / $ 0</td>
                                         </tr>
+                                        <tr>
+                                            <td><strong>3. Cobros de Servicios Adicionales (Sesionistas y Ensayos)</strong></td>
+                                            <td style="color:#64748b; font-size:11px;" id="kpi-cobros-servicios-sub">Sin servicios contratados</td>
+                                            <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-teal);" id="total-cobros-servicios-txt">$ 0 / $ 0</td>
+                                        </tr>
                                     </tbody>
                                     <tfoot>
                                         <tr style="background:#fffbeb; border-top:2px solid #fde68a;">
                                             <td style="font-weight:800; color:#92400e; font-size:12px; padding:8px 12px;">
-                                                3. TOTAL PENDIENTE DE COBRO
+                                                4. TOTAL PENDIENTE DE COBRO
                                             </td>
                                             <td style="color:#b45309; font-size:11px; font-weight:600;" id="kpi-cobros-pendiente-total-sub">Saldo total por cobrar en el evento</td>
                                             <td style="text-align:right; font-family:'Geist Mono'; font-weight:900; font-size:14px; color:var(--accent-red); padding:8px 12px;" id="kpi-cobros-pendiente-total-txt">
@@ -2559,6 +2500,47 @@
         </div>
     </div>
 
+    <!-- Modal Productora (alta y edición de tarifas) -->
+    <div id="modal-productora" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modal-productora-titulo">🎬 Nueva Productora</h3>
+                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nombre de la productora</label>
+                    <input type="text" id="pf-nombre" class="form-control" placeholder="Ej: Jodida Productora">
+                    <small id="pf-nombre-ayuda" style="display:none; color:var(--text-muted);">Si corregís el nombre, se actualiza también en los festivales que la usan.</small>
+                </div>
+                <h4 style="margin:12px 0 8px 0; font-size:13.5px; font-weight:800; color:var(--accent-blue);">🎥 1. Presupuesto Base (Costo Operativo)</h4>
+                <div class="form-grid">
+                    <div class="form-group"><label>Video Multipista / Registro Escenario ($)</label><input type="number" id="pf-baseVideo" class="form-control"></div>
+                    <div class="form-group"><label>Fotografía Profesional Escénica ($)</label><input type="number" id="pf-baseFotos" class="form-control"></div>
+                    <div class="form-group"><label>Costo Edición por Reel ($)</label><input type="number" id="pf-baseReel" class="form-control"></div>
+                </div>
+                <h4 style="margin:12px 0 8px 0; font-size:13.5px; font-weight:800; color:var(--accent-purple);">🌟 2. Artistas Invitados</h4>
+                <div class="form-grid">
+                    <div class="form-group"><label>Solo Fotos ($)</label><input type="number" id="pf-artFotos" class="form-control"></div>
+                    <div class="form-group"><label>Solo Reel ($)</label><input type="number" id="pf-artReel" class="form-control"></div>
+                    <div class="form-group"><label>Fotos + Reel Combo ($)</label><input type="number" id="pf-artAmbas" class="form-control"></div>
+                    <div class="form-group"><label>Costo Edición por Reel ($)</label><input type="number" id="pf-artEdicionReel" class="form-control"></div>
+                </div>
+                <h4 style="margin:12px 0 8px 0; font-size:13.5px; font-weight:800; color:var(--accent-teal);">🎓 3. Alumnos Regulares Mandala</h4>
+                <div class="form-grid">
+                    <div class="form-group"><label>Solo Fotos ($)</label><input type="number" id="pf-aluFotos" class="form-control"></div>
+                    <div class="form-group"><label>Solo Reel ($)</label><input type="number" id="pf-aluReel" class="form-control"></div>
+                    <div class="form-group"><label>Fotos + Reel Combo ($)</label><input type="number" id="pf-aluAmbas" class="form-control"></div>
+                    <div class="form-group"><label>Costo Edición por Reel ($)</label><input type="number" id="pf-aluEdicionReel" class="form-control"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
+                <button type="button" class="btn-app btn-primary" onclick="guardarProductoraDesdeModal()">💾 Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Editar Ficha de Evento -->
     <div id="modal-editar-ficha" class="modal-overlay">
         <div class="modal-box">
@@ -2780,6 +2762,7 @@
                             <option value="Guido" selected>Guido</option>
                             <option value="Nacho">Nacho</option>
                             <option value="Belu">Belu</option>
+                            <option value="Ariel">Ariel</option>
                         </select>
                     </div>
 
@@ -3512,9 +3495,11 @@
         }
 
         let confirmResolver = null;
-        function mostrarModalConfirmacion({ titulo = '¿Confirmar Acción?', mensaje = '¿Estás seguro?', icono = '❓', textoConfirmar = 'Confirmar', esPeligroso = false } = {}) {
+        function mostrarModalConfirmacion({ titulo = '¿Confirmar Acción?', mensaje = '¿Estás seguro?', icono = '❓', textoConfirmar = 'Confirmar', esPeligroso = false, textoCancelar = 'Cancelar' } = {}) {
             return new Promise((resolve) => {
                 confirmResolver = resolve;
+                const cancelBtn = document.getElementById('modal-confirm-btn-cancel');
+                if (cancelBtn) cancelBtn.textContent = textoCancelar;
                 const modal = document.getElementById('modal-mandala-confirm');
                 const titEl = document.getElementById('modal-confirm-titulo');
                 const msgEl = document.getElementById('modal-confirm-mensaje');
@@ -3724,6 +3709,52 @@
         const RESPONSABLE_COBRO_DEFECTO = 'Guido';
         const PRODUCTORA_DEFECTO = 'Jodida Productora';
 
+        // Responsables de cobro: salen de los usuarios del sistema con el rol "gestor_festivales" (se usa el nombre de pila).
+        // Si todavía no cargaron (o falla la lectura) rige esta lista de respaldo.
+        const RESPONSABLES_COBRO_RESPALDO = ['Guido', 'Nacho', 'Belu', 'Ariel'];
+        let responsablesCobroCache = null;
+        function obtenerResponsablesCobro() {
+            return (responsablesCobroCache && responsablesCobroCache.length) ? responsablesCobroCache : RESPONSABLES_COBRO_RESPALDO;
+        }
+        // <option> para un select de responsable; si el valor guardado ya no está en la lista (ej. "Pablo"), se conserva igual.
+        function opcionesResponsablesHTML(actual) {
+            const lista = obtenerResponsablesCobro().slice();
+            if (actual && !lista.includes(actual)) lista.push(actual);
+            return lista.map(n => '<option value="' + n + '"' + (n === actual ? ' selected' : '') + '>' + n + '</option>').join('');
+        }
+        function llenarSelectResponsableEstatico(id, actual) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const previo = actual !== undefined ? actual : (el.value || RESPONSABLE_COBRO_DEFECTO);
+            el.innerHTML = opcionesResponsablesHTML(previo);
+        }
+        async function cargarResponsablesCobro() {
+            const usuarios = await window.MandalaApp.usuarios.obtener();
+            const nombres = [];
+            (usuarios || []).forEach(u => {
+                if (!u || u.activo === false) return;
+                if (!Array.isArray(u.roles) || !u.roles.includes('gestor_festivales')) return;
+                const pila = String(u.nombre || '').trim().split(/\s+/)[0];
+                if (pila && !nombres.includes(pila)) nombres.push(pila);
+            });
+            if (!nombres.length) return false;
+            responsablesCobroCache = nombres;
+            llenarSelectResponsableEstatico('sel-gasto-prod-responsable');
+            llenarSelectResponsableEstatico('modal-deuda-responsable', RESPONSABLE_COBRO_DEFECTO);
+            return true;
+        }
+        // Reintenta hasta que haya sesión y usuarios disponibles
+        (function iniciarCargaResponsables() {
+            let intentos = 0;
+            const t = setInterval(async () => {
+                intentos++;
+                try {
+                    if (window.MandalaApp && window.MandalaApp.usuarios && await cargarResponsablesCobro()) { clearInterval(t); return; }
+                } catch (e) { /* sin sesión todavía */ }
+                if (intentos >= 40) clearInterval(t);
+            }, 2000);
+        })();
+
         /**
          * CÁLCULO ÚNICO DE LA TAQUILLA Y DEL NETO ONLINE DE UN FESTIVAL.
          * Lo usan la pantalla del festival (recalcularIngresosFestival) y el resumen general / Finanzas / Caja
@@ -3807,25 +3838,204 @@
         // Estructura de tarifas congeladas por festival (snapshot inmutable por evento)
         const tarifasFestivales = {};
 
-        // Obtener snapshot vigente de la productora
-        function obtenerTarifasVigentesProductora() {
-            const artFotos = parseInt(document.getElementById('prod-art-fotos')?.value || '50000');
-            const artAmbas = parseInt(document.getElementById('prod-art-ambas')?.value || '75000');
-            const aluFotos = parseInt(document.getElementById('prod-alu-fotos')?.value || '50000');
-            const aluAmbas = parseInt(document.getElementById('prod-alu-ambas')?.value || '75000');
-            return {
-                baseVideo: parseInt(document.getElementById('prod-base-video')?.value || '100000'),
-                baseFotos: parseInt(document.getElementById('prod-base-fotos')?.value || '100000'),
-                baseReel: parseInt(document.getElementById('prod-base-reel')?.value || '20000'),
-                artFotos,
-                artReel: parseInt(document.getElementById('prod-art-reel')?.value || '40000'),
-                artAmbas,
-                artEdicionReel: parseInt(document.getElementById('prod-art-edicion-reel')?.value || String(Math.max(20000, artAmbas - artFotos)) || '25000'),
-                aluFotos,
-                aluReel: parseInt(document.getElementById('prod-alu-reel')?.value || '35000'),
-                aluAmbas,
-                aluEdicionReel: parseInt(document.getElementById('prod-alu-edicion-reel')?.value || String(Math.max(20000, aluAmbas - aluFotos)) || '25000')
+        // =========================================================
+        // PRODUCTORAS AUDIOVISUALES: cada una tiene su propia lista de tarifas.
+        // El festival COPIA las tarifas de su productora al crearse (snapshot) y no cambian solas.
+        // =========================================================
+        const TARIFAS_PRODUCTORA_BASE = {
+            baseVideo: 100000, baseFotos: 100000, baseReel: 20000,
+            artFotos: 50000, artReel: 40000, artAmbas: 75000, artEdicionReel: 25000,
+            aluFotos: 50000, aluReel: 35000, aluAmbas: 75000, aluEdicionReel: 25000
+        };
+        const CAMPOS_TARIFAS_PRODUCTORA = [
+            ['baseVideo', 'Video Multipista / Registro Escenario ($)', 'base'],
+            ['baseFotos', 'Fotografía Profesional Escénica ($)', 'base'],
+            ['baseReel', 'Costo Edición por Reel ($)', 'base'],
+            ['artFotos', 'Solo Fotos ($)', 'art'],
+            ['artReel', 'Solo Reel ($)', 'art'],
+            ['artAmbas', 'Fotos + Reel Combo ($)', 'art'],
+            ['artEdicionReel', 'Costo Edición por Reel ($)', 'art'],
+            ['aluFotos', 'Solo Fotos ($)', 'alu'],
+            ['aluReel', 'Solo Reel ($)', 'alu'],
+            ['aluAmbas', 'Fotos + Reel Combo ($)', 'alu'],
+            ['aluEdicionReel', 'Costo Edición por Reel ($)', 'alu']
+        ];
+        let productorasDB = [];
+        let productoraEditandoId = null;
+
+        function normalizarTarifasProductora(t) {
+            const o = { ...TARIFAS_PRODUCTORA_BASE };
+            const src = t || {};
+            Object.keys(TARIFAS_PRODUCTORA_BASE).forEach(k => {
+                const n = parseInt(src[k], 10);
+                if (Number.isFinite(n) && n >= 0) o[k] = n;
+            });
+            if (src.artEdicionReel === undefined && (Number(src.artAmbas) - Number(src.artFotos)) > 0) o.artEdicionReel = Number(src.artAmbas) - Number(src.artFotos);
+            if (src.aluEdicionReel === undefined && (Number(src.aluAmbas) - Number(src.aluFotos)) > 0) o.aluEdicionReel = Number(src.aluAmbas) - Number(src.aluFotos);
+            return o;
+        }
+        function productoraPorDefecto() {
+            return productorasDB.find(p => p.porDefecto) || productorasDB[0] || null;
+        }
+        function nombreProductoraDefecto() {
+            const p = productoraPorDefecto();
+            return p ? p.nombre : PRODUCTORA_DEFECTO;
+        }
+        function buscarProductora(nombre) {
+            if (!nombre) return null;
+            const n = String(nombre).trim().toLowerCase();
+            return productorasDB.find(p => String(p.nombre).trim().toLowerCase() === n) || null;
+        }
+        // Productora de un festival (si no tiene una asignada, la por defecto)
+        function buscarProductoraPorId(id) {
+            return id ? (productorasDB.find(p => p.id === id) || null) : null;
+        }
+        function productoraDeFestival(festId) {
+            const inf = (typeof infoFestivales !== 'undefined' && infoFestivales[festId]) || {};
+            return (buscarProductoraPorId(inf.productoraId) || buscarProductora(inf.productora) || productoraPorDefecto() || { nombre: PRODUCTORA_DEFECTO }).nombre;
+        }
+        // Tarifas vigentes de una productora (sin nombre: la productora por defecto)
+        function obtenerTarifasVigentesProductora(nombre) {
+            const p = buscarProductora(nombre) || productoraPorDefecto();
+            return normalizarTarifasProductora(p ? p.tarifas : null);
+        }
+        function festivalesDeProductora(p) {
+            const n = String(p.nombre).trim().toLowerCase();
+            const esDef = !!p.porDefecto;
+            return Object.values(infoFestivales).filter(f => {
+                if (f.productoraId) return f.productoraId === p.id;
+                const fp = String(f.productora || '').trim().toLowerCase();
+                return fp ? fp === n : esDef;
+            });
+        }
+        function contarFestivalesDeProductora(p) { return festivalesDeProductora(p).length; }
+        async function guardarProductorasEnFirestore() {
+            const api = window.MandalaApp && window.MandalaApp.configuracion;
+            if (!api || typeof api.guardarProductoras !== 'function') return false;
+            const ok = await api.guardarProductoras(productorasDB);
+            // Se mantiene el documento histórico de tarifas con las de la productora por defecto (compatibilidad)
+            const def = productoraPorDefecto();
+            if (ok !== false && def && typeof api.guardarTarifasProductora === 'function') await api.guardarTarifasProductora(def.tarifas);
+            return ok !== false;
+        }
+        function inicializarProductoras(tarifasMaestras, listado) {
+            let items = (listado && Array.isArray(listado.items)) ? listado.items.filter(p => p && p.nombre) : [];
+            let sembrar = false;
+            if (!items.length) {
+                items = [{ id: 'jodida-productora', nombre: PRODUCTORA_DEFECTO, tarifas: normalizarTarifasProductora(tarifasMaestras), porDefecto: true }];
+                sembrar = true;
+            }
+            if (!items.some(p => p.porDefecto)) items[0].porDefecto = true;
+            items.forEach(p => { p.tarifas = normalizarTarifasProductora(p.tarifas); });
+            productorasDB = items;
+            if (sembrar) guardarProductorasEnFirestore();
+            llenarSelectsProductoras();
+            renderizarListaProductoras();
+        }
+        // Rellena los desplegables de productora de los festivales; conserva el valor actual aunque no esté en la lista
+        function llenarSelectsProductoras(valorEdicion) {
+            const nombres = productorasDB.map(p => p.nombre);
+            const llenar = (id, valor) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const previo = valor !== undefined ? valor : (el.value || nombreProductoraDefecto());
+                const lista = nombres.slice();
+                if (previo && !lista.some(n => n.toLowerCase() === String(previo).toLowerCase())) lista.push(previo);
+                el.innerHTML = lista.map(n => '<option value="' + esc(n) + '">' + esc(n) + '</option>').join('');
+                el.value = (buscarProductora(previo) || { nombre: previo }).nombre;
             };
+            llenar('new-ev-productora');
+            llenar('edit-ev-productora', valorEdicion);
+        }
+        function renderizarListaProductoras() {
+            const cont = document.getElementById('lista-productoras');
+            if (!cont) return;
+            if (!productorasDB.length) { cont.innerHTML = '<p style="color:var(--text-muted); padding:12px;">Todavía no hay productoras cargadas.</p>'; return; }
+            const fmt = (n) => (typeof formatearMonedaAr === 'function' ? formatearMonedaAr(n) : '$ ' + n);
+            cont.innerHTML = productorasDB.map(p => {
+                const t = p.tarifas;
+                const usos = contarFestivalesDeProductora(p);
+                const idJs = esc(p.id).replace(/'/g, "\\'");
+                return '<div class="content-card" style="margin-bottom:12px; padding:14px 16px;">'
+                    + '<div class="card-header-flex">'
+                    + '<div><h3 class="card-title" style="margin:0;">🎬 ' + esc(p.nombre) + (p.porDefecto ? ' <span class="pill-status pill-success" style="font-size:11px; margin-left:6px;">Por defecto</span>' : '') + '</h3>'
+                    + '<span style="font-size:12px; color:var(--text-muted);">Base: video ' + fmt(t.baseVideo) + ' · fotos ' + fmt(t.baseFotos) + ' · reel ' + fmt(t.baseReel)
+                    + ' &nbsp;|&nbsp; Alumnos combo ' + fmt(t.aluAmbas) + ' &nbsp;|&nbsp; Invitados combo ' + fmt(t.artAmbas)
+                    + ' &nbsp;|&nbsp; Usada en ' + usos + ' festival' + (usos === 1 ? '' : 'es') + '</span></div>'
+                    + '<div style="display:flex; gap:8px; flex-wrap:wrap;">'
+                    + '<button class="btn-app btn-secondary" onclick="abrirModalProductora(\'' + idJs + '\')">✏️ Editar tarifas</button>'
+                    + (p.porDefecto ? '' : '<button class="btn-app btn-secondary" onclick="marcarProductoraPorDefecto(\'' + idJs + '\')">⭐ Usar por defecto</button>')
+                    + (p.porDefecto || usos > 0 ? '' : '<button class="btn-app btn-secondary" onclick="eliminarProductora(\'' + idJs + '\')">🗑️ Eliminar</button>')
+                    + '</div></div></div>';
+            }).join('');
+        }
+        function abrirModalProductora(id) {
+            const p = id ? productorasDB.find(x => x.id === id) : null;
+            productoraEditandoId = p ? p.id : null;
+            document.getElementById('modal-productora-titulo').textContent = p ? '🎬 Editar tarifas: ' + p.nombre : '🎬 Nueva Productora';
+            const inpNom = document.getElementById('pf-nombre');
+            inpNom.value = p ? p.nombre : '';
+            inpNom.disabled = false;
+            document.getElementById('pf-nombre-ayuda').style.display = p ? 'block' : 'none';
+            const t = p ? p.tarifas : (productoraPorDefecto() ? productoraPorDefecto().tarifas : TARIFAS_PRODUCTORA_BASE);
+            CAMPOS_TARIFAS_PRODUCTORA.forEach(([k]) => { document.getElementById('pf-' + k).value = t[k]; });
+            document.getElementById('modal-productora').classList.add('active');
+        }
+        async function guardarProductoraDesdeModal() {
+            const nombre = document.getElementById('pf-nombre').value.trim();
+            if (!nombre) { mostrarToast('Ingresá el nombre de la productora.', 'warning'); return; }
+            const tarifas = {};
+            for (const [k] of CAMPOS_TARIFAS_PRODUCTORA) {
+                const n = parseInt(document.getElementById('pf-' + k).value, 10);
+                if (!Number.isFinite(n) || n < 0) { mostrarToast('Todas las tarifas deben ser números iguales o mayores a 0.', 'warning'); return; }
+                tarifas[k] = n;
+            }
+            if (productoraEditandoId) {
+                const p = productorasDB.find(x => x.id === productoraEditandoId);
+                if (p) {
+                    p.tarifas = tarifas;
+                    if (nombre !== p.nombre) {
+                        const otra = buscarProductora(nombre);
+                        if (otra && otra.id !== p.id) { mostrarToast('Ya existe una productora con ese nombre.', 'warning'); return; }
+                        // Los festivales se enlazan por id; se les actualiza el nombre guardado
+                        const afectados = festivalesDeProductora(p);
+                        p.nombre = nombre;
+                        for (const f of afectados) {
+                            f.productora = nombre;
+                            f.productoraId = p.id;
+                            if (window.MandalaApp && window.MandalaApp.festivales) await window.MandalaApp.festivales.actualizarCampos(f.id, { productora: nombre, productoraId: p.id });
+                        }
+                        const detProd = document.getElementById('det-ev-productora');
+                        if (detProd && eventoActualId && afectados.some(f => f.id === eventoActualId)) detProd.textContent = nombre;
+                    }
+                }
+            } else {
+                if (buscarProductora(nombre)) { mostrarToast('Ya existe una productora con ese nombre.', 'warning'); return; }
+                productorasDB.push({ id: 'prod-' + Date.now(), nombre, tarifas, porDefecto: productorasDB.length === 0 });
+            }
+            const ok = await guardarProductorasEnFirestore();
+            if (!ok) { mostrarToast('No se pudo guardar en la base de datos. Reintentá.', 'error'); return; }
+            cerrarModales();
+            llenarSelectsProductoras();
+            renderizarListaProductoras();
+            mostrarToast('Productora guardada. Los festivales ya creados conservan sus tarifas; usá "Actualizar tarifas" en cada festival para pasarlo a estos valores.', 'success');
+        }
+        async function marcarProductoraPorDefecto(id) {
+            productorasDB.forEach(p => { p.porDefecto = (p.id === id); });
+            await guardarProductorasEnFirestore();
+            llenarSelectsProductoras();
+            renderizarListaProductoras();
+            mostrarToast('Productora por defecto actualizada.', 'success');
+        }
+        async function eliminarProductora(id) {
+            const p = productorasDB.find(x => x.id === id);
+            if (!p || p.porDefecto || contarFestivalesDeProductora(p) > 0) return;
+            const conf = await mostrarModalConfirmacion({ titulo: 'Eliminar productora', mensaje: '¿Eliminar a <b>' + esc(p.nombre) + '</b>? No la usa ningún festival.', icono: '🗑️', textoConfirmar: 'Eliminar', esPeligroso: true });
+            if (!conf) return;
+            productorasDB = productorasDB.filter(x => x.id !== id);
+            await guardarProductorasEnFirestore();
+            llenarSelectsProductoras();
+            renderizarListaProductoras();
         }
 
         // =========================================================
@@ -5207,15 +5417,11 @@
             if (!tarifasFestivales[eventoActualId]) {
                 // Si es un evento nuevo y no tiene tarifas congeladas, toma una foto del preset vigente
                 tarifasFestivales[eventoActualId] = {
-                    ...obtenerTarifasVigentesProductora(),
+                    ...obtenerTarifasVigentesProductora(productoraDeFestival(eventoActualId)),
                     _esPorDefectoLocal: true
                 };
             }
             const t = tarifasFestivales[eventoActualId];
-            if ((Number(t.baseVideo) + Number(t.baseFotos)) === 260000 || Number(t.baseVideo) === 180000 || Number(t.baseFotos) === 80000 || Number(t.baseVideo) === 160000) {
-                t.baseVideo = 100000;
-                t.baseFotos = 100000;
-            }
             return t;
         }
 
@@ -5398,7 +5604,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta3.5";
+        const APP_VERSION = "beta3.6";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -7770,7 +7976,7 @@
             const rawLink = fInfo.linkVenta || fInfo.link || '';
             const textLink = document.getElementById('det-ev-link')?.textContent || '';
             const linkActual = (rawLink && rawLink !== '-') ? rawLink : (textLink !== '-' ? textLink : '');
-            const prodActual = fInfo.productora || document.getElementById('det-ev-productora')?.textContent || PRODUCTORA_DEFECTO;
+            const prodActual = fInfo.productora || document.getElementById('det-ev-productora')?.textContent || nombreProductoraDefecto();
             const venActual = fInfo.venue || document.getElementById('det-ev-venue')?.textContent?.trim() || '';
 
             document.getElementById('edit-ev-nombre').value = nomActual;
@@ -7778,7 +7984,7 @@
             document.getElementById('edit-ev-fecha').value = fecActual;
             document.getElementById('edit-ev-link').value = linkActual;
             if (document.getElementById('edit-ev-productora')) {
-                document.getElementById('edit-ev-productora').value = prodActual;
+                llenarSelectsProductoras((buscarProductora(prodActual) || productoraPorDefecto() || { nombre: prodActual }).nombre);
             }
             const selVenue = document.getElementById('edit-ev-venue');
             if (selVenue && venActual) selVenue.value = venActual;
@@ -7797,8 +8003,21 @@
 
             const venueSeleccionado = document.getElementById('edit-ev-venue').value;
             const fechaInp = document.getElementById('edit-ev-fecha').value.trim();
-            const productoraInp = document.getElementById('edit-ev-productora')?.value || PRODUCTORA_DEFECTO;
+            const productoraInp = document.getElementById('edit-ev-productora')?.value || nombreProductoraDefecto();
             const linkInp = document.getElementById('edit-ev-link')?.value?.trim() || '';
+
+            // Cambio de productora: las tarifas del festival NO cambian solas; se pregunta
+            const prodPrevia = productoraDeFestival(eventoActualId);
+            let aplicarTarifasNuevaProductora = false;
+            if (String(productoraInp).toLowerCase() !== String(prodPrevia).toLowerCase()) {
+                aplicarTarifasNuevaProductora = await mostrarModalConfirmacion({
+                    titulo: 'Cambio de productora',
+                    mensaje: 'Pasás este festival de <b>' + esc(prodPrevia) + '</b> a <b>' + esc(productoraInp) + '</b>.<br><br>¿Querés también usar las tarifas de <b>' + esc(productoraInp) + '</b>? Si elegís mantener, el festival conserva las tarifas actuales.',
+                    icono: '🎬',
+                    textoConfirmar: 'Usar tarifas de ' + productoraInp,
+                    textoCancelar: 'Mantener tarifas actuales'
+                });
+            }
 
             // Sincronizar dirección y capacidad en rango del venue
             const venueObj = Object.values(venuesData).find(v => v.nombre === venueSeleccionado);
@@ -7875,6 +8094,10 @@
                 infoFestivales[eventoActualId] = { id: eventoActualId };
             }
             const festInfo = infoFestivales[eventoActualId];
+            if (aplicarTarifasNuevaProductora) {
+                tarifasFestivales[eventoActualId] = { ...obtenerTarifasVigentesProductora(productoraInp), fechaCongelado: new Date().toLocaleDateString('es-AR') };
+                if (typeof autoguardarDetalleFestivalFirestore === 'function') autoguardarDetalleFestivalFirestore('tarifasCongeladas', tarifasFestivales[eventoActualId]);
+            }
             festInfo.nombre = nombre;
             festInfo.estado = nuevoEstado;
             festInfo.venue = venueSeleccionado;
@@ -7882,6 +8105,7 @@
             festInfo.fechaRaw = fechaInp;
             festInfo.fechaHora = fechaInp;
             festInfo.productora = productoraInp;
+            festInfo.productoraId = (buscarProductora(productoraInp) || {}).id || '';
             festInfo.link = linkInp;
             festInfo.linkVenta = linkInp;
             festInfo.dir = dirVenue;
@@ -7945,6 +8169,7 @@
                     direccion: dirVenue,
                     capacidad: capVenue,
                     productora: productoraInp,
+                    productoraId: (buscarProductora(productoraInp) || {}).id || '',
                     linkVenta: linkInp,
                     anio
                 };
@@ -7963,6 +8188,12 @@
 
             formularioModificado = false;
             cerrarModales();
+            if (aplicarTarifasNuevaProductora) {
+                if (typeof recalcularCoberturaEscuela === 'function') recalcularCoberturaEscuela();
+                if (typeof renderizarCoberturaBandasFestival === 'function') renderizarCoberturaBandasFestival();
+                if (typeof renderizarServiciosAdicionalesFestival === 'function') renderizarServiciosAdicionalesFestival();
+            }
+            renderizarListaProductoras();
             mostrarToast('¡Festival guardado y actualizado con éxito!', 'success');
         }
 
@@ -8069,45 +8300,24 @@
         }
         window.autoguardarDetalleFestivalFirestore = autoguardarDetalleFestivalFirestore;
 
-        function poblarConfiguracionDesdeFirestore(tarifasProd, preciosEnt) {
-            if (tarifasProd) {
-                const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
-                let migrarTarifasProd = false;
-                if ((Number(tarifasProd.baseVideo) + Number(tarifasProd.baseFotos)) === 260000 || Number(tarifasProd.baseVideo) === 180000 || Number(tarifasProd.baseFotos) === 80000 || Number(tarifasProd.baseVideo) === 160000) {
+        function poblarConfiguracionDesdeFirestore(tarifasProd, preciosEnt, listadoProductoras) {
+            if (tarifasProd || (listadoProductoras && Array.isArray(listadoProductoras.items))) {
+                // Corrección histórica de bases viejas (solo aplica al documento de tarifas heredado, que siembra a la primera productora)
+                if (tarifasProd && ((Number(tarifasProd.baseVideo) + Number(tarifasProd.baseFotos)) === 260000 || Number(tarifasProd.baseVideo) === 180000 || Number(tarifasProd.baseFotos) === 80000 || Number(tarifasProd.baseVideo) === 160000)) {
                     tarifasProd.baseVideo = 100000;
                     tarifasProd.baseFotos = 100000;
-                    migrarTarifasProd = true;
+                    if (Number(tarifasProd.baseReel) === 25000) tarifasProd.baseReel = 20000;
                 }
-                if (Number(tarifasProd.baseReel) === 25000 && migrarTarifasProd) {
-                    tarifasProd.baseReel = 20000;
-                }
-                const defArtEdicion = (Number(tarifasProd.artAmbas) - Number(tarifasProd.artFotos)) > 0 ? (Number(tarifasProd.artAmbas) - Number(tarifasProd.artFotos)) : 25000;
-                const defAluEdicion = (Number(tarifasProd.aluAmbas) - Number(tarifasProd.aluFotos)) > 0 ? (Number(tarifasProd.aluAmbas) - Number(tarifasProd.aluFotos)) : 25000;
-
-                setVal('prod-base-video', tarifasProd.baseVideo);
-                setVal('prod-base-fotos', tarifasProd.baseFotos);
-                setVal('prod-base-reel', tarifasProd.baseReel);
-                setVal('prod-art-fotos', tarifasProd.artFotos);
-                setVal('prod-art-reel', tarifasProd.artReel);
-                setVal('prod-art-ambas', tarifasProd.artAmbas);
-                setVal('prod-art-edicion-reel', tarifasProd.artEdicionReel !== undefined ? tarifasProd.artEdicionReel : defArtEdicion);
-                setVal('prod-alu-fotos', tarifasProd.aluFotos);
-                setVal('prod-alu-reel', tarifasProd.aluReel);
-                setVal('prod-alu-ambas', tarifasProd.aluAmbas);
-                setVal('prod-alu-edicion-reel', tarifasProd.aluEdicionReel !== undefined ? tarifasProd.aluEdicionReel : defAluEdicion);
-
+                inicializarProductoras(tarifasProd, listadoProductoras);
                 const vigentesActuales = obtenerTarifasVigentesProductora();
-                if (migrarTarifasProd && window.MandalaApp?.configuracion?.guardarTarifasProductora) {
-                    window.MandalaApp.configuracion.guardarTarifasProductora(vigentesActuales);
-                }
 
                 Object.keys(tarifasFestivales).forEach(fId => {
                     const tf = tarifasFestivales[fId];
                     if (!tf) return;
-                    const esBaseAntigua = (Number(tf.baseVideo) + Number(tf.baseFotos)) === 260000 || Number(tf.baseVideo) === 180000 || Number(tf.baseFotos) === 80000 || Number(tf.baseVideo) === 160000;
+                    const esBaseAntigua = false; // corrección histórica retirada: con varias productoras, 160000/180000 son valores legítimos
                     if (tf._esPorDefectoLocal || esBaseAntigua) {
                         tarifasFestivales[fId] = {
-                            ...vigentesActuales,
+                            ...obtenerTarifasVigentesProductora(infoFestivales[fId] && infoFestivales[fId].productora),
                             fechaCongelado: tf.fechaCongelado || 'Al crear',
                             _esPorDefectoLocal: tf._esPorDefectoLocal
                         };
@@ -8192,6 +8402,9 @@
             document.getElementById('new-ev-fecha').value = '';
             document.getElementById('new-ev-link').value = '';
             document.getElementById('btn-submit-crear-evento').textContent = 'Crear Evento';
+            llenarSelectsProductoras();
+            const selProdNuevo = document.getElementById('new-ev-productora');
+            if (selProdNuevo) selProdNuevo.value = nombreProductoraDefecto();
             document.getElementById('modal-crear-evento').classList.add('active');
         }
 
@@ -8206,11 +8419,15 @@
             const fechaHora = document.getElementById('new-ev-fecha')?.value || 'A definir';
             const idOrigen = document.getElementById('modal-evento-origen-id')?.value;
             const esDuplicacion = Boolean(idOrigen);
+            const productoraSel = document.getElementById('new-ev-productora')?.value || nombreProductoraDefecto();
+            const productoraSelId = (buscarProductora(productoraSel) || productoraPorDefecto() || {}).id || '';
             const nuevoId = esDuplicacion ? ('fest-dupl-' + Date.now()) : ('fest-' + Date.now());
 
             // Si es duplicación, hereda las tarifas congeladas, entradas, cronograma, participantes y rider del evento origen
             if (esDuplicacion) {
-                const tarifasOrigen = tarifasFestivales[idOrigen] || obtenerTarifasVigentesProductora();
+                // Misma productora: hereda las tarifas congeladas del origen. Otra productora: copia las suyas.
+                const mismaProductora = productoraDeFestival(idOrigen).toLowerCase() === String(productoraSel).toLowerCase();
+                const tarifasOrigen = (mismaProductora && tarifasFestivales[idOrigen]) || obtenerTarifasVigentesProductora(productoraSel);
                 tarifasFestivales[nuevoId] = { ...tarifasOrigen, fechaCongelado: new Date().toLocaleDateString('es-AR') };
                 const entradasOrigen = entradasFestivales[idOrigen] || obtenerEntradasVigentesPorDefecto();
                 entradasFestivales[nuevoId] = { ...entradasOrigen, fechaCongelado: new Date().toLocaleDateString('es-AR') };
@@ -8242,7 +8459,7 @@
                 }));
                 checklistFestivalesDB[nuevoId] = chkLimpio;
             } else {
-                tarifasFestivales[nuevoId] = obtenerTarifasVigentesProductora();
+                tarifasFestivales[nuevoId] = { ...obtenerTarifasVigentesProductora(productoraSel), fechaCongelado: new Date().toLocaleDateString('es-AR') };
                 entradasFestivales[nuevoId] = obtenerEntradasVigentesPorDefecto();
                 // Cronograma oficial por defecto garantizado
                 cronogramasFestivalesDB[nuevoId] = JSON.parse(JSON.stringify(cronogramaOficialPlantilla));
@@ -8284,7 +8501,9 @@
                 fechaRaw: fechaHora || '',
                 fechaHora: fechaHora || '',
                 anio: anioEvento,
-                estado
+                estado,
+                productora: productoraSel,
+                productoraId: productoraSelId
             };
 
             // Re-renderizar lista ordenada de festivales de manera cronológica (antiguo a reciente)
@@ -8302,6 +8521,8 @@
                     direccion: dirVenue,
                     capacidad: capVenue,
                     fechaHora,
+                    productora: productoraSel,
+                    productoraId: productoraSelId,
                     tarifasCongeladas: tarifasFestivales[nuevoId],
                     entradasCongeladas: entradasFestivales[nuevoId],
                     cronograma: cronogramasFestivalesDB[nuevoId],
@@ -8555,19 +8776,15 @@
                     anio: festAnio,
                     estado: fest.estado || 'Finalizado',
                     productora: fest.productora || '',
+                    productoraId: fest.productoraId || '',
                     link: fest.linkVenta || fest.link || '',
                     linkVenta: fest.linkVenta || fest.link || '',
                     netoEscuela: Number(fest.netoEscuela) || (Number(fest.recaudacionBruta) - Number(fest.gastosFestival)) || 0
                 };
 
                 if (fest.tarifasCongeladas) {
-                    const vigentes = obtenerTarifasVigentesProductora();
+                    const vigentes = obtenerTarifasVigentesProductora(fest.productora);
                     const tc = { ...fest.tarifasCongeladas };
-                    if ((Number(tc.baseVideo) + Number(tc.baseFotos)) === 260000 || Number(tc.baseVideo) === 180000 || Number(tc.baseFotos) === 80000 || Number(tc.baseVideo) === 160000) {
-                        tc.baseVideo = 100000;
-                        tc.baseFotos = 100000;
-                        if (Number(tc.baseReel) === 25000) tc.baseReel = 20000;
-                    }
                     if (tc.artEdicionReel === undefined) {
                         const diffArt = Number(tc.artAmbas) - Number(tc.artFotos);
                         tc.artEdicionReel = diffArt > 0 ? diffArt : vigentes.artEdicionReel;
@@ -8899,6 +9116,8 @@
                 montoSadaicUsado = taq.montoSadaic;
             }
 
+            const serv = calcularServiciosFestival(fId, fest);
+            const tieneDatosServicios = serv.costo > 0;
             const incRes = (typeof calcularIngresosIncumplimientosFestival === 'function')
                 ? calcularIngresosIncumplimientosFestival(fId)
                 : { cobrado: 0 };
@@ -8919,8 +9138,8 @@
             }
 
             let gananciaEscuela = Number(fest?.netoEscuela) || (brutoTotal > 0 ? Math.max(0, brutoTotal - gastosOperativos) : 0);
-            if (tieneDatosIngresos || tieneDatosGastosOp || tieneDatosCobertura || ingresosIncumplimientos > 0) {
-                gananciaEscuela = recaudacionNeta + excedenteCobertura - gastosOperativos - gastosCobertura;
+            if (tieneDatosIngresos || tieneDatosGastosOp || tieneDatosCobertura || ingresosIncumplimientos > 0 || tieneDatosServicios) {
+                gananciaEscuela = recaudacionNeta + serv.cobrado + excedenteCobertura - gastosOperativos - serv.costo - gastosCobertura;
             }
 
             return {
@@ -8931,6 +9150,10 @@
                 gastosOperativos,
                 gastosCobertura,
                 excedenteCobertura,
+                ingresosServicios: serv.cobrado,
+                gastosServicios: serv.costo,
+                serviciosPorCobrar: serv.porCobrar,
+                serviciosCostoPendiente: serv.costoPendiente,
                 gananciaEscuela,
                 montoSadaic: montoSadaicUsado !== null ? montoSadaicUsado : calcularMontoSadaicFestival(fId, brutoTotal).monto
             };
@@ -9148,6 +9371,9 @@
             document.getElementById('new-ev-fecha').value = '';
             document.getElementById('new-ev-link').value = '';
             document.getElementById('btn-submit-crear-evento').textContent = 'Duplicar Festival';
+            llenarSelectsProductoras();
+            const selProdDup = document.getElementById('new-ev-productora');
+            if (selProdDup) selProdDup.value = productoraDeFestival(idOrigen);
 
             document.getElementById('modal-crear-evento').classList.add('active');
         }
@@ -11911,24 +12137,17 @@
         // =========================================================
         // COBERTURA AUDIOVISUAL: CÁLCULOS DINÁMICOS
         // =========================================================
-        async function guardarTarifasProductora() {
-            const tarifas = obtenerTarifasVigentesProductora();
-            if (window.MandalaApp && window.MandalaApp.configuracion && typeof window.MandalaApp.configuracion.guardarTarifasProductora === 'function') {
-                await window.MandalaApp.configuracion.guardarTarifasProductora(tarifas);
-            }
-            mostrarToast('¡Tarifas vigentes de la productora guardadas con éxito en la base de datos!', 'success');
-        }
-
         async function actualizarTarifasDesdePreset() {
+            const nomProdEvento = productoraDeFestival(eventoActualId);
             const conf = await mostrarModalConfirmacion({
                 titulo: 'Actualizar Tarifas del Evento',
-                mensaje: '¿Deseás desbloquear y actualizar las tarifas de este festival a los precios vigentes de la productora? Esta acción recalculará los montos de cobertura de las bandas.',
+                mensaje: '¿Deseás actualizar las tarifas de este festival a los precios vigentes de <b>' + esc(nomProdEvento) + '</b>? Esta acción recalculará los montos de cobertura de las bandas.',
                 icono: '🔄',
                 textoConfirmar: 'Actualizar Tarifas'
             });
             if (!conf) return;
 
-            tarifasFestivales[eventoActualId] = obtenerTarifasVigentesProductora();
+            tarifasFestivales[eventoActualId] = { ...obtenerTarifasVigentesProductora(nomProdEvento), fechaCongelado: new Date().toLocaleDateString('es-AR') };
             if (typeof autoguardarDetalleFestivalFirestore === 'function') {
                 autoguardarDetalleFestivalFirestore('tarifasCongeladas', tarifasFestivales[eventoActualId]);
             }
@@ -12295,10 +12514,7 @@
                         </td>
                         <td style="text-align:center;">
                             <select class="installment-select" style="font-size:11.5px;" onchange="actualizarDetalleCobroCoberturaFinanzas('${safeNombre}', ${cIdx}, 'cobradoPor', this.value)">
-                                <option value="Guido" ${pago.cobradoPor === 'Guido' ? 'selected' : ''}>Guido</option>
-                                <option value="Nacho" ${pago.cobradoPor === 'Nacho' ? 'selected' : ''}>Nacho</option>
-                                <option value="Belu" ${pago.cobradoPor === 'Belu' ? 'selected' : ''}>Belu</option>
-                                <option value="Pablo" ${pago.cobradoPor === 'Pablo' ? 'selected' : ''}>Pablo</option>
+                                ${opcionesResponsablesHTML(pago.cobradoPor)}
                             </select>
                         </td>
                         <td style="text-align:center;">
@@ -12393,11 +12609,41 @@
             const excl = new Set(Array.isArray(srv && srv.excluidos) ? srv.excluidos : []);
             const pagadores = nombres.filter(n => !excl.has(n.nombre));
             const excluidos = nombres.filter(n => excl.has(n.nombre));
-            const total = Number((srv && srv.total) || Math.round(parseFloat((srv && srv.horas) || 1) * parseFloat((srv && srv.precioHora) || 0)) || 0);
+            const total = Math.round(parseFloat((srv && srv.horas) || 1) * parseFloat((srv && srv.precioHora) || 0)) || Number((srv && srv.total) || 0);
             const cuota = pagadores.length > 0 ? Math.ceil((total / pagadores.length) / 1000) * 1000 : 0;
             return { nombres, pagadores, excluidos, cuota };
         }
         window.resolverPagadoresServicio = resolverPagadoresServicio;
+
+        // Fuente única de los números de servicios adicionales de un festival (lo usan Resumen, Balance, Cobros y la pestaña Servicios)
+        //  costo        = lo que se le debe a sesionistas/salas (total de los servicios)
+        //  cobrado      = lo que ya pagaron los integrantes a la escuela
+        //  porCobrar    = lo que falta cobrar a los integrantes
+        //  costoPagado / costoPendiente = lo ya pagado / lo que falta pagar a proveedores
+        function calcularServiciosFestival(fId, fest) {
+            const serviciosDB = (typeof serviciosAdicionalesFestivalesDB !== 'undefined' && serviciosAdicionalesFestivalesDB[fId]) || (fest && fest.serviciosAdicionales) || {};
+            const bandas = (typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[fId]) || (fest && fest.participantes) || [];
+            const r = { costo: 0, costoPagado: 0, costoPendiente: 0, cobrado: 0, porCobrar: 0, cantidad: 0 };
+            Object.entries(serviciosDB).forEach(([bNombre, lista]) => {
+                if (!Array.isArray(lista)) return;
+                const banda = bandas.find(b => b && b.nombre === bNombre);
+                const integrantes = banda ? (Array.isArray(banda.alumnos) ? banda.alumnos : (Array.isArray(banda.integrantes) ? banda.integrantes : [])) : [];
+                lista.forEach(srv => {
+                    const total = Math.round(parseFloat(srv.horas || 1) * parseFloat(srv.precioHora || 0)) || 0;
+                    if (total <= 0) return;
+                    r.cantidad++;
+                    r.costo += total;
+                    if (srv.pagadoProveedor) r.costoPagado += total; else r.costoPendiente += total;
+                    const res = resolverPagadoresServicio(srv, integrantes, bNombre);
+                    res.pagadores.forEach(p => {
+                        const pago = srv.pagosIntegrantes && srv.pagosIntegrantes[p.nombre];
+                        if (pago && pago.pagada) r.cobrado += res.cuota; else r.porCobrar += res.cuota;
+                    });
+                });
+            });
+            return r;
+        }
+        window.calcularServiciosFestival = calcularServiciosFestival;
 
         const serviciosExclusionAbiertos = new Set();
         function registrarAperturaExclusionServicio(bandaNombre, srvIdx, abierto) {
@@ -12433,6 +12679,62 @@
             mostrarToast(excluir ? `${nombre} excluido del pago de este servicio.` : `${nombre} vuelve a pagar su parte de este servicio.`, 'info');
         }
         window.toggleExcluirIntegranteServicio = toggleExcluirIntegranteServicio;
+
+        // Pago al sesionista / sala de ensayo (lo que la escuela debe pagarle)
+        function cambiarEstadoPagoProveedorServicio(bandaNombre, srvIdx, pagado) {
+            const fid = eventoActualId;
+            const srv = obtenerServiciosAdicionalesFestival(fid)[bandaNombre]?.[srvIdx];
+            if (!srv) return;
+            srv.pagadoProveedor = Boolean(pagado);
+            guardarServiciosAdicionalesYRefrescar(fid);
+            if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
+            mostrarToast(pagado ? 'Pago al proveedor registrado.' : 'Pago al proveedor marcado como pendiente.', pagado ? 'success' : 'info');
+        }
+        window.cambiarEstadoPagoProveedorServicio = cambiarEstadoPagoProveedorServicio;
+
+        // Fila de detalle bajo cada servicio: quién pagó y quién no (como en Cierre de Entradas)
+        function crearFilaDetallePagosServicio(srv, resPag, bNombre, sIdx) {
+            const safeB = bNombre.replace(/'/g, "\\'");
+            const fmt = (n) => '$ ' + Number(n).toLocaleString('es-AR');
+            const cuota = resPag.cuota;
+            const vistos = new Set();
+            let cobrado = 0, total = 0;
+            const filas = [];
+            resPag.nombres.forEach(n => {
+                if (vistos.has(n.nombre)) return;
+                vistos.add(n.nombre);
+                const excluido = resPag.excluidos.some(e => e.nombre === n.nombre);
+                const safeN = n.nombre.replace(/'/g, "\\'");
+                if (excluido) {
+                    filas.push('<tr style="background:#f8fafc; color:#94a3b8;"><td>👤 ' + esc(n.nombre) + '</td><td style="text-align:right;">—</td><td><span style="font-size:11px; font-weight:700;">Excluido (lo absorbe la escuela)</span></td><td></td><td></td><td></td></tr>');
+                    return;
+                }
+                const pago = (srv.pagosIntegrantes && srv.pagosIntegrantes[n.nombre]) || {};
+                const pagada = Boolean(pago.pagada);
+                total += cuota;
+                if (pagada) cobrado += cuota;
+                const medio = pago.medio || 'Transferencia';
+                const cobra = pago.cobradoPor || RESPONSABLE_COBRO_DEFECTO;
+                filas.push('<tr' + (pagada ? '' : ' style="background:#fffbeb;"') + '>'
+                    + '<td>👤 <strong>' + esc(n.nombre) + '</strong></td>'
+                    + '<td style="text-align:right; font-family:\'Geist Mono\'; font-weight:700;">' + fmt(cuota) + '</td>'
+                    + '<td>' + (pagada ? '<span class="pill-status pill-success" style="font-size:11px;">✔ Pagó</span>' : '<span class="pill-status" style="font-size:11px; background:#fef3c7; color:#92400e; border:1px solid #fde68a;">⏳ Debe</span>') + '</td>'
+                    + '<td><select class="installment-select" style="font-size:11.5px;" onchange="actualizarDetalleCobroServicioFinanzas(\'' + safeB + '\', ' + sIdx + ', \'' + safeN + '\', \'medio\', this.value)">'
+                    + '<option value="Transferencia"' + (medio === 'Transferencia' ? ' selected' : '') + '>Transferencia</option><option value="Efectivo"' + (medio === 'Efectivo' ? ' selected' : '') + '>Efectivo</option></select></td>'
+                    + '<td><select class="installment-select" style="font-size:11.5px;" onchange="actualizarDetalleCobroServicioFinanzas(\'' + safeB + '\', ' + sIdx + ', \'' + safeN + '\', \'cobradoPor\', this.value)">' + opcionesResponsablesHTML(cobra) + '</select></td>'
+                    + '<td style="text-align:center;">' + (pagada
+                        ? '<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="cambiarEstadoCobroServicioFinanzas(\'' + safeB + '\', ' + sIdx + ', \'' + safeN + '\', false)" title="Marcar como pendiente">Deshacer</button>'
+                        : '<button type="button" class="btn-app btn-primary" style="font-size:11px; padding:3px 8px;" onclick="cambiarEstadoCobroServicioFinanzas(\'' + safeB + '\', ' + sIdx + ', \'' + safeN + '\', true)">✔ Cobrar</button>') + '</td>'
+                    + '</tr>');
+            });
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td colspan="8" style="padding:6px 16px 12px 40px; background:#fcfcfd; border-bottom:2px solid #e2e8f0;">'
+                + '<div style="font-size:11.5px; font-weight:700; color:#475569; margin-bottom:4px;">💳 Pagos de los integrantes · Cobrado ' + fmt(cobrado) + ' de ' + fmt(total)
+                + (total - cobrado > 0 ? ' · <span style="color:#b45309;">Por cobrar ' + fmt(total - cobrado) + '</span>' : ' · <span style="color:#15803d;">Todo cobrado</span>') + '</div>'
+                + '<table class="spreadsheet-table" style="font-size:11.5px; width:100%; margin:0;"><thead><tr><th style="text-align:left;">INTEGRANTE</th><th style="text-align:right; width:110px;">CUOTA</th><th style="width:110px;">ESTADO</th><th style="width:140px;">MEDIO</th><th style="width:130px;">COBRA</th><th style="width:100px; text-align:center;">ACCIÓN</th></tr></thead><tbody>'
+                + filas.join('') + '</tbody></table></td>';
+            return tr;
+        }
 
         function obtenerServiciosAdicionalesFestival(festId) {
             const fid = festId || eventoActualId;
@@ -12577,6 +12879,9 @@
                                 `;
                             }
 
+                            const botonProveedorHtml = '<div style="margin-top:4px;">' + (srv.pagadoProveedor
+                                ? '<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:2px 8px; background:#f0fdf4; color:#166534; border-color:#bbf7d0;" onclick="cambiarEstadoPagoProveedorServicio(\'' + safeNombre + '\', ' + sIdx + ', false)" title="Click para marcar como pendiente">✔ Proveedor pagado</button>'
+                                : '<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:2px 8px;" onclick="cambiarEstadoPagoProveedorServicio(\'' + safeNombre + '\', ' + sIdx + ', true)" title="Registrar que la escuela ya le pagó al proveedor">💸 Pagar al proveedor</button>') + '</div>';
                             tr.innerHTML = `
                                 <td>
                                     <select class="table-inp" style="font-weight:700;" onchange="actualizarServicioAdicional('${safeNombre}', ${sIdx}, 'tipo', this.value)">
@@ -12602,7 +12907,7 @@
                                     $ ${total.toLocaleString('es-AR')}
                                 </td>
                                 <td>
-                                    ${proveedorHtml}
+                                    ${proveedorHtml}${botonProveedorHtml}
                                 </td>
                                 <td>
                                     <input type="text" class="table-inp" value="${esc(srv.obs || '')}" placeholder="Comentario o detalle..." onchange="actualizarServicioAdicional('${safeNombre}', ${sIdx}, 'obs', this.value)">
@@ -12619,6 +12924,7 @@
                                 </td>
                             `;
                             tbody.appendChild(tr);
+                            if (total > 0) tbody.appendChild(crearFilaDetallePagosServicio(srv, resPag, bNombre, sIdx));
                         });
                     }
                 }
@@ -12630,7 +12936,8 @@
 
         function actualizarTotalesServiciosAdicionales(total) {
             const badge = document.getElementById('badge-total-servicios-adicionales');
-            if (badge) badge.textContent = `Total Servicios: $ ${total.toLocaleString('es-AR')}`;
+            const sv = calcularServiciosFestival(eventoActualId, (typeof infoFestivales !== 'undefined') ? infoFestivales[eventoActualId] : null);
+            if (badge) badge.textContent = 'Total Servicios: $ ' + total.toLocaleString('es-AR') + (sv.costo > 0 ? ' · Cobrado: $ ' + sv.cobrado.toLocaleString('es-AR') : '');
             const tdTot = document.getElementById('td-tot-servicios-adicionales');
             if (tdTot) tdTot.textContent = `$ ${total.toLocaleString('es-AR')}`;
         }
@@ -12810,10 +13117,7 @@
                             </td>
                             <td style="text-align:center;">
                                 <select class="installment-select" style="font-size:11.5px;" onchange="actualizarDetalleCobroServicioFinanzas('${safeBanda}', ${sIdx}, '${safeIntg}', 'cobradoPor', this.value)">
-                                    <option value="Guido" ${pago.cobradoPor === 'Guido' ? 'selected' : ''}>Guido</option>
-                                    <option value="Nacho" ${pago.cobradoPor === 'Nacho' ? 'selected' : ''}>Nacho</option>
-                                    <option value="Belu" ${pago.cobradoPor === 'Belu' ? 'selected' : ''}>Belu</option>
-                                    <option value="Pablo" ${pago.cobradoPor === 'Pablo' ? 'selected' : ''}>Pablo</option>
+                                    ${opcionesResponsablesHTML(pago.cobradoPor)}
                                 </select>
                             </td>
                             <td>
@@ -12867,6 +13171,8 @@
             }
 
             renderizarCobrosServiciosFinanzas();
+            if (typeof renderizarServiciosAdicionalesFestival === 'function') renderizarServiciosAdicionalesFestival(fid);
+            if (typeof renderizarGastosFestival === 'function') renderizarGastosFestival(false);
             if (typeof renderizarPanelDeudas === 'function') renderizarPanelDeudas();
             if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
 
@@ -13305,11 +13611,7 @@
                     </td>
                     <td style="text-align:center; padding:6px 8px;">
                         <select class="installment-select" style="font-size:11.5px;" onchange="actualizarGastoOperativoFestival(${idx}, 'responsable', this.value)">
-                            <option value="Guido" ${resp === 'Guido' ? 'selected' : ''}>Guido</option>
-                            <option value="Nacho" ${resp === 'Nacho' ? 'selected' : ''}>Nacho</option>
-                            <option value="Belu" ${resp === 'Belu' ? 'selected' : ''}>Belu</option>
-                            <option value="Pablo" ${resp === 'Pablo' ? 'selected' : ''}>Pablo</option>
-                            <option value="Administración" ${resp === 'Administración' ? 'selected' : ''}>Administración</option>
+                            ${opcionesResponsablesHTML(resp)}
                         </select>
                     </td>
                     <td style="text-align:center; padding:6px 8px;">
@@ -13477,7 +13779,7 @@
 
             const fInfo = (typeof infoFestivales !== 'undefined' && infoFestivales[eventoActualId]) ? infoFestivales[eventoActualId] : null;
             const fechaEvento = (fInfo && fInfo.fecha && fInfo.fecha !== 'A definir') ? fInfo.fecha.split(' ')[0] : '24/09/2026';
-            const nomProductora = (fInfo && fInfo.productora) ? fInfo.productora : (document.getElementById('det-ev-productora')?.textContent?.trim() || PRODUCTORA_DEFECTO);
+            const nomProductora = (fInfo && fInfo.productora) ? fInfo.productora : (document.getElementById('det-ev-productora')?.textContent?.trim() || nombreProductoraDefecto());
 
             const fEl = document.getElementById('gasto-prod-fecha');
             if (fEl) fEl.textContent = fechaEvento;
@@ -13501,7 +13803,7 @@
             const selMet = document.getElementById('sel-gasto-prod-metodo');
             if (selMet) selMet.value = datos.coberturaEscuelaMetodo || 'Transferencia';
             const selResp = document.getElementById('sel-gasto-prod-responsable');
-            if (selResp) selResp.value = datos.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO;
+            if (selResp) llenarSelectResponsableEstatico('sel-gasto-prod-responsable', datos.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO);
 
             const btnCobPagado = document.getElementById('btn-gasto-prod-pagado');
             if (btnCobPagado) {
@@ -13520,21 +13822,11 @@
                 if (!g.pagado) totalOperativosPendientes += m;
             });
 
-            // Sumar Servicios Adicionales (Sesionistas y Ensayos de Bandas)
-            let totalServiciosAdicionalesCosto = 0;
-            const srvFestObj = (typeof serviciosAdicionalesFestivalesDB !== 'undefined' && serviciosAdicionalesFestivalesDB[eventoActualId]) ? serviciosAdicionalesFestivalesDB[eventoActualId] : {};
-            Object.values(srvFestObj).forEach(srvs => {
-                if (Array.isArray(srvs)) {
-                    srvs.forEach(s => {
-                        totalServiciosAdicionalesCosto += Number(s.total || 0);
-                    });
-                }
-            });
-            totalOperativos += totalServiciosAdicionalesCosto;
-            totalOperativosPendientes += totalServiciosAdicionalesCosto;
+            // Servicios adicionales (sesionistas y ensayos): costo con proveedores e ingreso cobrado a los integrantes (fuente única)
+            const serv = calcularServiciosFestival(eventoActualId, (typeof infoFestivales !== 'undefined') ? infoFestivales[eventoActualId] : null);
 
-            const totalEgresos = totalOperativos + saldoEscuela;
-            const totalPendientePagarEscuela = totalOperativosPendientes + (datos.coberturaEscuelaPagada ? 0 : saldoEscuela);
+            const totalEgresos = totalOperativos + serv.costo + saldoEscuela;
+            const totalPendientePagarEscuela = totalOperativosPendientes + serv.costoPendiente + (datos.coberturaEscuelaPagada ? 0 : saldoEscuela);
 
             const elTotEgresos = document.getElementById('total-egresos-festival-tabla');
             if (elTotEgresos) elTotEgresos.textContent = `-$ ${totalEgresos.toLocaleString('es-AR')}`;
@@ -13553,6 +13845,14 @@
             const elCardIncTot = document.getElementById('resumen-card-incumplimientos-tot');
             const elCardSubInc = document.getElementById('resumen-card-sub-incumplimientos');
             const elCardGan = document.getElementById('resumen-card-ganancia-tot');
+            const elCardServCob = document.getElementById('resumen-card-serv-cobros-tot');
+            const elCardSubServCob = document.getElementById('resumen-card-sub-serv-cobros');
+            const elCardServCosto = document.getElementById('resumen-card-serv-costo-tot');
+            const elCardSubServCosto = document.getElementById('resumen-card-sub-serv-costo');
+            if (elCardServCob) elCardServCob.textContent = serv.cobrado > 0 ? '+$ ' + serv.cobrado.toLocaleString('es-AR') : '$ 0';
+            if (elCardSubServCob) elCardSubServCob.textContent = serv.costo > 0 ? (serv.porCobrar > 0 ? 'Por cobrar: $ ' + serv.porCobrar.toLocaleString('es-AR') : 'Todo cobrado') : 'Sin servicios contratados';
+            if (elCardServCosto) elCardServCosto.textContent = serv.costo > 0 ? '-$ ' + serv.costo.toLocaleString('es-AR') : '$ 0';
+            if (elCardSubServCosto) elCardSubServCosto.textContent = serv.costo > 0 ? (serv.costoPendiente > 0 ? 'Pendiente de pago a proveedores: $ ' + serv.costoPendiente.toLocaleString('es-AR') : 'Proveedores pagados') : 'Sin servicios contratados';
 
             if (elCardGastosOp) {
                 elCardGastosOp.textContent = totalOperativos > 0 ? `-$ ${totalOperativos.toLocaleString('es-AR')}` : '$ 0';
@@ -13614,7 +13914,10 @@
                 obtenerDatosIngresosEventoActual(),
                 (typeof obtenerEntradasEventoActual === 'function') ? obtenerEntradasEventoActual() : undefined
             ).recaudacionEntradas;
-            const gananciaFinal = ingBruto + incRes.cobrado + (res.excedenteCobertura || 0) - totalOperativos - saldoEscuela;
+            // Ganancia y cobertura salen del MISMO cálculo que la lista de Finanzas y Caja (una sola fuente de verdad)
+            const balUnico = calcularBalanceGeneralFestival(eventoActualId, (typeof infoFestivales !== 'undefined') ? (infoFestivales[eventoActualId] || null) : null);
+            const gananciaFinal = balUnico.gananciaEscuela;
+            if (elCardCob) elCardCob.textContent = balUnico.gastosCobertura > 0 ? '-$ ' + balUnico.gastosCobertura.toLocaleString('es-AR') : '$ 0';
             if (elCardGan) {
                 elCardGan.textContent = `${gananciaFinal >= 0 ? '+$ ' : '-$ '}${Math.abs(gananciaFinal).toLocaleString('es-AR')}`;
                 elCardGan.style.color = gananciaFinal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
@@ -14287,11 +14590,7 @@
                     </td>
                     <td>
                         <select class="form-control" style="font-size:12px; padding:3px 8px;" onchange="actualizarVentaEspecial(${idx}, 'cobradoPor', this.value)">
-                            <option value="Guido" ${v.cobradoPor === 'Guido' ? 'selected' : ''}>Guido</option>
-                            <option value="Nacho" ${v.cobradoPor === 'Nacho' ? 'selected' : ''}>Nacho</option>
-                            <option value="Belu" ${v.cobradoPor === 'Belu' ? 'selected' : ''}>Belu</option>
-                            <option value="Pablo" ${v.cobradoPor === 'Pablo' ? 'selected' : ''}>Pablo</option>
-                            <option value="Administración" ${v.cobradoPor === 'Administración' ? 'selected' : ''}>Administración</option>
+                            ${opcionesResponsablesHTML(v.cobradoPor)}
                         </select>
                     </td>
                     <td style="text-align:center;">
@@ -15778,10 +16077,7 @@
                         </td>
                         <td style="text-align:center;">
                             <select class="installment-select" style="font-size:11.5px;" onchange="actualizarDetallePagoContratoAlumno('${safeId}', ${cIdx}, 'cobradoPor', this.value)">
-                                <option value="Guido" ${p.cobradoPor === 'Guido' ? 'selected' : ''}>Guido</option>
-                                <option value="Nacho" ${p.cobradoPor === 'Nacho' ? 'selected' : ''}>Nacho</option>
-                                <option value="Belu" ${p.cobradoPor === 'Belu' ? 'selected' : ''}>Belu</option>
-                                <option value="Pablo" ${p.cobradoPor === 'Pablo' ? 'selected' : ''}>Pablo</option>
+                                ${opcionesResponsablesHTML(p.cobradoPor)}
                             </select>
                         </td>
                         <td>
@@ -15958,36 +16254,13 @@
                 });
             });
 
-            // 3. Pendiente de Servicios Adicionales (Sesionistas y Ensayos por Banda)
-            let pendServicios = 0;
-            const serviciosFest = (typeof serviciosAdicionalesFestivalesDB !== 'undefined' && serviciosAdicionalesFestivalesDB[eventoActualId])
-                ? serviciosAdicionalesFestivalesDB[eventoActualId]
-                : {};
-            const bandasSrvFest = (typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[eventoActualId])
-                ? participantesFestivalesDB[eventoActualId]
-                : [];
-            bandasSrvFest.forEach(banda => {
-                if (!banda || !banda.nombre) return;
-                const bNombre = banda.nombre;
-                const srvList = serviciosFest[bNombre] || [];
-                const integrantes = (Array.isArray(banda.alumnos) ? banda.alumnos : (Array.isArray(banda.integrantes) ? banda.integrantes : []));
-                const listaInt = integrantes.length > 0 ? integrantes : [bNombre];
-                srvList.forEach(srv => {
-                    const totalSrv = Number(srv.total || 0);
-                    if (totalSrv <= 0) return;
-                    const resPag = resolverPagadoresServicio(srv, integrantes, bNombre);
-                    const cuotaInd = resPag.cuota;
-                    const nombresExcl = new Set(resPag.excluidos.map(e => e.nombre));
-                    listaInt.forEach(intg => {
-                        const intgNombre = typeof intg === 'string' ? intg : (intg.nombre || '');
-                        if (nombresExcl.has(intgNombre)) return;
-                        const pIntg = srv.pagosIntegrantes?.[intgNombre];
-                        if (!pIntg || !pIntg.pagada) {
-                            pendServicios += cuotaInd;
-                        }
-                    });
-                });
-            });
+            // 3. Pendiente de Servicios Adicionales (Sesionistas y Ensayos por Banda): fuente única
+            const servK = calcularServiciosFestival(eventoActualId, (typeof infoFestivales !== 'undefined') ? infoFestivales[eventoActualId] : null);
+            const pendServicios = servK.porCobrar;
+            const elServTxt = document.getElementById('total-cobros-servicios-txt');
+            const elServSub = document.getElementById('kpi-cobros-servicios-sub');
+            if (elServTxt) elServTxt.textContent = formatearMonedaAr(servK.cobrado) + ' / ' + formatearMonedaAr(servK.cobrado + servK.porCobrar);
+            if (elServSub) elServSub.textContent = servK.costo > 0 ? (servK.porCobrar > 0 ? 'Por cobrar: ' + formatearMonedaAr(servK.porCobrar) : 'Todo cobrado') : 'Sin servicios contratados';
 
             const totalPendiente = pendContrato + pendCobertura + pendServicios;
 
@@ -16024,7 +16297,7 @@
                 const festId = fest.id;
                 const festNombre = fest.nombre || 'Festival';
                 const festFecha = fest.fecha || fest.fechaRaw || '';
-                const nomProd = fest.productora || (document.getElementById('det-ev-productora')?.textContent?.trim() || PRODUCTORA_DEFECTO);
+                const nomProd = fest.productora || (document.getElementById('det-ev-productora')?.textContent?.trim() || nombreProductoraDefecto());
 
                 // REGLA: No mostrar los gastos pendientes de eventos que se encuentran programados. Solo en curso y finalizados.
                 const estadoEv = (fest.estado || 'Programado').trim();
@@ -16512,11 +16785,7 @@
                             </td>
                             <td style="text-align:center;">
                                 <select class="installment-select no-print" style="font-size:11.5px; padding:3px 6px; border-radius:6px; color:#0f172a; font-weight:400;" onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'responsable', this.value)">
-                                    <option value="Guido" ${item.responsable === 'Guido' ? 'selected' : ''}>Guido</option>
-                                    <option value="Nacho" ${item.responsable === 'Nacho' ? 'selected' : ''}>Nacho</option>
-                                    <option value="Belu" ${item.responsable === 'Belu' ? 'selected' : ''}>Belu</option>
-                                    <option value="Pablo" ${item.responsable === 'Pablo' ? 'selected' : ''}>Pablo</option>
-                                    <option value="Administración" ${item.responsable === 'Administración' ? 'selected' : ''}>Administración</option>
+                                    ${opcionesResponsablesHTML(item.responsable)}
                                 </select>
                                 <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${esc(item.responsable)}</span>
                             </td>
@@ -16644,11 +16913,7 @@
                             <td style="text-align:center;">
                                 ${esTraspasoItem ? '<span style="color:#0f172a; font-weight:400;">-</span>' : `
                                 <select class="installment-select no-print" style="font-size:11.5px; padding:3px 6px; border-radius:6px; color:#0f172a; font-weight:400;" onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'responsable', this.value)">
-                                    <option value="Guido" ${item.responsable === 'Guido' ? 'selected' : ''}>Guido</option>
-                                    <option value="Nacho" ${item.responsable === 'Nacho' ? 'selected' : ''}>Nacho</option>
-                                    <option value="Belu" ${item.responsable === 'Belu' ? 'selected' : ''}>Belu</option>
-                                    <option value="Pablo" ${item.responsable === 'Pablo' ? 'selected' : ''}>Pablo</option>
-                                    <option value="Administración" ${item.responsable === 'Administración' ? 'selected' : ''}>Administración</option>
+                                    ${opcionesResponsablesHTML(item.responsable)}
                                 </select>
                                 <span class="print-val-deuda print-only" style="color:#0f172a; font-weight:400;">${esc(item.responsable)}</span>`}
                             </td>

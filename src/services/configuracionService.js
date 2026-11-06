@@ -9,6 +9,7 @@ import { notificarErrorPersistencia } from "../utils/errores.js";
 
 const DOC_PRODUCTORA = "tarifas_maestras";
 const DOC_ENTRADAS = "entradas_defecto";
+const DOC_LISTADO = "productoras_listado";
 
 /**
  * Obtener las tarifas vigentes maestras de la productora audiovisual
@@ -42,6 +43,35 @@ export async function guardarTarifasProductoraFirestore(tarifas) {
     } catch (err) {
         console.error("[Mandala Festivales] Error al guardar tarifas de productora:", err);
         notificarErrorPersistencia("las tarifas de productora", err);
+        return false;
+    }
+}
+
+/**
+ * Listado de productoras audiovisuales (cada una con su propia lista de tarifas).
+ * Vive en un único documento de productora_config para no depender de reglas nuevas.
+ */
+export async function obtenerProductorasFirestore() {
+    try {
+        const snap = await getDoc(doc(db, COLLECTIONS.PRODUCTORA_CONFIG, DOC_LISTADO));
+        return snap.exists() ? snap.data() : null;
+    } catch (err) {
+        console.warn("[Mandala Festivales] Error al obtener el listado de productoras:", err);
+        return null;
+    }
+}
+
+export async function guardarProductorasFirestore(items) {
+    try {
+        await setDoc(doc(db, COLLECTIONS.PRODUCTORA_CONFIG, DOC_LISTADO), {
+            items,
+            actualizadoEn: new Date().toISOString()
+        });
+        console.log("[Mandala Festivales] Listado de productoras guardado con éxito en Firestore.");
+        return true;
+    } catch (err) {
+        console.error("[Mandala Festivales] Error al guardar el listado de productoras:", err);
+        notificarErrorPersistencia("el listado de productoras", err);
         return false;
     }
 }

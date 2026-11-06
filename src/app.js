@@ -28,7 +28,7 @@ import { obtenerVenuesFirestore, guardarVenueFirestore, guardarLoteVenues, elimi
 import { obtenerSesionistasFirestore, guardarSesionistaFirestore, eliminarSesionistaFirestore } from "./services/sesionistasService.js";
 import { obtenerUsuariosSistemaFirestore, obtenerUsuarioPorEmail, consultarAccesoUsuario, marcarPasswordModificada } from "./services/usuariosService.js";
 import { obtenerGastosCajaFirestore, guardarGastosCajaFirestore, obtenerIngresosManualesCajaFirestore, guardarIngresosManualesCajaFirestore, escucharCajaEnTiempoReal, migrarCajaAFormato2, revertirCajaAFormato1, obtenerFormatoCaja, usarColeccionCaja } from "./services/cajaService.js";
-import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore } from "./services/configuracionService.js";
+import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerProductorasFirestore, guardarProductorasFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore } from "./services/configuracionService.js";
 import { obtenerInstrumentosFirestore, escucharInstrumentosEnTiempoReal, getEmojiParaInstrumento, obtenerInstrumentosActualesSync } from "./services/instrumentosService.js";
 
 import { idVenueEstable, idHistoricoEstable } from "./utils/ids.js";
@@ -103,6 +103,8 @@ window.MandalaApp = {
     configuracion: {
         obtenerTarifasProductora: obtenerTarifasProductoraFirestore,
         guardarTarifasProductora: guardarTarifasProductoraFirestore,
+        obtenerProductoras: obtenerProductorasFirestore,
+        guardarProductoras: guardarProductorasFirestore,
         obtenerPreciosEntradas: obtenerPreciosEntradasFirestore,
         guardarPreciosEntradas: guardarPreciosEntradasFirestore
     }
@@ -279,8 +281,9 @@ async function sincronizarDatosTrasLogin() {
         try {
             const tarifasProd = await obtenerTarifasProductoraFirestore();
             const preciosEnt = await obtenerPreciosEntradasFirestore();
+            const listadoProductoras = await obtenerProductorasFirestore();
             if (typeof window.poblarConfiguracionDesdeFirestore === 'function') {
-                window.poblarConfiguracionDesdeFirestore(tarifasProd, preciosEnt);
+                window.poblarConfiguracionDesdeFirestore(tarifasProd, preciosEnt, listadoProductoras);
             }
         } catch (e) {
             console.warn("[Mandala Festivales] Error al cargar configuración general:", e);

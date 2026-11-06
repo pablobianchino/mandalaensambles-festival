@@ -2,7 +2,7 @@
 // src/config/constants.js — Constantes y Configuración de Firebase Mandala
 // =======================================================================
 
-export const APP_VERSION = "beta3.4";
+export const APP_VERSION = "beta3.5";
 
 // Cuenta de emergencia: siempre puede ingresar (misma regla que en las reglas de Firestore de Admisión)
 export const EMAIL_CUENTA_EMERGENCIA = "productora.mandalahouse@gmail.com";

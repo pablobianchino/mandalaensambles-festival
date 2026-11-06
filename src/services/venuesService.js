@@ -29,6 +29,11 @@ export async function obtenerVenuesFirestore() {
  * Guardar o actualizar un venue en Firestore
  */
 export async function guardarVenueFirestore(venueId, venueData) {
+    // Un id vacío arma la ruta "venues" (1 segmento) y Firestore la rechaza: se frena acá y se deja la traza del origen.
+    if (venueId === undefined || venueId === null || String(venueId).trim() === "") {
+        console.warn("[Mandala Festivales] Se intentó guardar un venue sin id; no se guardó nada.", venueData, new Error("traza").stack);
+        return false;
+    }
     try {
         const docRef = doc(db, COLLECTIONS.VENUES, venueId);
         await setDoc(docRef, { ...venueData, actualizadoEn: new Date().toISOString() }, { merge: true });
@@ -67,6 +72,10 @@ export async function guardarLoteVenues(lote) {
  * Eliminar un venue en Firestore
  */
 export async function eliminarVenueFirestore(venueId) {
+    if (venueId === undefined || venueId === null || String(venueId).trim() === "") {
+        console.warn("[Mandala Festivales] Se intentó eliminar un venue sin id; no se hizo nada.", new Error("traza").stack);
+        return false;
+    }
     try {
         const docRef = doc(db, COLLECTIONS.VENUES, venueId);
         await deleteDoc(docRef);

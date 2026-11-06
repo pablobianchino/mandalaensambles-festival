@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=beta3.4">
+    <link rel="stylesheet" href="styles.css?v=beta3.5">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -1140,15 +1140,15 @@
                             <div class="form-grid" style="margin-top:16px;">
                                 <div class="form-group">
                                     <label>Entrada Preventa ($)</label>
-                                    <input type="text" id="cfg-precio-preventa" class="form-control" value="$ 7.000" style="font-family:'Geist Mono'; font-weight:700;" onfocus="desaplicarMascaraMonedaInput(this)" onblur="aplicarMascaraMonedaInput(this)">
+                                    <input type="text" id="cfg-precio-preventa" class="form-control" value="$ 14.000" style="font-family:'Geist Mono'; font-weight:700;" onfocus="desaplicarMascaraMonedaInput(this)" onblur="aplicarMascaraMonedaInput(this)">
                                 </div>
                                 <div class="form-group">
                                     <label>Entrada General ($)</label>
-                                    <input type="text" id="cfg-precio-general" class="form-control" value="$ 8.500" style="font-family:'Geist Mono'; font-weight:700;" onfocus="desaplicarMascaraMonedaInput(this)" onblur="aplicarMascaraMonedaInput(this); actualizarVistaPreviaPrecioGeneralConfig();" oninput="actualizarVistaPreviaPrecioGeneralConfig()">
+                                    <input type="text" id="cfg-precio-general" class="form-control" value="$ 16.000" style="font-family:'Geist Mono'; font-weight:700;" onfocus="desaplicarMascaraMonedaInput(this)" onblur="aplicarMascaraMonedaInput(this); actualizarVistaPreviaPrecioGeneralConfig();" oninput="actualizarVistaPreviaPrecioGeneralConfig()">
                                 </div>
                                 <div class="form-group">
                                     <label>Entrada en Puerta ($)</label>
-                                    <input type="text" id="cfg-precio-puerta" class="form-control" value="$ 10.000" style="font-family:'Geist Mono'; font-weight:700;" onfocus="desaplicarMascaraMonedaInput(this)" onblur="aplicarMascaraMonedaInput(this)">
+                                    <input type="text" id="cfg-precio-puerta" class="form-control" value="$ 18.000" style="font-family:'Geist Mono'; font-weight:700;" onfocus="desaplicarMascaraMonedaInput(this)" onblur="aplicarMascaraMonedaInput(this)">
                                 </div>
                                 <div class="form-group">
                                     <label>Honorarios de Sesionista ($)</label>
@@ -1190,7 +1190,7 @@
                             </div>
 
                             <div style="margin-top:20px; padding:14px; background:#eff6ff; border-radius:12px; border:1px solid #bfdbfe; font-size:13px; color:#1e40af;">
-                                ℹ️ <strong>Regla de liquidación contractual:</strong> Si un alumno o artista no alcanza el cupo fijado, la diferencia de entradas se liquida automáticamente al valor de <strong>Entrada General (<span id="txt-cfg-regla-precio-general">$ 8.500</span>)</strong> configurado en el sistema.
+                                ℹ️ <strong>Regla de liquidación contractual:</strong> Si un alumno o artista no alcanza el cupo fijado, la diferencia de entradas se liquida automáticamente al valor de <strong>Entrada General (<span id="txt-cfg-regla-precio-general">$ 16.000</span>)</strong> configurado en el sistema.
                             </div>
                         </div>
                     </div>
@@ -1845,7 +1845,7 @@
                                                 </select>
                                             </div>
                                             <div style="font-size:12px; color:#78350f;" id="txt-sadaic-detalle-entradas">
-                                                Cálculo: <strong>3 × $ 8.500</strong> = <strong style="color:var(--accent-red);">$ 25.500</strong>
+                                                Cálculo: <strong>3 × $ 16.000</strong> = <strong style="color:var(--accent-red);">$ 48.000</strong>
                                             </div>
                                         </div>
 
@@ -1863,7 +1863,7 @@
                                             </div>
                                         </div>
 
-                                        <div style="display:none;" id="txt-sadaic-monto-resumen">-$ 25.500</div>
+                                        <div style="display:none;" id="txt-sadaic-monto-resumen">-$ 48.000</div>
                                     </div>
 
                                     <div class="form-grid" style="align-items:stretch;">
@@ -1878,9 +1878,9 @@
                                         <div style="background:#fff1f2; padding:14px; border-radius:12px; border:1px solid #fecdd3; display:flex; flex-direction:column; justify-content:space-between;">
                                             <span style="font-size:10.5px; font-weight:800; color:#9f1239; text-transform:uppercase;">Canon SADAIC (3 Entradas Generales)</span>
                                             <div style="font-size:1.45em; font-weight:800; color:var(--accent-red); font-family:'Geist Mono'; margin:4px 0;" id="txt-calc-monto-sadaic">
-                                                -$ 25.500
+                                                -$ 48.000
                                             </div>
-                                            <span style="font-size:11px; color:#be123c;" id="txt-calc-detalle-sadaic">Fijo: 3 × $ 8.500 (Valor Entrada General)</span>
+                                            <span style="font-size:11px; color:#be123c;" id="txt-calc-detalle-sadaic">Fijo: 3 × $ 16.000 (Valor Entrada General)</span>
                                         </div>
 
                                         <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
@@ -3623,16 +3623,22 @@
         let formularioModificado = false;
 
         // Precios predeterminados de entradas y honorarios de Configuración General
+        // Valores provisorios: solo rigen hasta que se carga la Configuración General real desde Firestore
         const preciosEntradasPorDefecto = {
-            preventa: 7000,
-            general: 8500,
-            puerta: 10000,
+            preventa: 14000,
+            general: 16000,
+            puerta: 18000,
             sadaic: 10,
             honorariosSesionista: 25000
         };
 
         // Estructura de precios de entradas congelados por festival (snapshot inmutable por evento)
         const entradasFestivales = {};
+
+        // Cupos mínimos de entradas del contrato (piso por alumno/artista y por banda). Son un DATO de cada festival;
+        // si el festival no tiene los suyos se usan los valores por defecto.
+        const CUPOS_CONTRATO_DEFECTO = { alumno: 5, invitado: 3, jam: 2 };
+        const cuposContratoFestivalesDB = {};
 
         function obtenerEntradasVigentesPorDefecto() {
             const prev = (typeof parsearMontoInput === 'function' ? parsearMontoInput(document.getElementById('cfg-precio-preventa')?.value) : parseFloat(document.getElementById('cfg-precio-preventa')?.value)) || preciosEntradasPorDefecto.preventa;
@@ -3659,7 +3665,7 @@
                 ? entradasFestivales[fId]
                 : ((typeof obtenerEntradasEventoActual === 'function' && fId === eventoActualId)
                     ? obtenerEntradasEventoActual()
-                    : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : { general: 8500, preventa: 6000 })));
+                    : preciosEntradasPorDefecto));
 
             const tipo = ent.sadaicTipo || 'entradas'; // 'entradas' o 'porcentaje'
             
@@ -3701,8 +3707,22 @@
         window.calcularMontoSadaicFestival = calcularMontoSadaicFestival;
 
         // Valores de respaldo (cuando el festival no tiene el dato cargado)
-        const PRECIO_GENERAL_RESPALDO = 8500;
+        // El precio general de respaldo es SIEMPRE el configurado en Configuración General (nunca un número fijo).
+        function precioGeneralVigente() {
+            return Number(preciosEntradasPorDefecto.general) || 0;
+        }
+        // $ 8.500 es un valor erróneo histórico: si un festival lo trae congelado se descarta y toma el precio configurado.
+        const PRECIO_GENERAL_DESCARTADO = 8500;
+        function normalizarEntradasCongeladas(ent) {
+            if (ent && Number(ent.general) === PRECIO_GENERAL_DESCARTADO) {
+                return { ...obtenerEntradasVigentesPorDefecto(), _esPorDefectoLocal: true };
+            }
+            return ent;
+        }
         const PORC_ESCUELA_RESPALDO = 70;
+        // Valores por defecto de operación (un solo lugar para cambiarlos)
+        const RESPONSABLE_COBRO_DEFECTO = 'Guido';
+        const PRODUCTORA_DEFECTO = 'Jodida Productora';
 
         /**
          * CÁLCULO ÚNICO DE LA TAQUILLA Y DEL NETO ONLINE DE UN FESTIVAL.
@@ -3718,7 +3738,7 @@
             fin = fin || {};
             ent = ent || (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : {});
             const pPrev = Number(ent.preventa) || 0;
-            const pGen = Number(ent.general) || PRECIO_GENERAL_RESPALDO;
+            const pGen = Number(ent.general) || precioGeneralVigente();
             const pPue = Number(ent.puerta) || 0;
             const cPrev = Math.max(0, parseInt(fin.cantPreventa || 0) || 0);
             const cGen = Math.max(0, parseInt(fin.cantGeneral || 0) || 0);
@@ -3855,7 +3875,7 @@
                         beneficiarios: 'Belu Cardillo (Mamá y Tía)',
                         metodo: 'Transferencia',
                         monto: 15000,
-                        cobradoPor: 'Guido'
+                        cobradoPor: RESPONSABLE_COBRO_DEFECTO
                     },
                     {
                         comprador: 'Agustín Gómez',
@@ -5378,7 +5398,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "beta3.4";
+        const APP_VERSION = "beta3.5";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -7750,7 +7770,7 @@
             const rawLink = fInfo.linkVenta || fInfo.link || '';
             const textLink = document.getElementById('det-ev-link')?.textContent || '';
             const linkActual = (rawLink && rawLink !== '-') ? rawLink : (textLink !== '-' ? textLink : '');
-            const prodActual = fInfo.productora || document.getElementById('det-ev-productora')?.textContent || 'Jodida Productora';
+            const prodActual = fInfo.productora || document.getElementById('det-ev-productora')?.textContent || PRODUCTORA_DEFECTO;
             const venActual = fInfo.venue || document.getElementById('det-ev-venue')?.textContent?.trim() || '';
 
             document.getElementById('edit-ev-nombre').value = nomActual;
@@ -7777,7 +7797,7 @@
 
             const venueSeleccionado = document.getElementById('edit-ev-venue').value;
             const fechaInp = document.getElementById('edit-ev-fecha').value.trim();
-            const productoraInp = document.getElementById('edit-ev-productora')?.value || 'Jodida Productora';
+            const productoraInp = document.getElementById('edit-ev-productora')?.value || PRODUCTORA_DEFECTO;
             const linkInp = document.getElementById('edit-ev-link')?.value?.trim() || '';
 
             // Sincronizar dirección y capacidad en rango del venue
@@ -7947,23 +7967,31 @@
         }
 
         function abrirModalEditarContrato() {
-            document.getElementById('inp-cupo-alumno').value = document.getElementById('contrato-cupo-alumno').textContent;
-            document.getElementById('inp-cupo-invitado').value = document.getElementById('contrato-cupo-invitado').textContent;
-            document.getElementById('inp-cupo-jam').value = document.getElementById('contrato-cupo-jam').textContent;
+            const c = obtenerCuposContratoVigentes();
+            document.getElementById('inp-cupo-alumno').value = c.alumno;
+            document.getElementById('inp-cupo-invitado').value = c.invitado;
+            document.getElementById('inp-cupo-jam').value = c.jam;
             document.getElementById('modal-editar-contrato').classList.add('active');
         }
 
         function guardarEdicionContrato() {
-            document.getElementById('contrato-cupo-alumno').textContent = document.getElementById('inp-cupo-alumno').value;
-            document.getElementById('contrato-cupo-invitado').textContent = document.getElementById('inp-cupo-invitado').value;
-            document.getElementById('contrato-cupo-jam').textContent = document.getElementById('inp-cupo-jam').value;
+            const leer = (id) => { const n = parseInt(document.getElementById(id).value, 10); return (Number.isFinite(n) && n >= 0) ? n : null; };
+            const nuevos = { alumno: leer('inp-cupo-alumno'), invitado: leer('inp-cupo-invitado'), jam: leer('inp-cupo-jam') };
+            if (Object.values(nuevos).some(v => v === null)) {
+                mostrarToast('Los cupos deben ser números enteros iguales o mayores a 0.', 'warning');
+                return;
+            }
+            cuposContratoFestivalesDB[eventoActualId] = nuevos;
+            if (typeof autoguardarDetalleFestivalFirestore === 'function') autoguardarDetalleFestivalFirestore('cuposContrato', nuevos);
+            mostrarCuposContratoEnPantalla();
+            if (typeof renderizarTablaCumplimientoContrato === 'function') renderizarTablaCumplimientoContrato();
             cerrarModales();
             mostrarToast('¡Cupos contractuales del festival actualizados!', 'success');
         }
 
         function actualizarVistaPreviaPrecioGeneralConfig() {
             const inpGen = document.getElementById('cfg-precio-general');
-            const genVal = (inpGen ? parsearMontoInput(inpGen.value) : 0) || preciosEntradasPorDefecto.general || PRECIO_GENERAL_RESPALDO;
+            const genVal = (inpGen ? parsearMontoInput(inpGen.value) : 0) || preciosEntradasPorDefecto.general || precioGeneralVigente();
 
             const elRegla = document.getElementById('txt-cfg-regla-precio-general');
             if (elRegla) {
@@ -8108,7 +8136,7 @@
                 if (preciosEnt.honorariosSesionista !== undefined) preciosEntradasPorDefecto.honorariosSesionista = preciosEnt.honorariosSesionista;
 
                 Object.keys(entradasFestivales).forEach(fId => {
-                    if (entradasFestivales[fId] && (entradasFestivales[fId]._esPorDefectoLocal || Number(entradasFestivales[fId].general) === 8500)) {
+                    if (entradasFestivales[fId] && (entradasFestivales[fId]._esPorDefectoLocal || Number(entradasFestivales[fId].general) === PRECIO_GENERAL_DESCARTADO)) {
                         entradasFestivales[fId] = {
                             ...obtenerEntradasVigentesPorDefecto(),
                             _esPorDefectoLocal: true
@@ -8186,6 +8214,7 @@
                 tarifasFestivales[nuevoId] = { ...tarifasOrigen, fechaCongelado: new Date().toLocaleDateString('es-AR') };
                 const entradasOrigen = entradasFestivales[idOrigen] || obtenerEntradasVigentesPorDefecto();
                 entradasFestivales[nuevoId] = { ...entradasOrigen, fechaCongelado: new Date().toLocaleDateString('es-AR') };
+                if (cuposContratoFestivalesDB[idOrigen]) cuposContratoFestivalesDB[nuevoId] = { ...cuposContratoFestivalesDB[idOrigen] };
                 const cronoOrigen = cronogramasFestivalesDB[idOrigen] || cronogramaOficialPlantilla;
                 cronogramasFestivalesDB[nuevoId] = JSON.parse(JSON.stringify(cronoOrigen));
                 const partOrigen = participantesFestivalesDB[idOrigen] || [];
@@ -8284,6 +8313,7 @@
                     cobertura: coberturaFestivalesDB[nuevoId] || {},
                     contratosAlumnos: contratosAlumnosFestivalesDB[nuevoId] || [],
                     serviciosAdicionales: serviciosAdicionalesFestivalesDB[nuevoId] || {},
+                    ...(cuposContratoFestivalesDB[nuevoId] ? { cuposContrato: cuposContratoFestivalesDB[nuevoId] } : {}),
                     checklist: checklistFestivalesDB[nuevoId] || [],
                     finanzas: {
                         brutoOnline: 0,
@@ -8550,7 +8580,8 @@
                 }
                 const editandoEsteEvento = (fId === eventoActualId && typeof estaUsuarioEditandoDetalleFestival === 'function' && estaUsuarioEditandoDetalleFestival());
                 if (!editandoEsteEvento) {
-                    if (fest.entradasCongeladas) entradasFestivales[fId] = fest.entradasCongeladas;
+                    if (fest.entradasCongeladas) entradasFestivales[fId] = normalizarEntradasCongeladas(fest.entradasCongeladas);
+                    if (fest.cuposContrato) cuposContratoFestivalesDB[fId] = fest.cuposContrato;
                     if (fest.cronograma) cronogramasFestivalesDB[fId] = fest.cronograma;
                     if (fest.participantes) participantesFestivalesDB[fId] = fest.participantes;
                     if (fest.rider) {
@@ -12036,7 +12067,7 @@
                         dataCob.pagosDetalle.push({
                             pagada: estabaPagado,
                             medio: formaCobro === 'Efectivo' ? 'Efectivo' : 'Transferencia',
-                            cobradoPor: 'Guido'
+                            cobradoPor: RESPONSABLE_COBRO_DEFECTO
                         });
                     }
                 } else if (dataCob.pagosDetalle.length !== totalPagos) {
@@ -12048,7 +12079,7 @@
                             nuevosPagos.push({
                                 pagada: false,
                                 medio: formaCobro === 'Efectivo' ? 'Efectivo' : 'Transferencia',
-                                cobradoPor: 'Guido'
+                                cobradoPor: RESPONSABLE_COBRO_DEFECTO
                             });
                         }
                     }
@@ -12210,7 +12241,7 @@
                         arr.push(dataCob.pagosDetalle?.[i] || {
                             pagada: false,
                             medio: formaCobro === 'Efectivo' ? 'Efectivo' : 'Transferencia',
-                            cobradoPor: 'Guido'
+                            cobradoPor: RESPONSABLE_COBRO_DEFECTO
                         });
                     }
                     dataCob.pagosDetalle = arr;
@@ -12745,7 +12776,7 @@
                             srv.pagosIntegrantes[intgNombre] = {
                                 pagada: false,
                                 medio: 'Transferencia',
-                                cobradoPor: 'Guido',
+                                cobradoPor: RESPONSABLE_COBRO_DEFECTO,
                                 obs: ''
                             };
                         }
@@ -12933,7 +12964,7 @@
 
             const actual = deudores.find(d => d.nombre === alumnoSeleccionadoComunicado);
             if (badge && actual) {
-                const monto = actual.deudaMonto || (actual.faltantes * (actual.precioGeneral || PRECIO_GENERAL_RESPALDO));
+                const monto = actual.deudaMonto || (actual.faltantes * (actual.precioGeneral || precioGeneralVigente()));
                 badge.textContent = `🚨 ${actual.faltantes} ent. ($ ${monto.toLocaleString('es-AR')})`;
             }
         }
@@ -12946,7 +12977,7 @@
             const actual = deudores.find(d => d.nombre === val);
             const badge = document.getElementById('badge-alumno-faltantes');
             if (badge && actual) {
-                const monto = actual.deudaMonto || (actual.faltantes * (actual.precioGeneral || PRECIO_GENERAL_RESPALDO));
+                const monto = actual.deudaMonto || (actual.faltantes * (actual.precioGeneral || precioGeneralVigente()));
                 badge.textContent = `🚨 ${actual.faltantes} ent. ($ ${monto.toLocaleString('es-AR')})`;
             }
             actualizarVistaTextoComunicado();
@@ -13039,7 +13070,7 @@
                 }
 
                 const al = (alumnoNombreOpcional && deudores.find(d => d.nombre === alumnoNombreOpcional)) || deudores[0];
-                const precioGen = al.precioGeneral || (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto.general : PRECIO_GENERAL_RESPALDO);
+                const precioGen = al.precioGeneral || (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto.general : precioGeneralVigente());
                 const montoTotal = al.deudaMonto || (al.faltantes * precioGen);
 
                 return `Hola ${al.nombre}, cómo estas? Tengo registrado del último festi que cubriste ${al.vendidas} entradas de las ${al.cupo} que teníamos acordado. Avisame cualquier cosa si tengo mal los datos, pero de no ser así, te pediría por favor abonar el valor de las que quedaron pendientes.\n\n🎟 Entradas que no se vendieron: ${al.faltantes}\n💸 Valor a abonar: $${montoTotal.toLocaleString('es-AR')}\n👉 Alias: guidokerpel.mp\n\n_Aclaración: se tomó el valor de entrada general para realizar el calculo: $${precioGen.toLocaleString('es-AR')} _`;
@@ -13249,7 +13280,7 @@
             gastos.forEach((g, idx) => {
                 const pagado = Boolean(g.pagado);
                 const metodo = g.metodo || 'Transferencia';
-                const resp = g.responsable || 'Guido';
+                const resp = g.responsable || RESPONSABLE_COBRO_DEFECTO;
                 const montoNum = Math.max(0, parseFloat(g.monto || 0) || 0);
                 const montoDisplay = montoNum > 0 ? `-$ ${montoNum.toLocaleString('es-AR')}` : '$ 0';
                 const tr = document.createElement('tr');
@@ -13357,7 +13388,7 @@
                 proveedor: '',
                 monto: 0,
                 metodo: 'Transferencia',
-                responsable: 'Guido',
+                responsable: RESPONSABLE_COBRO_DEFECTO,
                 pagado: false
             });
             renderizarTablaGastosOperativosFestival();
@@ -13446,7 +13477,7 @@
 
             const fInfo = (typeof infoFestivales !== 'undefined' && infoFestivales[eventoActualId]) ? infoFestivales[eventoActualId] : null;
             const fechaEvento = (fInfo && fInfo.fecha && fInfo.fecha !== 'A definir') ? fInfo.fecha.split(' ')[0] : '24/09/2026';
-            const nomProductora = (fInfo && fInfo.productora) ? fInfo.productora : (document.getElementById('det-ev-productora')?.textContent?.trim() || 'Jodida Productora');
+            const nomProductora = (fInfo && fInfo.productora) ? fInfo.productora : (document.getElementById('det-ev-productora')?.textContent?.trim() || PRODUCTORA_DEFECTO);
 
             const fEl = document.getElementById('gasto-prod-fecha');
             if (fEl) fEl.textContent = fechaEvento;
@@ -13470,7 +13501,7 @@
             const selMet = document.getElementById('sel-gasto-prod-metodo');
             if (selMet) selMet.value = datos.coberturaEscuelaMetodo || 'Transferencia';
             const selResp = document.getElementById('sel-gasto-prod-responsable');
-            if (selResp) selResp.value = datos.coberturaEscuelaResponsable || 'Guido';
+            if (selResp) selResp.value = datos.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO;
 
             const btnCobPagado = document.getElementById('btn-gasto-prod-pagado');
             if (btnCobPagado) {
@@ -13616,7 +13647,7 @@
                     gastosOperativos: [],
                     coberturaEscuelaPagada: false,
                     coberturaEscuelaMetodo: 'Transferencia',
-                    coberturaEscuelaResponsable: 'Guido'
+                    coberturaEscuelaResponsable: RESPONSABLE_COBRO_DEFECTO
                 };
             }
             const d = ingresosFestivalesDB[eventoActualId];
@@ -13649,7 +13680,7 @@
             if (!Array.isArray(d.gastosOperativos)) d.gastosOperativos = [];
             if (d.coberturaEscuelaPagada === undefined) d.coberturaEscuelaPagada = false;
             if (!d.coberturaEscuelaMetodo) d.coberturaEscuelaMetodo = 'Transferencia';
-            if (!d.coberturaEscuelaResponsable) d.coberturaEscuelaResponsable = 'Guido';
+            if (!d.coberturaEscuelaResponsable) d.coberturaEscuelaResponsable = RESPONSABLE_COBRO_DEFECTO;
             return d;
         }
 
@@ -13909,7 +13940,7 @@
             const ent = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : preciosEntradasPorDefecto;
             datos.categoriasExtra.push({
                 nombre: 'Entrada Especial',
-                precio: Number(ent.general) || PRECIO_GENERAL_RESPALDO,
+                precio: Number(ent.general) || precioGeneralVigente(),
                 cantidad: 0
             });
             renderizarTablaTaquillaTipos();
@@ -14194,7 +14225,7 @@
                     gastosOperativos: datos.gastosOperativos || [],
                     coberturaEscuelaPagada: Boolean(datos.coberturaEscuelaPagada),
                     coberturaEscuelaMetodo: datos.coberturaEscuelaMetodo || 'Transferencia',
-                    coberturaEscuelaResponsable: datos.coberturaEscuelaResponsable || 'Guido',
+                    coberturaEscuelaResponsable: datos.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO,
                     cantTaquilla,
                     cantVentasEspeciales,
                     totalGeneralEntradas,
@@ -14274,7 +14305,7 @@
         function agregarFilaVentaEspecial() {
             const datos = obtenerDatosIngresosEventoActual();
             const ent = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : preciosEntradasPorDefecto;
-            const precioGen = Number(ent.general) || PRECIO_GENERAL_RESPALDO;
+            const precioGen = Number(ent.general) || precioGeneralVigente();
             if (!datos.ventasEspeciales) datos.ventasEspeciales = [];
             datos.ventasEspeciales.push({
                 comprador: '',
@@ -14283,7 +14314,7 @@
                 cantEntradas: 2,
                 metodo: 'Transferencia',
                 monto: precioGen,
-                cobradoPor: 'Guido'
+                cobradoPor: RESPONSABLE_COBRO_DEFECTO
             });
             renderizarTablaVentasEspeciales();
             recalcularIngresosFestival(true);
@@ -14293,7 +14324,7 @@
             const datos = obtenerDatosIngresosEventoActual();
             if (datos.ventasEspeciales && datos.ventasEspeciales[idx]) {
                 const ent = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : preciosEntradasPorDefecto;
-                const precioGen = Number(ent.general) || PRECIO_GENERAL_RESPALDO;
+                const precioGen = Number(ent.general) || precioGeneralVigente();
 
                 if (campo === 'monto') {
                     datos.ventasEspeciales[idx].monto = parseFloat(valor || '0') || 0;
@@ -14388,15 +14419,22 @@
         }
         window.esMusicoSesionista = esMusicoSesionista;
 
-        function obtenerCuposContratoVigentes() {
-            const elAlu = document.getElementById('contrato-cupo-alumno');
-            const elInv = document.getElementById('contrato-cupo-invitado');
-            const elJam = document.getElementById('contrato-cupo-jam');
+        function obtenerCuposContratoVigentes(festId) {
+            const c = cuposContratoFestivalesDB[festId || eventoActualId] || {};
+            const num = (v, def) => { const n = parseInt(v, 10); return (Number.isFinite(n) && n >= 0) ? n : def; };
             return {
-                alumno: elAlu ? parseInt(elAlu.textContent || '5') : 5,
-                invitado: elInv ? parseInt(elInv.textContent || '3') : 3,
-                jam: elJam ? parseInt(elJam.textContent || '2') : 2
+                alumno: num(c.alumno, CUPOS_CONTRATO_DEFECTO.alumno),
+                invitado: num(c.invitado, CUPOS_CONTRATO_DEFECTO.invitado),
+                jam: num(c.jam, CUPOS_CONTRATO_DEFECTO.jam)
             };
+        }
+        // Refleja en pantalla los cupos del festival abierto (solo muestra; la fuente es cuposContratoFestivalesDB)
+        function mostrarCuposContratoEnPantalla() {
+            const c = obtenerCuposContratoVigentes();
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v); };
+            set('contrato-cupo-alumno', c.alumno);
+            set('contrato-cupo-invitado', c.invitado);
+            set('contrato-cupo-jam', c.jam);
         }
         window.obtenerCuposContratoVigentes = obtenerCuposContratoVigentes;
 
@@ -14449,7 +14487,7 @@
         // Búsqueda de deuda de entradas traspasada desde festivales anteriores (Rollover)
         function buscarTraspasoEntradasPendienteAlumno(nombreAlumno, festActualId = eventoActualId) {
             if (!nombreAlumno || typeof contratosAlumnosFestivalesDB === 'undefined') return null;
-            const nomClean = String(nombreAlumno).trim().toLowerCase();
+            const nomClean = normalizarNombreContrato(nombreAlumno);
             const festIdsSet = new Set([
                 ...Object.keys(infoFestivales || {}),
                 ...Object.keys(contratosAlumnosFestivalesDB || {})
@@ -14460,7 +14498,7 @@
                 const contratos = contratosAlumnosFestivalesDB[fId];
                 if (!Array.isArray(contratos)) continue;
 
-                const cont = contratos.find(c => c && String(c.nombre || '').trim().toLowerCase() === nomClean && c.traspasoProximoFestival === true);
+                const cont = contratos.find(c => c && normalizarNombreContrato(c.nombre) === nomClean && c.traspasoProximoFestival === true);
                 if (cont) {
                     if (!cont.traspasoDestinoFestId || cont.traspasoDestinoFestId === festActualId) {
                         const cant = Math.max(1, Number(cont.traspasoEntradas || cont.faltantes || 1));
@@ -14481,7 +14519,7 @@
         // Verifica si un alumno con traspaso ya fue integrado en otro festival posterior
         function verificarSiTraspasoFueAbsorbido(nombreAlumno, festOrigenId) {
             if (!nombreAlumno) return null;
-            const nomClean = String(nombreAlumno).trim().toLowerCase();
+            const nomClean = normalizarNombreContrato(nombreAlumno);
 
             // 1. Revisar en participantesFestivalesDB de todos los festivales
             if (typeof participantesFestivalesDB !== 'undefined') {
@@ -14492,7 +14530,7 @@
                         const alus = b.alumnos || b.musicos || [];
                         const encontrado = alus.some(a => {
                             const aNom = typeof a === 'string' ? a : (a.nombre || '');
-                            return aNom.trim().toLowerCase() === nomClean;
+                            return normalizarNombreContrato(aNom) === nomClean;
                         });
                         if (encontrado) {
                             const fInfo = (typeof infoFestivales !== 'undefined' && infoFestivales[fId]) ? infoFestivales[fId] : null;
@@ -14510,7 +14548,7 @@
             if (typeof contratosAlumnosFestivalesDB !== 'undefined') {
                 for (const [fId, contratos] of Object.entries(contratosAlumnosFestivalesDB)) {
                     if (fId === festOrigenId || !Array.isArray(contratos)) continue;
-                    const cont = contratos.find(c => c && String(c.nombre || '').trim().toLowerCase() === nomClean && !c.traspasoProximoFestival);
+                    const cont = contratos.find(c => c && normalizarNombreContrato(c.nombre) === nomClean && !c.traspasoProximoFestival);
                     if (cont) {
                         const fInfo = (typeof infoFestivales !== 'undefined' && infoFestivales[fId]) ? infoFestivales[fId] : null;
                         return {
@@ -14627,7 +14665,7 @@
             const pagos = (Array.isArray(pagosOriginales) ? pagosOriginales : []).filter(Boolean).map(p => ({ ...p }));
             if (pagos.length === 0) {
                 return [{
-                    cuota: 1, monto: deudaMonto, fecha: '', medio: 'Transferencia', cobradoPor: 'Guido',
+                    cuota: 1, monto: deudaMonto, fecha: '', medio: 'Transferencia', cobradoPor: RESPONSABLE_COBRO_DEFECTO,
                     obs: `Diferencia ${faltantes} entrada/s no cubiertas`, pagada: false
                 }];
             }
@@ -14643,7 +14681,7 @@
             } else if (saldo > 0) {
                 // Todo lo anterior ya está cobrado pero la deuda creció: se agrega una cuota nueva por la diferencia
                 pagos.push({
-                    cuota: pagos.length + 1, monto: saldo, fecha: '', medio: 'Transferencia', cobradoPor: 'Guido',
+                    cuota: pagos.length + 1, monto: saldo, fecha: '', medio: 'Transferencia', cobradoPor: RESPONSABLE_COBRO_DEFECTO,
                     obs: 'Ajuste por diferencia de entradas', pagada: false
                 });
             }
@@ -14656,8 +14694,8 @@
             const cuposVigentes = (typeof obtenerCuposContratoVigentes === 'function') ? obtenerCuposContratoVigentes() : { alumno: 5, invitado: 3, jam: 2 };
             const entConf = (festId && typeof entradasFestivales !== 'undefined' && entradasFestivales[festId])
                 ? entradasFestivales[festId]
-                : ((typeof obtenerEntradasEventoActual === 'function' && festId === eventoActualId) ? obtenerEntradasEventoActual() : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : { general: PRECIO_GENERAL_RESPALDO }));
-            const precioEntrada = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || PRECIO_GENERAL_RESPALDO);
+                : ((typeof obtenerEntradasEventoActual === 'function' && festId === eventoActualId) ? obtenerEntradasEventoActual() : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : { general: precioGeneralVigente() }));
+            const precioEntrada = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || precioGeneralVigente());
 
             const cacheGuardada = (typeof contratosAlumnosFestivalesDB !== 'undefined' && Array.isArray(contratosAlumnosFestivalesDB[festId])) ? contratosAlumnosFestivalesDB[festId] : [];
             const { porPosicion, huerfanos } = emparejarContratosGuardados(bandas, cacheGuardada);
@@ -14775,6 +14813,7 @@
         window.obtenerListaParticipantesContratoFestival = obtenerListaParticipantesContratoFestival;
 
         function renderizarTablaCumplimientoContrato() {
+            mostrarCuposContratoEnPantalla();
             const tbody = document.getElementById('tbody-cumplimiento-contrato');
             if (!tbody) return;
             tbody.innerHTML = '';
@@ -14787,7 +14826,7 @@
 
             const cuposVigentes = obtenerCuposContratoVigentes();
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || PRECIO_GENERAL_RESPALDO);
+            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || precioGeneralVigente());
 
             // Lista consolidada garantizada (nunca vacía si hay participantes)
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
@@ -15048,7 +15087,7 @@
             const cupo = parseInt(row.getAttribute('data-cupo') || '0');
             const vendidas = parseInt(input.value || '0');
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || PRECIO_GENERAL_RESPALDO);
+            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || precioGeneralVigente());
             const celdaDeuda = row.querySelector('.celda-deuda-pesos');
             const celdaEstado = row.querySelector('.celda-estado-cupo');
             const celdaAccion = row.querySelector('.celda-accion-cobro');
@@ -15146,7 +15185,7 @@
                             monto: deudaPesos,
                             fecha: '',
                             medio: 'Transferencia',
-                            cobradoPor: 'Guido',
+                            cobradoPor: RESPONSABLE_COBRO_DEFECTO,
                             obs: `Diferencia ${faltantes} entrada/s no cubiertas`,
                             pagada: false
                         }];
@@ -15171,7 +15210,7 @@
             const filas = document.querySelectorAll('.banda-child-row');
             const cacheActual = contratosAlumnosFestivalesDB[eventoActualId] || [];
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || PRECIO_GENERAL_RESPALDO);
+            const precioEntrada = entConf && entConf.general ? entConf.general : (preciosEntradasPorDefecto.general || precioGeneralVigente());
 
             if (filas.length > 0) {
                 filas.forEach(f => {
@@ -15210,7 +15249,7 @@
 
         function actualizarTotalesCabecerasBandas() {
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioGralFestival = entConf && entConf.general ? entConf.general : PRECIO_GENERAL_RESPALDO;
+            const precioGralFestival = entConf && entConf.general ? entConf.general : precioGeneralVigente();
 
             let grandCupoTot = 0;
             let grandVendidasTot = 0;
@@ -15231,7 +15270,7 @@
                 filas.forEach(f => {
                     const c = parseInt(f.getAttribute('data-cupo') || '0');
                     const v = parseInt(f.querySelector('.inp-entradas-vendidas')?.value || '0');
-                    const p = precioGralFestival || parseInt(f.getAttribute('data-precio-entrada') || '8500');
+                    const p = precioGralFestival || parseInt(f.getAttribute('data-precio-entrada') || precioGeneralVigente());
                     const esExcluido = f.getAttribute('data-excluido') === 'true';
 
                     cupoTot += c;
@@ -15350,7 +15389,7 @@
             const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
             const cont = buscarContrato(cacheContratos, id, nombre);
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || PRECIO_GENERAL_RESPALDO);
+            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || precioGeneralVigente());
 
             const faltantesReales = Math.max(1, Number(cont?.traspasoEntradas || cont?.faltantes || faltantes || 1));
             const montoReal = (cont && cont.deudaMonto !== undefined) ? Number(cont.deudaMonto) : Number(monto || 0);
@@ -15452,7 +15491,7 @@
         function restablecerMontoOficialDeudaModal() {
             if (!deudaActualConfig) return;
             const entConf = typeof obtenerEntradasEventoActual === 'function' ? obtenerEntradasEventoActual() : null;
-            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || PRECIO_GENERAL_RESPALDO);
+            const precioOficial = entConf && entConf.general ? Number(entConf.general) : (preciosEntradasPorDefecto?.general || precioGeneralVigente());
             const falt = Math.max(1, Number(deudaActualConfig.faltantes || 1));
             const total = precioOficial * falt;
             deudaActualConfig.precioUnitarioManual = null;
@@ -15534,7 +15573,7 @@
                 const cuotas = parseInt(document.getElementById('modal-deuda-modalidad').value || '1');
                 const fecha = document.getElementById('modal-deuda-fecha')?.value || '';
                 const medio = document.getElementById('modal-deuda-medio').value || 'Transferencia';
-                const resp = document.getElementById('modal-deuda-responsable').value || 'Guido';
+                const resp = document.getElementById('modal-deuda-responsable').value || RESPONSABLE_COBRO_DEFECTO;
 
                 const montoTotal = deudaActualConfig.monto;
                 cont.deudaMonto = montoTotal;
@@ -15678,7 +15717,7 @@
                         monto: deudaMonto,
                         fecha: '',
                         medio: 'Transferencia',
-                        cobradoPor: 'Guido',
+                        cobradoPor: RESPONSABLE_COBRO_DEFECTO,
                         obs: `Diferencia ${faltantes} entrada/s no cubiertas`,
                         pagada: false
                     }];
@@ -15985,7 +16024,7 @@
                 const festId = fest.id;
                 const festNombre = fest.nombre || 'Festival';
                 const festFecha = fest.fecha || fest.fechaRaw || '';
-                const nomProd = fest.productora || (document.getElementById('det-ev-productora')?.textContent?.trim() || 'Jodida Productora');
+                const nomProd = fest.productora || (document.getElementById('det-ev-productora')?.textContent?.trim() || PRODUCTORA_DEFECTO);
 
                 // REGLA: No mostrar los gastos pendientes de eventos que se encuentran programados. Solo en curso y finalizados.
                 const estadoEv = (fest.estado || 'Programado').trim();
@@ -16011,7 +16050,7 @@
                                 monto: Number(g.monto),
                                 esPasivoEscuela: true,
                                 medio: g.metodo || 'Transferencia',
-                                responsable: g.responsable || 'Guido',
+                                responsable: g.responsable || RESPONSABLE_COBRO_DEFECTO,
                                 obs: g.obs || '',
                                 itemId: gIdx,
                                 idxCuota: null
@@ -16038,7 +16077,7 @@
                             monto: saldoEscuela,
                             esPasivoEscuela: true,
                             medio: datosIng.coberturaEscuelaMetodo || 'Transferencia',
-                            responsable: datosIng.coberturaEscuelaResponsable || 'Guido',
+                            responsable: datosIng.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO,
                             obs: `Presupuesto: $ ${resProd.presupuestoProductora.toLocaleString('es-AR')} - Bandas: $ ${resProd.totalBandas.toLocaleString('es-AR')}`,
                             itemId: 'cobertura_escuela',
                             idxCuota: null
@@ -16117,7 +16156,7 @@
                                     monto: montoSaldar,
                                     esPasivoEscuela: false, // Ingreso por cobrar
                                     medio: p.medio || 'Transferencia',
-                                    responsable: p.cobradoPor || 'Guido',
+                                    responsable: p.cobradoPor || RESPONSABLE_COBRO_DEFECTO,
                                     obs: p.obs || `Liquidación cupo contractual`,
                                     itemId: c.id,
                                     idxCuota: pIdx
@@ -16161,7 +16200,7 @@
                                     monto: montoFila,
                                     esPasivoEscuela: false, // Ingreso por cobrar
                                     medio: p.medio || 'Transferencia',
-                                    responsable: p.cobradoPor || 'Guido',
+                                    responsable: p.cobradoPor || RESPONSABLE_COBRO_DEFECTO,
                                     obs: dataCob.responsablePago ? `Paga: ${dataCob.responsablePago}` : '',
                                     itemId: bNombre,
                                     idxCuota: pIdx
@@ -16201,7 +16240,7 @@
                                     monto: totalSrv,
                                     esPasivoEscuela: true, // Pasivo de la escuela
                                     medio: srv.medioProveedor || 'Transferencia',
-                                    responsable: srv.responsableProveedor || 'Guido',
+                                    responsable: srv.responsableProveedor || RESPONSABLE_COBRO_DEFECTO,
                                     obs: srv.obs ? `Servicio ${srv.tipo} (${srv.obs})` : `Servicio ${srv.tipo} para banda ${bNombre}`,
                                     itemId: bNombre,
                                     idxCuota: sIdx
@@ -16232,7 +16271,7 @@
                                         monto: cuotaInd,
                                         esPasivoEscuela: false, // Ingreso por cobrar
                                         medio: pIntg.medio || 'Transferencia',
-                                        responsable: pIntg.cobradoPor || 'Guido',
+                                        responsable: pIntg.cobradoPor || RESPONSABLE_COBRO_DEFECTO,
                                         obs: pIntg.obs || `Cuota individual proporcional ${srv.tipo} (${srv.proveedor || ''})`,
                                         itemId: bNombre,
                                         idxCuota: `${sIdx}__${intgNombre}`
@@ -17103,7 +17142,7 @@
                 'Tipo / Origen': d.esPasivoEscuela ? 'A Pagar (Escuela)' : 'Por Cobrar',
                 'Monto ($)': (d.esPasivoEscuela ? -1 : 1) * Number(d.monto || 0),
                 'Medio de Pago': d.medio || 'Transferencia',
-                'Responsable': d.responsable || 'Guido',
+                'Responsable': d.responsable || RESPONSABLE_COBRO_DEFECTO,
                 'Detalle / Observaciones': d.obs || ''
             }));
 
@@ -17171,7 +17210,7 @@
             tr.setAttribute('data-banda', banda);
             tr.setAttribute('data-tipo', cat);
             tr.setAttribute('data-cupo', cupo);
-            tr.setAttribute('data-precio-entrada', '8500');
+            tr.setAttribute('data-precio-entrada', String(precioGeneralVigente()));
 
             tr.innerHTML = `
                 <td style="padding-left:28px;">👤 <strong>${esc(nombre)}</strong></td>

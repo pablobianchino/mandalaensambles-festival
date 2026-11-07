@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v1.0">
+    <link rel="stylesheet" href="styles.css?v=v1.1">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -2187,7 +2187,7 @@
                                     <span class="pill-status pill-neutral" id="pill-deudas-count-badge" style="font-size:11px;">0 pendientes</span>
                                 </h3>
                                 <span id="deudas-subtitulo" style="font-size:12.5px; color:var(--text-muted); display:block; margin-top:2px;">
-                                    Lo que la escuela debe pagar y lo que le deben cobrar. Servicios y cobertura se ven desde que el evento está En Curso; las entradas incumplidas, desde el día siguiente al evento.
+                                    Lo que la escuela debe pagar y lo que le deben cobrar. Todo se ve desde que el evento está En Curso, salvo las entradas incumplidas, que aparecen el día siguiente al evento.
                                 </span>
                             </div>
                             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -5664,7 +5664,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v1.0";
+        const APP_VERSION = "v1.1";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -16552,7 +16552,7 @@
                 const nomProd = fest.productora || (document.getElementById('det-ev-productora')?.textContent?.trim() || nombreProductoraDefecto());
 
                 // REGLAS: servicios adicionales y cobertura audiovisual se ven desde que el evento está En Curso (no en los Programados).
-                // Entradas incumplidas y gastos operativos se activan el día siguiente a la fecha del evento (siempre en los Finalizados).
+                // Todo lo demás (gastos, cobertura, servicios) se ve desde En Curso; solo las entradas incumplidas se activan el día siguiente a la fecha del evento (siempre en los Finalizados), porque no se conocen hasta cerrar el evento.
                 const estadoEv = (fest.estado || 'Programado').trim();
                 const enCursoOFinalizado = (estadoEv === 'En Curso' || estadoEv === 'Finalizado');
                 let esActivoOFinalizado = (estadoEv === 'En Curso' || estadoEv === 'Finalizado');
@@ -16568,7 +16568,7 @@
 
                 // 1. Gastos Operativos de la Escuela (No pagados) - desde el día siguiente al evento; cobertura de la escuela - desde En Curso
                 if (enCursoOFinalizado) {
-                    const gastosOp = (esActivoOFinalizado && Array.isArray(datosIng.gastosOperativos)) ? datosIng.gastosOperativos : [];
+                    const gastosOp = Array.isArray(datosIng.gastosOperativos) ? datosIng.gastosOperativos : [];
                     gastosOp.forEach((g, gIdx) => {
                         if (g && !g.pagado && Number(g.monto) > 0) {
                             deudas.push({
@@ -16914,7 +16914,7 @@
             // Aviso cuando se está simulando otra fecha
             const elSub = document.getElementById('deudas-subtitulo');
             if (elSub) {
-                const base = 'Lo que la escuela debe pagar y lo que le deben cobrar. Servicios y cobertura se ven desde que el evento está En Curso; las entradas incumplidas, desde el día siguiente al evento.';
+                const base = 'Lo que la escuela debe pagar y lo que le deben cobrar. Todo se ve desde que el evento está En Curso, salvo las entradas incumplidas, que aparecen el día siguiente al evento.';
                 elSub.innerHTML = esc(base) + (fechaSimuladaDeudas() ? ' <strong style="color:#b45309;">⚠️ Simulando el día ' + fechaHoyDeudas().toLocaleDateString('es-AR') + ' (los datos no se modifican).</strong>' : '');
             }
             filtrarTablaDeudas();

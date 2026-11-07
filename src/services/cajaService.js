@@ -251,6 +251,7 @@ export function escucharCajaEnTiempoReal(onGastosUpdate, onIngresosUpdate) {
             if (ingresos && typeof onIngresosUpdate === "function") onIngresosUpdate(ingresos);
         }, (err) => {
             console.warn("[Caja Realtime] Error en listener de caja:", err);
+            if (window.notificarSincronizacion) window.notificarSincronizacion('warn', 'No se pudo actualizar. Se muestran los últimos datos.', { persistente: true, reintentar: true });
         });
     } catch (err) {
         console.warn("[Caja Realtime] Error configurando escucha de Caja:", err);

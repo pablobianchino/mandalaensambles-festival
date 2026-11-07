@@ -478,6 +478,7 @@ export function escucharFestivalesEnTiempoReal(callback) {
             if (typeof callback === 'function') {
                 callback(listaConsolidada);
             }
+            if (window.sincronizacionRecuperada) window.sincronizacionRecuperada();
         };
 
         const unsubVigentes = onSnapshot(colRef, (snap) => {
@@ -488,6 +489,7 @@ export function escucharFestivalesEnTiempoReal(callback) {
             consolidarYNotificar();
         }, (err) => {
             console.warn("[Firestore Realtime] Error en listener de festivales:", err);
+            if (window.notificarSincronizacion) window.notificarSincronizacion('warn', 'No se pudo actualizar. Se muestran los últimos datos.', { persistente: true, reintentar: true });
         });
 
         const unsubHistoricos = onSnapshot(colHistRef, (snap) => {
@@ -515,6 +517,7 @@ export function escucharFestivalesEnTiempoReal(callback) {
             consolidarYNotificar();
         }, (err) => {
             console.warn("[Firestore Realtime] Error en listener de festivales históricos:", err);
+            if (window.notificarSincronizacion) window.notificarSincronizacion('warn', 'No se pudo actualizar. Se muestran los últimos datos.', { persistente: true, reintentar: true });
         });
 
         return () => {

@@ -163,7 +163,7 @@ async function manejarCambioSesion(user) {
 
     console.log(`[Mandala Festivales] Usuario autenticado: ${user.email}`);
     if (typeof window.mostrarIndicadorCarga === 'function' && !document.documentElement.classList.contains('festivales-loaded')) {
-        window.mostrarIndicadorCarga('Cargando datos...');
+        window.mostrarIndicadorCarga(window.textoCarga ? window.textoCarga('arranque') : 'Cargando...');
     }
 
     const acceso = await consultarAccesoUsuario(user.email);
@@ -295,6 +295,14 @@ async function sincronizarDatosTrasLogin() {
         }
     }
 }
+
+// Botón "Reintentar" de la pastilla de sincronización: vuelve a suscribirse a los datos
+window.reintentarSincronizacion = function () {
+    if (window.notificarSincronizacion) window.notificarSincronizacion('loading', 'Cargando datos...');
+    sincronizarDatosTrasLogin().then(() => {
+        if (window.notificarSincronizacion) window.notificarSincronizacion('hide');
+    });
+};
 
 // Suscripción al observer de Firebase Auth
 escucharEstadoAutenticacion(manejarCambioSesion);

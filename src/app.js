@@ -28,7 +28,7 @@ import { obtenerVenuesFirestore, guardarVenueFirestore, guardarLoteVenues, elimi
 import { obtenerSesionistasFirestore, guardarSesionistaFirestore, eliminarSesionistaFirestore } from "./services/sesionistasService.js";
 import { obtenerUsuariosSistemaFirestore, obtenerUsuarioPorEmail, consultarAccesoUsuario, marcarPasswordModificada } from "./services/usuariosService.js";
 import { obtenerGastosCajaFirestore, guardarGastosCajaFirestore, obtenerIngresosManualesCajaFirestore, guardarIngresosManualesCajaFirestore, escucharCajaEnTiempoReal, migrarCajaAFormato2, revertirCajaAFormato1, obtenerFormatoCaja, usarColeccionCaja } from "./services/cajaService.js";
-import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerProductorasFirestore, guardarProductorasFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore } from "./services/configuracionService.js";
+import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerProductorasFirestore, guardarProductorasFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore, obtenerChecklistProduccionPlantillaFirestore, guardarChecklistProduccionPlantillaFirestore } from "./services/configuracionService.js";
 import { obtenerInstrumentosFirestore, escucharInstrumentosEnTiempoReal, getEmojiParaInstrumento, obtenerInstrumentosActualesSync } from "./services/instrumentosService.js";
 
 import { idVenueEstable, idHistoricoEstable } from "./utils/ids.js";
@@ -106,7 +106,9 @@ window.MandalaApp = {
         obtenerProductoras: obtenerProductorasFirestore,
         guardarProductoras: guardarProductorasFirestore,
         obtenerPreciosEntradas: obtenerPreciosEntradasFirestore,
-        guardarPreciosEntradas: guardarPreciosEntradasFirestore
+        guardarPreciosEntradas: guardarPreciosEntradasFirestore,
+        obtenerChecklistProduccion: obtenerChecklistProduccionPlantillaFirestore,
+        guardarChecklistProduccion: guardarChecklistProduccionPlantillaFirestore
     }
 };
 
@@ -287,6 +289,16 @@ async function sincronizarDatosTrasLogin() {
             }
         } catch (e) {
             console.warn("[Mandala Festivales] Error al cargar configuración general:", e);
+        }
+
+        // Plantilla del checklist de producción (se copia a cada festival nuevo)
+        try {
+            const plantillaChk = await obtenerChecklistProduccionPlantillaFirestore();
+            if (typeof window.poblarChecklistProduccionPlantilla === 'function') {
+                window.poblarChecklistProduccionPlantilla(plantillaChk);
+            }
+        } catch (e) {
+            console.warn("[Mandala Festivales] Error al cargar la plantilla del checklist de producción:", e);
         }
     } catch (err) {
         console.warn("[Mandala Festivales] Error durante sincronización tras login:", err);

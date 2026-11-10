@@ -10,6 +10,7 @@ import { notificarErrorPersistencia } from "../utils/errores.js";
 const DOC_PRODUCTORA = "tarifas_maestras";
 const DOC_ENTRADAS = "entradas_defecto";
 const DOC_LISTADO = "productoras_listado";
+const DOC_CHECKLIST_PRODUCCION = "checklist_produccion_plantilla";
 
 /**
  * Obtener las tarifas vigentes maestras de la productora audiovisual
@@ -72,6 +73,35 @@ export async function guardarProductorasFirestore(items) {
     } catch (err) {
         console.error("[Mandala Festivales] Error al guardar el listado de productoras:", err);
         notificarErrorPersistencia("el listado de productoras", err);
+        return false;
+    }
+}
+
+/**
+ * Plantilla del checklist de producción: lista de tareas que se copia a cada festival nuevo.
+ * Vive en un documento de productora_config (misma colección que el resto de la configuración).
+ */
+export async function obtenerChecklistProduccionPlantillaFirestore() {
+    try {
+        const snap = await getDoc(doc(db, COLLECTIONS.PRODUCTORA_CONFIG, DOC_CHECKLIST_PRODUCCION));
+        return snap.exists() ? snap.data() : null;
+    } catch (err) {
+        console.warn("[Mandala Festivales] Error al obtener la plantilla del checklist de producción:", err);
+        return null;
+    }
+}
+
+export async function guardarChecklistProduccionPlantillaFirestore(items) {
+    try {
+        await setDoc(doc(db, COLLECTIONS.PRODUCTORA_CONFIG, DOC_CHECKLIST_PRODUCCION), {
+            items,
+            actualizadoEn: new Date().toISOString()
+        });
+        console.log("[Mandala Festivales] Plantilla del checklist de producción guardada con éxito en Firestore.");
+        return true;
+    } catch (err) {
+        console.error("[Mandala Festivales] Error al guardar la plantilla del checklist de producción:", err);
+        notificarErrorPersistencia("la plantilla del checklist de producción", err);
         return false;
     }
 }

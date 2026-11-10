@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v1.1">
+    <link rel="stylesheet" href="styles.css?v=v1.2">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -342,6 +342,9 @@
                         </button>
                         <button class="segmented-tab-btn" data-tab="cronograma" onclick="switchTabEvento('cronograma')">
                             ⏱️ Cronograma
+                        </button>
+                        <button class="segmented-tab-btn" data-tab="produccion" onclick="switchTabEvento('produccion')">
+                            📝 Producción <span class="pill-status pill-neutral" id="contador-checklist-produccion" style="display:none; margin-left:4px;"></span>
                         </button>
                         <button class="segmented-tab-btn" data-tab="rider" onclick="switchTabEvento('rider')">
                             🎛️ Rider Técnico
@@ -976,6 +979,38 @@
                     </div>
                 
                     <!-- Pestaña: Comunicaciones & Templates de WhatsApp -->
+                    <!-- Pestaña: Producción (checklist de tareas administrativas del evento) -->
+                    <div id="tab-ev-produccion" class="tab-ev-content" style="display:none;">
+                        <div class="content-card">
+                            <div class="card-header-flex">
+                                <div>
+                                    <h3 class="card-title">📝 Checklist de Producción</h3>
+                                    <span style="font-size:12px; color:var(--text-muted);" id="subtitulo-checklist-produccion">
+                                        Tareas administrativas de este evento. Se copiaron de la plantilla al crearlo y desde ahí son propias de este evento.
+                                    </span>
+                                </div>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <button class="btn-table-pill" id="btn-cargar-plantilla-produccion" style="display:none;" onclick="cargarPlantillaChecklistProduccionEnEvento()">📥 Cargar plantilla</button>
+                                    <button class="btn-table-pill" onclick="agregarTareaChecklistProduccion()">＋ Tarea</button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="spreadsheet-table" id="tabla-checklist-produccion">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:44px; text-align:center;">Listo</th>
+                                            <th class="text-left">Tarea</th>
+                                            <th class="text-left" style="width:38%;">Nota</th>
+                                            <th style="width:44px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-checklist-produccion"></tbody>
+                                </table>
+                            </div>
+                            <div id="vacio-checklist-produccion" style="display:none; padding:18px; text-align:center; color:var(--text-muted); font-size:13px;"></div>
+                        </div>
+                    </div>
+
                     <div id="tab-ev-comunicaciones" class="tab-ev-content" style="display:none;">
                         <div class="content-card" style="padding: 20px;">
                             <div class="card-header-flex" style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
@@ -1076,6 +1111,9 @@
                         <button class="segmented-tab-btn" id="btn-tab-cfg-productora" onclick="cambiarTabConfiguracion('productora')">
                             🎬 Productoras
                         </button>
+                        <button class="segmented-tab-btn" id="btn-tab-cfg-checklist" onclick="cambiarTabConfiguracion('checklist')">
+                            📝 Checklist de Producción
+                        </button>
                         <button class="segmented-tab-btn" id="btn-tab-cfg-seguridad" onclick="cambiarTabConfiguracion('seguridad')">
                             🔒 Seguridad & Acceso
                         </button>
@@ -1168,6 +1206,40 @@
                             </div>
                         </div>
                         <div id="lista-productoras"></div>
+                    </div>
+
+                    <!-- PESTAÑA: PLANTILLA DEL CHECKLIST DE PRODUCCIÓN -->
+                    <div id="tab-cfg-checklist" class="tab-cfg-content" style="display:none;">
+                        <div class="content-card">
+                            <div class="card-header-flex">
+                                <div>
+                                    <h3 class="card-title">📝 Plantilla del Checklist de Producción</h3>
+                                    <span style="font-size:12px; color:var(--text-muted);">
+                                        Al crear un evento nuevo se copian estas tareas a su solapa Producción. Si después cambiás la plantilla, los eventos ya creados no se modifican (quedan congelados): solo la toman los que se creen desde ese momento.
+                                    </span>
+                                </div>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <button class="btn-table-pill" onclick="agregarTareaPlantillaProduccion()">＋ Tarea</button>
+                                    <button class="btn-app btn-primary" id="btn-guardar-plantilla-produccion" onclick="guardarPlantillaChecklistProduccion()">💾 Guardar plantilla</button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="spreadsheet-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px;">#</th>
+                                            <th class="text-left">Tarea</th>
+                                            <th class="text-left" style="width:38%;">Nota (opcional)</th>
+                                            <th style="width:96px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-plantilla-produccion"></tbody>
+                                </table>
+                            </div>
+                            <div id="vacio-plantilla-produccion" style="display:none; padding:18px; text-align:center; color:var(--text-muted); font-size:13px;">
+                                La plantilla está vacía. Agregá las tareas que se repiten en cada festival.
+                            </div>
+                        </div>
                     </div>
 
                     <!-- PESTAÑA 3: SEGURIDAD & ACCESO -->
@@ -5664,7 +5736,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v1.1";
+        const APP_VERSION = "v1.2";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -5958,6 +6030,7 @@
             if (tabId === 'seguridad') {
                 cargarUsuariosSistemaEnTabla();
             }
+            if (tabId === 'checklist') renderizarPlantillaChecklistProduccion();
         }
 
         // Cargar y listar usuarios sincronizados desde usuarios_sistema
@@ -6148,6 +6221,7 @@
                 renderizarChecklistFestival(checklistFestivalesDB[id] || null);
             }
             renderizarCronogramaFestival();
+            renderizarChecklistProduccionFestival();
             renderizarTablaEntradasFestival();
             if (typeof renderizarCoberturaBandasFestival === 'function') {
                 renderizarCoberturaBandasFestival();
@@ -6196,6 +6270,7 @@
                 }
             }
             if (tabId === 'cronograma') renderizarCronogramaFestival();
+            if (tabId === 'produccion') renderizarChecklistProduccionFestival();
             if (tabId === 'entradas') renderizarTablaEntradasFestival();
             if (tabId === 'cobertura') {
                 if (typeof recalcularCoberturaEscuela === 'function') recalcularCoberturaEscuela(false);
@@ -8425,6 +8500,192 @@
         }
         window.autoguardarDetalleFestivalFirestore = autoguardarDetalleFestivalFirestore;
 
+        // =========================================================
+        // CHECKLIST DE PRODUCCIÓN
+        // - Plantilla maestra (Configuración General): [{id, tarea, nota}]
+        // - Cada evento guarda su propia copia: [{id, tarea, nota, hecho}] (campo checklistProduccion).
+        //   Se copia UNA vez al crear el evento; cambiar la plantilla después no lo modifica (queda congelado).
+        // =========================================================
+        const checklistProduccionFestivalesDB = {};
+        let plantillaChecklistProduccion = [];
+
+        function nuevoIdTareaProduccion() {
+            return 'tp-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        }
+
+        function poblarChecklistProduccionPlantilla(data) {
+            const items = (data && Array.isArray(data.items)) ? data.items : [];
+            plantillaChecklistProduccion = items
+                .filter(it => it && String(it.tarea || '').trim() !== '')
+                .map(it => ({ id: it.id || nuevoIdTareaProduccion(), tarea: String(it.tarea).trim(), nota: String(it.nota || '') }));
+            renderizarPlantillaChecklistProduccion();
+        }
+        window.poblarChecklistProduccionPlantilla = poblarChecklistProduccionPlantilla;
+
+        // Copia independiente de la plantilla vigente, con todo sin tildar
+        function copiarPlantillaChecklistProduccion() {
+            return plantillaChecklistProduccion.map(it => ({ id: nuevoIdTareaProduccion(), tarea: it.tarea, nota: it.nota || '', hecho: false }));
+        }
+
+        // ---- Plantilla (Configuración General) ----
+        function renderizarPlantillaChecklistProduccion() {
+            const tbody = document.getElementById('tbody-plantilla-produccion');
+            if (!tbody) return;
+            const vacio = document.getElementById('vacio-plantilla-produccion');
+            if (vacio) vacio.style.display = plantillaChecklistProduccion.length ? 'none' : 'block';
+            const ultimo = plantillaChecklistProduccion.length - 1;
+            tbody.innerHTML = plantillaChecklistProduccion.map((it, i) => `
+                <tr>
+                    <td style="text-align:center; color:var(--text-muted);">${i + 1}</td>
+                    <td><input type="text" class="spreadsheet-inp text-left" value="${esc(it.tarea)}" placeholder="Tarea..." oninput="plantillaChecklistProduccion[${i}].tarea = this.value"></td>
+                    <td><input type="text" class="spreadsheet-inp text-left" value="${esc(it.nota)}" placeholder="Nota..." oninput="plantillaChecklistProduccion[${i}].nota = this.value"></td>
+                    <td style="text-align:center; white-space:nowrap;">
+                        <button class="btn-row-del" style="${i === 0 ? 'visibility:hidden;' : ''}" title="Subir" onclick="moverTareaPlantillaProduccion(${i}, -1)">↑</button>
+                        <button class="btn-row-del" style="${i === ultimo ? 'visibility:hidden;' : ''}" title="Bajar" onclick="moverTareaPlantillaProduccion(${i}, 1)">↓</button>
+                        <button class="btn-row-del" title="Quitar de la plantilla" onclick="quitarTareaPlantillaProduccion(${i})">✕</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function agregarTareaPlantillaProduccion() {
+            plantillaChecklistProduccion.push({ id: nuevoIdTareaProduccion(), tarea: '', nota: '' });
+            renderizarPlantillaChecklistProduccion();
+            const inputs = document.querySelectorAll('#tbody-plantilla-produccion tr:last-child input');
+            if (inputs[0]) inputs[0].focus();
+        }
+
+        function quitarTareaPlantillaProduccion(i) {
+            plantillaChecklistProduccion.splice(i, 1);
+            renderizarPlantillaChecklistProduccion();
+        }
+
+        function moverTareaPlantillaProduccion(i, delta) {
+            const j = i + delta;
+            if (j < 0 || j >= plantillaChecklistProduccion.length) return;
+            const tmp = plantillaChecklistProduccion[i];
+            plantillaChecklistProduccion[i] = plantillaChecklistProduccion[j];
+            plantillaChecklistProduccion[j] = tmp;
+            renderizarPlantillaChecklistProduccion();
+        }
+
+        async function guardarPlantillaChecklistProduccion() {
+            // Se descartan las filas sin texto
+            plantillaChecklistProduccion = plantillaChecklistProduccion
+                .filter(it => String(it.tarea || '').trim() !== '')
+                .map(it => ({ id: it.id, tarea: String(it.tarea).trim(), nota: String(it.nota || '').trim() }));
+            renderizarPlantillaChecklistProduccion();
+            const svc = window.MandalaApp && window.MandalaApp.configuracion;
+            if (!svc || typeof svc.guardarChecklistProduccion !== 'function') {
+                mostrarToast('No se pudo guardar: la conexión con la base de datos no está lista.', 'warning');
+                return;
+            }
+            const btn = document.getElementById('btn-guardar-plantilla-produccion');
+            if (typeof setBotonCargando === 'function' && btn) setBotonCargando(btn, true);
+            const ok = await svc.guardarChecklistProduccion(plantillaChecklistProduccion);
+            if (typeof setBotonCargando === 'function' && btn) setBotonCargando(btn, false);
+            if (ok) mostrarToast('Plantilla guardada. La van a tomar los eventos que crees desde ahora; los ya creados no cambian.', 'success');
+        }
+
+        // ---- Checklist del evento ----
+        function listaChecklistProduccionEvento() {
+            return checklistProduccionFestivalesDB[eventoActualId] || [];
+        }
+
+        function guardarChecklistProduccionEvento() {
+            autoguardarDetalleFestivalFirestore('checklistProduccion', checklistProduccionFestivalesDB[eventoActualId] || []);
+            actualizarContadorChecklistProduccion();
+        }
+
+        function actualizarContadorChecklistProduccion() {
+            const pill = document.getElementById('contador-checklist-produccion');
+            if (!pill) return;
+            const lista = listaChecklistProduccionEvento();
+            const hechas = lista.filter(t => t.hecho).length;
+            pill.style.display = lista.length ? '' : 'none';
+            pill.textContent = `${hechas}/${lista.length}`;
+        }
+
+        function renderizarChecklistProduccionFestival() {
+            const tbody = document.getElementById('tbody-checklist-produccion');
+            if (!tbody) return;
+            const lista = listaChecklistProduccionEvento();
+            tbody.innerHTML = lista.map((t, i) => {
+                const estilo = t.hecho ? 'text-decoration:line-through; color:var(--text-muted);' : '';
+                return `
+                <tr>
+                    <td style="text-align:center;"><input type="checkbox" style="transform:scale(1.2); cursor:pointer;" ${t.hecho ? 'checked' : ''} onchange="alternarTareaChecklistProduccion(${i}, this.checked)"></td>
+                    <td><input type="text" class="spreadsheet-inp text-left" id="inp-tarea-prod-${i}" style="${estilo}" value="${esc(t.tarea)}" onchange="editarTareaChecklistProduccion(${i}, 'tarea', this.value)"></td>
+                    <td><input type="text" class="spreadsheet-inp text-left" value="${esc(t.nota)}" placeholder="Nota..." onchange="editarTareaChecklistProduccion(${i}, 'nota', this.value)"></td>
+                    <td style="text-align:center;"><button class="btn-row-del" title="Quitar tarea" onclick="quitarTareaChecklistProduccion(${i})">✕</button></td>
+                </tr>`;
+            }).join('');
+
+            const vacio = document.getElementById('vacio-checklist-produccion');
+            if (vacio) {
+                vacio.style.display = lista.length ? 'none' : 'block';
+                vacio.textContent = plantillaChecklistProduccion.length
+                    ? 'Este evento no tiene tareas. Podés cargar la plantilla o agregar tareas a mano.'
+                    : 'Este evento no tiene tareas. Agregalas a mano, o armá la plantilla en Configuración General > Checklist de Producción.';
+            }
+            const btnPlantilla = document.getElementById('btn-cargar-plantilla-produccion');
+            if (btnPlantilla) btnPlantilla.style.display = (!lista.length && plantillaChecklistProduccion.length) ? '' : 'none';
+            actualizarContadorChecklistProduccion();
+        }
+
+        function alternarTareaChecklistProduccion(i, marcado) {
+            const lista = listaChecklistProduccionEvento();
+            if (!lista[i]) return;
+            lista[i].hecho = !!marcado;
+            const inp = document.getElementById('inp-tarea-prod-' + i);
+            if (inp) {
+                inp.style.textDecoration = marcado ? 'line-through' : '';
+                inp.style.color = marcado ? 'var(--text-muted)' : '';
+            }
+            guardarChecklistProduccionEvento();
+        }
+
+        function editarTareaChecklistProduccion(i, campo, valor) {
+            const lista = listaChecklistProduccionEvento();
+            if (!lista[i]) return;
+            lista[i][campo] = String(valor || '').trim();
+            guardarChecklistProduccionEvento();
+        }
+
+        function agregarTareaChecklistProduccion() {
+            if (!eventoActualId) return;
+            if (!checklistProduccionFestivalesDB[eventoActualId]) checklistProduccionFestivalesDB[eventoActualId] = [];
+            checklistProduccionFestivalesDB[eventoActualId].push({ id: nuevoIdTareaProduccion(), tarea: '', nota: '', hecho: false });
+            renderizarChecklistProduccionFestival();
+            const inputs = document.querySelectorAll('#tbody-checklist-produccion tr:last-child input[type="text"]');
+            if (inputs[0]) inputs[0].focus();
+            guardarChecklistProduccionEvento();
+        }
+
+        async function quitarTareaChecklistProduccion(i) {
+            const lista = listaChecklistProduccionEvento();
+            if (!lista[i]) return;
+            const nombre = lista[i].tarea ? `"${lista[i].tarea}"` : 'esta tarea vacía';
+            const ok = await mostrarModalConfirmacion({
+                titulo: 'Quitar tarea',
+                mensaje: `¿Quitar ${nombre} del checklist de este evento? No se puede deshacer.`,
+                icono: '🗑️',
+                textoConfirmar: 'Quitar',
+                esPeligroso: true
+            });
+            if (!ok) return;
+            lista.splice(i, 1);
+            renderizarChecklistProduccionFestival();
+            guardarChecklistProduccionEvento();
+        }
+
+        function cargarPlantillaChecklistProduccionEnEvento() {
+            if (!eventoActualId || listaChecklistProduccionEvento().length) return;
+            checklistProduccionFestivalesDB[eventoActualId] = copiarPlantillaChecklistProduccion();
+            renderizarChecklistProduccionFestival();
+            guardarChecklistProduccionEvento();
+            mostrarToast('Plantilla cargada en este evento.', 'success');
+        }
+
         function poblarConfiguracionDesdeFirestore(tarifasProd, preciosEnt, listadoProductoras) {
             if (tarifasProd || (listadoProductoras && Array.isArray(listadoProductoras.items))) {
                 // Corrección histórica de bases viejas (solo aplica al documento de tarifas heredado, que siembra a la primera productora)
@@ -8597,6 +8858,9 @@
                 checklistFestivalesDB[nuevoId] = [];
             }
 
+            // Checklist de producción: siempre se toma de la plantilla vigente (también al duplicar) y queda congelado en el evento
+            checklistProduccionFestivalesDB[nuevoId] = copiarPlantillaChecklistProduccion();
+
             let estadoClass = 'estado-programado';
             if (estado === 'Lapiz') estadoClass = 'estado-lapiz';
             else if (estado === 'En Curso') estadoClass = 'estado-encurso';
@@ -8661,6 +8925,7 @@
                     serviciosAdicionales: serviciosAdicionalesFestivalesDB[nuevoId] || {},
                     ...(cuposContratoFestivalesDB[nuevoId] ? { cuposContrato: cuposContratoFestivalesDB[nuevoId] } : {}),
                     checklist: checklistFestivalesDB[nuevoId] || [],
+                    checklistProduccion: checklistProduccionFestivalesDB[nuevoId] || [],
                     finanzas: {
                         brutoOnline: 0,
                         porcSadaic: 3,
@@ -8935,6 +9200,13 @@
                     }
                     if (fest.checklist) {
                         checklistFestivalesDB[fId] = fest.checklist;
+                    }
+                    if (Array.isArray(fest.checklistProduccion)) {
+                        checklistProduccionFestivalesDB[fId] = fest.checklistProduccion;
+                        if (fId === eventoActualId) {
+                            if (typeof renderizarChecklistProduccionFestival === 'function' && document.getElementById('tab-ev-produccion')?.style.display === 'block') renderizarChecklistProduccionFestival();
+                            else if (typeof actualizarContadorChecklistProduccion === 'function') actualizarContadorChecklistProduccion();
+                        }
                     }
                     if (fest.finanzas) {
                         ingresosFestivalesDB[fId] = fest.finanzas;
@@ -13535,14 +13807,12 @@
                 const bandas = (typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[festId]) ? participantesFestivalesDB[festId] : [];
                 const listaBandas = bandas.map((b, idx) => `${idx + 1}. ${b.nombre.toUpperCase()}`).join('\n');
 
-                return `*CRONOGRAMA y ORDEN DE BANDAS*\n⏰ Apertura: 20:30 hs | 🎵 Show: 21:00 hs\n\n${listaBandas || '1. BANDA 1\n2. BANDA 2\n3. JAM'}`;
+                return `*ORDEN DE BANDAS*\n${listaBandas || '1. BANDA 1\n2. BANDA 2\n3. JAM'}`;
             }
 
             if (tplKey === 'cronograma_detallado') {
                 const bandas = (typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[festId]) ? participantesFestivalesDB[festId] : [];
-                const listaBandas = bandas.map((b, idx) => `${idx + 1}. ${b.nombre.toUpperCase()} (35 min)`).join('\n');
-
-                return `*CRONOGRAMA DETALLADO PARA BANDAS*\n📍 Venue: ${festVenue} (${festDir})\n📅 Fecha: ${festFecha}\n\n⏰ *Horarios Técnicos:*\n• 17:30 hs — Citación Técnica / Prueba de Sonido\n• 19:30 hs — Apertura de Puertas\n• 20:00 hs — Comienzo Puntual\n\n🎸 *Tiempos de Escenario:*\n${listaBandas || '1. KU CHAU\n2. INFLUENCIA\n3. AUTOSABOTAJE\n4. JAM'}\n\n⚠️ *Importante:* Rogamos puntualidad estricta entre cambios de banda (máx. 10 minutos).`;
+                return `🗓️ *CRONOGRAMA*\n📍 ${festVenue} (${festDir})\n📅 ${festFecha}\n\n🕖 *19:00 hs* | Llegada recomendada: les sugerimos a todas las bandas llegar a las 19 hs. Es la mejor forma de vivir el festival desde adentro, acomodarse con tiempo y compartir backstage entre tod@s 🙌\n🕗 *20:00 hs* | Límite de llegada\n🚪 *20:30 hs* | Puerta al público\n🎶 *21:00 hs* | Inicio de show\n\n⚠️ *CLAVE:* quienes tengan equipos para configurar y conectar (pedaleras, etc.) TIENEN que llegar a las 19 hs.`;
             }
 
             if (tplKey === 'temas_jam') {

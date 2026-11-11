@@ -164,9 +164,7 @@ async function manejarCambioSesion(user) {
     }
 
     console.log(`[Mandala Festivales] Usuario autenticado: ${user.email}`);
-    if (typeof window.mostrarIndicadorCarga === 'function' && !document.documentElement.classList.contains('festivales-loaded')) {
-        window.mostrarIndicadorCarga(window.textoCarga ? window.textoCarga('arranque') : 'Cargando...');
-    }
+    // (el aviso "Cargando..." del arranque lo reemplaza la pantalla de carga inicial #splash-inicial)
 
     const acceso = await consultarAccesoUsuario(user.email);
     if (acceso.estado !== 'ok') {

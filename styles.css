@@ -2347,6 +2347,94 @@ tr.drag-over {
     border-radius: 8px !important;
 }
 
+/* RIDER: columnas redimensionables y columnas fijas (solo en pantalla; la impresión no cambia) */
+@media screen {
+    #tabla-rider-interactiva th.col-drag-header { position: sticky; left: 0; z-index: 30; }
+    #tabla-rider-interactiva th.col-setlist-header { position: sticky; left: 36px; z-index: 30; }
+    #tabla-rider-interactiva td.col-drag-cell { position: sticky !important; left: 0; z-index: 12; background: #fff; }
+    #tabla-rider-interactiva td.rider-tema-nombre-cell { position: sticky !important; left: 36px; z-index: 12; background: #fff !important; box-shadow: 2px 0 0 #e2e8f0; overflow: hidden; }
+    #tabla-rider-interactiva td.celda-instrumento-drop { min-width: 0 !important; max-width: none !important; overflow: hidden; }
+    #tabla-rider-interactiva .rider-group-header .group-header-content { position: sticky; left: 40px; width: max-content; max-width: calc(100vw - 120px); }
+    #tabla-rider-interactiva th .rider-resizer {
+        position: absolute; top: 0; right: -3px; width: 8px; height: 100%;
+        cursor: col-resize; z-index: 40; touch-action: none;
+    }
+    #tabla-rider-interactiva th .rider-resizer::after {
+        content: ""; position: absolute; top: 20%; bottom: 20%; left: 3px; width: 2px;
+        border-radius: 2px; background: transparent; transition: background .15s;
+    }
+    #tabla-rider-interactiva th:hover .rider-resizer::after { background: var(--line-strong, #cbd5e1); }
+    #tabla-rider-interactiva th .rider-resizer:hover::after { background: var(--teal); }
+    body.rider-redimensionando { cursor: col-resize !important; user-select: none; }
+    body.rider-redimensionando * { cursor: col-resize !important; }
+    .table-responsive.rider-paneando, .table-responsive.rider-paneando * { cursor: grabbing !important; user-select: none; }
+}
+@media print { .rider-resizer { display: none !important; } }
+
+/* FASE 4: modales, diálogos y avisos (toast) con el sistema de diseño */
+.modal-overlay, .modal-overlay.active { background: rgba(28, 31, 34, .42); }
+.modal-box { border: 0; border-radius: var(--r-lg); box-shadow: var(--sh-3); }
+.modal-header { background: var(--surface); border-bottom: 1px solid var(--line); padding: 16px 22px; }
+.modal-header h3 { font-size: 18px; color: var(--ink); }
+.btn-close-modal { width: 32px; height: 32px; border-radius: var(--r-sm); color: var(--ink-3); font-size: 18px; line-height: 1; display: grid; place-items: center; }
+.btn-close-modal:hover { background: var(--surface-2); color: var(--ink); }
+.modal-body { padding: 20px 22px; }
+.modal-footer { padding: 14px 22px; border-top: 1px solid var(--line); background: var(--surface-2); gap: 10px; }
+
+.mandala-dialog-box { border: 0; border-radius: var(--r-lg); box-shadow: var(--sh-3); }
+.mandala-dialog-icon-badge { border-radius: var(--r-md); background: var(--surface-2); }
+.mandala-dialog-icon-badge.danger { background: var(--bad-bg); color: var(--bad); }
+.mandala-dialog-icon-badge.accent { background: var(--teal-50); color: var(--teal-700); }
+.mandala-dialog-title { color: var(--ink); font-size: 18px; }
+.mandala-dialog-body { color: var(--ink-2); }
+.mandala-dialog-input { border: 1px solid var(--line-2); border-radius: var(--r-sm); }
+.mandala-dialog-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0, 123, 143, .15); }
+.mandala-dialog-footer { background: var(--surface-2); border-top: 1px solid var(--line); }
+
+.mandala-toast { border: 1px solid var(--line); border-left-width: 1px; border-radius: var(--r-md); box-shadow: var(--sh-2); padding: 10px 14px; gap: 10px; font-weight: 600; color: var(--ink); }
+.mandala-toast-icon { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 0; flex: none; }
+.mandala-toast-success .mandala-toast-icon { background: var(--ok-bg); color: var(--ok); }
+.mandala-toast-warning .mandala-toast-icon { background: var(--warn-bg); color: var(--warn); }
+.mandala-toast-error .mandala-toast-icon { background: var(--bad-bg); color: var(--bad); }
+.mandala-toast-info .mandala-toast-icon { background: var(--info-bg); color: var(--info); }
+.mandala-toast-success, .mandala-toast-warning, .mandala-toast-error, .mandala-toast-info { border-left: 1px solid var(--line); }
+.mandala-toast-error { border-color: var(--bad-bg); }
+
+.btn-danger { background: var(--bad); color: #fff; border: 1px solid transparent; }
+.btn-danger:hover { filter: brightness(.92); }
+
+/* TABLAS DE LISTA: una sola piel (referencia: Eventos) para Eventos, Venues, Sesionistas, Finanzas y Deudas */
+#tabla-eventos-filas, #tabla-venues-lista, #tabla-sesionistas-lista, #tabla-finanzas-resumen-filas, #tabla-deudas-consolidada { border: 0 !important; background: transparent !important; }
+#tabla-eventos-filas th, #tabla-venues-lista th, #tabla-sesionistas-lista th, #tabla-finanzas-resumen-filas th, #tabla-deudas-consolidada th { background: var(--surface-2) !important; border: 0 !important; box-shadow: inset 0 -1px 0 var(--line) !important; color: var(--ink-3) !important; padding: 10px 14px !important; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+#tabla-eventos-filas td, #tabla-venues-lista td, #tabla-sesionistas-lista td, #tabla-finanzas-resumen-filas td { border: 0 !important; border-bottom: 1px solid var(--line) !important; padding: 12px 14px !important; vertical-align: middle; }
+#tabla-eventos-filas tr:last-child td, #tabla-venues-lista tr:last-child td, #tabla-sesionistas-lista tr:last-child td, #tabla-finanzas-resumen-filas tr:last-child td { border-bottom: 0 !important; }
+#tabla-eventos-filas tbody tr:hover td, #tabla-venues-lista tbody tr:hover td, #tabla-sesionistas-lista tbody tr:hover td, #tabla-finanzas-resumen-filas tbody tr:hover td { background: var(--surface-2) !important; }
+/* Deudas: mismas líneas finas; cabecera de evento como banda y detalle con fondo suave */
+#tabla-deudas-consolidada td { border: 0 !important; border-bottom: 1px solid var(--line) !important; }
+#tabla-deudas-consolidada tr.group-header-row { background: var(--surface-2) !important; border-top: 0 !important; }
+#tabla-deudas-consolidada tr.fila-deuda-detalle td { background: var(--surface-2) !important; }
+#tabla-deudas-consolidada tbody tr.fila-banda-hijo:not(.fila-deuda-detalle):hover td { background: var(--surface-2); }
+#tabla-venues-lista td, #tabla-sesionistas-lista td { background: var(--surface) !important; }
+#tabla-venues-lista td:first-child .spreadsheet-inp, #tabla-sesionistas-lista td:first-child .spreadsheet-inp { color: var(--ink) !important; font-weight: 700 !important; }
+#tabla-venues-lista th:nth-child(1) { min-width: 190px; }
+#tabla-venues-lista th:nth-child(2) { min-width: 200px; }
+/* campos editables dentro de las tablas: sin recuadro hasta pasar el mouse o escribir */
+#tabla-venues-lista .spreadsheet-inp, #tabla-venues-lista select, #tabla-sesionistas-lista .spreadsheet-inp, #tabla-sesionistas-lista select { border-color: transparent !important; background: transparent !important; }
+#tabla-venues-lista .spreadsheet-inp:hover, #tabla-venues-lista select:hover, #tabla-sesionistas-lista .spreadsheet-inp:hover, #tabla-sesionistas-lista select:hover { border-color: var(--line-2) !important; background: var(--surface) !important; }
+#tabla-venues-lista .spreadsheet-inp:focus, #tabla-venues-lista select:focus, #tabla-sesionistas-lista .spreadsheet-inp:focus, #tabla-sesionistas-lista select:focus { border-color: var(--teal) !important; background: var(--surface) !important; }
+
+/* FASE 3: listas con fila común (Eventos y Productoras) */
+.ds-row-prod { grid-template-columns: 44px 1.2fr 1.4fr 1.2fr auto; }
+.ds-row-acc { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+@media (min-width: 1100px) { .ds-row-acc { flex-wrap: nowrap; } }
+@media (max-width: 820px) {
+    .ds-row-prod { grid-template-columns: 40px 1fr; }
+    .ds-row-prod > :nth-child(n+3) { grid-column: 2 / 3; }
+    .ds-row-acc { justify-content: flex-start; }
+}
+#tabla-eventos-filas .btn-icon-dots { border-color: transparent; background: none; box-shadow: none; border-radius: var(--r-sm); }
+#tabla-eventos-filas .btn-icon-dots:hover { background: var(--surface-2); border-color: var(--line); transform: none; box-shadow: none; }
+
 /* =======================================================================
    BOTÓN DE ACCESO DIRECTO A WHATSAPP (CONTACTOS & VENUES)
    ======================================================================= */

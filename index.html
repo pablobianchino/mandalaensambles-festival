@@ -12,7 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v1.3">
+    <link rel="stylesheet" href="styles.css?v=v1.4">
+    <script src="src/ui/iconos.js?v=v1.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -271,8 +272,7 @@
                     <div class="content-card">
                         <div class="card-header-flex">
                             <div>
-                                <h3 class="card-title">🎪 Cronograma y Gestión de Festivales</h3>
-                                <span style="font-size:12px; color:var(--text-muted);">
+                                <span style="font-size:13px; color:var(--ink-3);">
                                     Listado cronológico de festivales del año. Hacé click sobre cualquier fila para acceder a su ficha, rider, coberturas y cuotas.
                                 </span>
                             </div>
@@ -291,16 +291,16 @@
                         </div>
 
                         <!-- BARRA DE FILTROS POR AÑO Y ESTADO -->
-                        <div style="display:flex; align-items:center; gap:16px; margin-bottom:14px; padding:10px 14px; background:var(--hover-bg); border-radius:10px; border:1px solid var(--border-color);">
+                        <div class="ds-toolbar" style="padding:10px 14px; background:var(--surface-2); border-radius:var(--r-md); border:1px solid var(--line); gap:16px;">
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <label style="font-size:12px; font-weight:700; color:var(--text-muted);">📅 Filtrar por Año:</label>
+                                <label style="font-size:12px; font-weight:700; color:var(--ink-3);">Año</label>
                                 <select id="filtro-eventos-anio" class="form-control" style="width:110px; padding:6px 10px; font-size:12.5px; font-weight:700;" onchange="filtroAnioManualUsuario = true; aplicarFiltrosEventos()">
                                     <option value="todos">Todos</option>
                                 </select>
                             </div>
 
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <label style="font-size:12px; font-weight:700; color:var(--text-muted);">🏷️ Estado:</label>
+                                <label style="font-size:12px; font-weight:700; color:var(--ink-3);">Estado</label>
                                 <select id="filtro-eventos-estado" class="form-control" style="width:140px; padding:6px 10px; font-size:12.5px; font-weight:700;" onchange="aplicarFiltrosEventos()">
                                     <option value="todos" selected>Todos los estados</option>
                                     <option value="En Curso">En Curso</option>
@@ -1312,8 +1312,7 @@
                     <div class="content-card">
                         <div class="card-header-flex">
                             <div>
-                                <h3 class="card-title">📍 Venues y Espacios para Conciertos</h3>
-                                <span style="font-size:12px; color:var(--text-muted);">
+                                <span style="font-size:13px; color:var(--ink-3);">
                                     Gestión de lugares para eventos con capacidad en rangos (ej: 100-130 pers.), contacto y acuerdos.
                                 </span>
                             </div>
@@ -1357,8 +1356,7 @@
                     <div class="content-card">
                         <div class="card-header-flex">
                             <div>
-                                <h3 class="card-title">🎸 Músicos Sesionistas</h3>
-                                <span style="font-size:12px; color:var(--text-muted);">
+                                <span style="font-size:13px; color:var(--ink-3);">
                                     Directorio de músicos sesionistas para convocatorias y reemplazos en festivales y riders técnicos. Modificá directamente sobre la tabla.
                                 </span>
                             </div>
@@ -1416,16 +1414,16 @@
                             </div>
 
                             <!-- BARRA DE FILTROS POR AÑO Y ESTADO -->
-                            <div style="display:flex; align-items:center; gap:16px; margin-bottom:14px; padding:10px 14px; background:var(--hover-bg); border-radius:10px; border:1px solid var(--border-color);">
+                            <div class="ds-toolbar" style="padding:10px 14px; background:var(--surface-2); border-radius:var(--r-md); border:1px solid var(--line); gap:16px;">
                                 <div style="display:flex; align-items:center; gap:8px;">
-                                    <label style="font-size:12px; font-weight:700; color:var(--text-muted);">📅 Filtrar por Año:</label>
+                                    <label style="font-size:12px; font-weight:700; color:var(--ink-3);">Año</label>
                                     <select id="filtro-finanzas-anio" class="form-control" style="width:110px; padding:6px 10px; font-size:12.5px; font-weight:700;" onchange="filtroAnioManualUsuario = true; aplicarFiltrosFinanzas()">
                                         <option value="todos">Todos</option>
                                     </select>
                                 </div>
 
                                 <div style="display:flex; align-items:center; gap:8px;">
-                                    <label style="font-size:12px; font-weight:700; color:var(--text-muted);">🏷️ Estado:</label>
+                                    <label style="font-size:12px; font-weight:700; color:var(--ink-3);">Estado</label>
                                     <select id="filtro-finanzas-estado" class="form-control" style="width:140px; padding:6px 10px; font-size:12.5px; font-weight:700;" onchange="aplicarFiltrosFinanzas()">
                                         <option value="todos" selected>Todos los estados</option>
                                         <option value="En Curso">En Curso</option>
@@ -3369,11 +3367,12 @@
             const toast = document.createElement('div');
             toast.className = `mandala-toast mandala-toast-${tipo}`;
 
-            let icon = '✨';
-            if (tipo === 'success') icon = '✅';
-            else if (tipo === 'warning') icon = '⚠️';
-            else if (tipo === 'error') icon = '❌';
-            else if (tipo === 'info') icon = 'ℹ️';
+            const svg = (d) => '<svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;">' + d + '</svg>';
+            let icon = svg('<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>');
+            if (tipo === 'success') icon = svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>');
+            else if (tipo === 'warning') icon = svg('<path d="M12 3.5 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17.4v.1"/>');
+            else if (tipo === 'error') icon = svg('<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>');
+            else if (tipo === 'info') icon = svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8v.1"/>');
 
             toast.innerHTML = `
                 <span class="mandala-toast-icon">${icon}</span>
@@ -3857,22 +3856,23 @@
             if (!cont) return;
             if (!productorasDB.length) { cont.innerHTML = '<p style="color:var(--text-muted); padding:12px;">Todavía no hay productoras cargadas.</p>'; return; }
             const fmt = (n) => (typeof formatearMonedaAr === 'function' ? formatearMonedaAr(n) : '$ ' + n);
-            cont.innerHTML = productorasDB.map(p => {
+            const iniciales = (n) => (String(n || '?').replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9 ]/g, '').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?');
+            cont.innerHTML = '<div class="ds-card">' + productorasDB.map(p => {
                 const t = p.tarifas;
                 const usos = contarFestivalesDeProductora(p);
                 const idJs = esc(p.id).replace(/'/g, "\\'");
-                return '<div class="content-card" style="margin-bottom:12px; padding:14px 16px;">'
-                    + '<div class="card-header-flex">'
-                    + '<div><h3 class="card-title" style="margin:0;">🎬 ' + esc(p.nombre) + (p.porDefecto ? ' <span class="pill-status pill-success" style="font-size:11px; margin-left:6px;">Por defecto</span>' : '') + '</h3>'
-                    + '<span style="font-size:12px; color:var(--text-muted);">Base: video ' + fmt(t.baseVideo) + ' · fotos ' + fmt(t.baseFotos) + ' · reel ' + fmt(t.baseReel)
-                    + ' &nbsp;|&nbsp; Alumnos combo ' + fmt(t.aluAmbas) + ' &nbsp;|&nbsp; Invitados combo ' + fmt(t.artAmbas)
-                    + ' &nbsp;|&nbsp; Usada en ' + usos + ' festival' + (usos === 1 ? '' : 'es') + '</span></div>'
-                    + '<div style="display:flex; gap:8px; flex-wrap:wrap;">'
-                    + '<button class="btn-app btn-secondary" onclick="abrirModalProductora(\'' + idJs + '\')">✏️ Editar tarifas</button>'
-                    + (p.porDefecto ? '' : '<button class="btn-app btn-secondary" onclick="marcarProductoraPorDefecto(\'' + idJs + '\')">⭐ Usar por defecto</button>')
-                    + (p.porDefecto || usos > 0 ? '' : '<button class="btn-app btn-secondary" onclick="eliminarProductora(\'' + idJs + '\')">🗑️ Eliminar</button>')
-                    + '</div></div></div>';
-            }).join('');
+                return '<div class="ds-row ds-row-prod">'
+                    + '<span class="ds-avatar">' + esc(iniciales(p.nombre)) + '</span>'
+                    + '<div class="nm"><b>' + esc(p.nombre) + (p.porDefecto ? ' <span class="ds-chip ok" style="margin-left:6px;">Por defecto</span>' : '') + '</b>'
+                    + '<span>Usada en ' + usos + ' festival' + (usos === 1 ? '' : 'es') + '</span></div>'
+                    + '<div class="ds-meta"><b>Base</b>Video ' + fmt(t.baseVideo) + ' · Fotos ' + fmt(t.baseFotos) + ' · Reel ' + fmt(t.baseReel) + '</div>'
+                    + '<div class="ds-meta"><b>Combos</b>Alumnos ' + fmt(t.aluAmbas) + ' · Invitados ' + fmt(t.artAmbas) + '</div>'
+                    + '<div class="ds-row-acc">'
+                    + '<button class="ds-btn ds-btn-secondary sm" onclick="abrirModalProductora(\'' + idJs + '\')">Editar tarifas</button>'
+                    + (p.porDefecto ? '' : '<button class="ds-btn ds-btn-ghost sm" onclick="marcarProductoraPorDefecto(\'' + idJs + '\')">Usar por defecto</button>')
+                    + (p.porDefecto || usos > 0 ? '' : '<button class="ds-btn ds-btn-ghost sm" style="color:var(--bad);" onclick="eliminarProductora(\'' + idJs + '\')">Eliminar</button>')
+                    + '</div></div>';
+            }).join('') + '</div>';
         }
         function abrirModalProductora(id) {
             const p = id ? productorasDB.find(x => x.id === id) : null;
@@ -5587,7 +5587,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v1.3";
+        const APP_VERSION = "v1.4";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -9076,7 +9076,7 @@
                     const estActualMenu = fest.estado || 'Programado';
                     tr.innerHTML = `
                         <td class="celda-fecha">${htmlFechaListado(fechaDisplay)}</td>
-                        <td><strong style="color:var(--accent-blue); font-size:13.5px;">${esc((fest.nombre || 'FESTIVAL').toUpperCase())}</strong></td>
+                        <td><div style="display:flex; align-items:center; gap:10px;"><span class="ds-avatar" aria-hidden="true">${esc((fest.nombre || 'F').replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9 ]/g, '').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || 'F')}</span><strong style="color:var(--ink); font-size:13.5px;">${esc((fest.nombre || 'FESTIVAL').toUpperCase())}</strong></div></td>
                         <td>${esc(fest.venue || 'Venue')}</td>
                         <td class="celda-ev-estado"><span class="pill-status ${estadoClass}">${estActualMenu}</span></td>
                         <td style="text-align:center; position:relative;" onclick="event.stopPropagation()">
@@ -11365,12 +11365,14 @@
                 });
             });
             // 9.5px por carácter + 75px de margen para el botón de nota 📝 y padding de celda (mínimo 270px)
+            // (en pantalla se limita a 380px: el ancho se ajusta a mano arrastrando el borde del encabezado)
             const anchoSetlist = Math.max(270, Math.ceil(maxLongitudCancion * 9.5 + 75));
+            riderCargarAnchos();
 
             // Reconstruir Thead con títulos de instrumentos editables y notas
             headerRow.innerHTML = `
                 <th class="col-drag-header" style="width:36px; min-width:36px;" title="Mover fila de tema con el mouse">⠿</th>
-                <th class="col-setlist-header" style="width:${anchoSetlist}px; min-width:${anchoSetlist}px; text-align:left;">SETLIST</th>
+                <th class="col-setlist-header" data-ancho-key="setlist" style="width:${anchoSetlist}px; min-width:${anchoSetlist}px; text-align:left;">SETLIST<span class="rider-resizer no-print" onpointerdown="riderIniciarRedimension(event)" ondblclick="riderRestablecerAncho(event)" title="Arrastrá para cambiar el ancho (doble clic: ancho automático)"></span></th>
             `;
 
             columnas.forEach((colObj, cIdx) => {
@@ -11378,6 +11380,7 @@
                 th.className = 'col-instrumento';
                 th.draggable = !modoVista;
                 th.dataset.colIndex = cIdx;
+                th.dataset.anchoKey = 'c:' + colObj.nombre;
                 th.setAttribute('ondragstart', `handleColDragStart(event, ${cIdx})`);
                 th.setAttribute('ondragover', `handleColDragOver(event, ${cIdx})`);
                 th.setAttribute('ondragleave', `handleColDragLeave(event, ${cIdx})`);
@@ -11389,6 +11392,7 @@
                 const notaColAttr = colObj.nota ? colObj.nota.replace(/"/g, '&quot;') : '';
 
                 th.innerHTML = `
+                    <span class="rider-resizer no-print" onpointerdown="riderIniciarRedimension(event)" ondblclick="riderRestablecerAncho(event)" title="Arrastrá para cambiar el ancho (doble clic: ancho automático)"></span>
                     <div class="print-col-note">${colObj.nota ? esc(colObj.nota) : ''}</div>
                     <div class="print-col-inst-head"><span class="print-inst-emoji">${emoji}</span><span class="print-inst-name">${esc(colObj.nombre)}</span></div>
                     <div class="col-header-action" style="display:flex; align-items:center; justify-content:center; gap:1px;">
@@ -11566,7 +11570,7 @@
                         <td class="rider-tema-nombre-cell" style="border:1px solid #cbd5e1; width:${anchoSetlist}px; min-width:${anchoSetlist}px; padding:2px 6px; vertical-align:middle; position:relative; white-space:nowrap;">
                             <div class="rider-tema-screen-content" style="display:flex; align-items:center; gap:6px; width:100%;">
                                 <span class="rider-song-name-wrapper rider-hover-target" ${notaTema ? `data-nota="${notaTemaAttr}"` : ''} style="flex:1; min-width:0; display:inline-block; position:relative;">
-                                    <input type="text" class="spreadsheet-inp text-left" value="${esc(tema)}" style="font-weight:700; color:var(--accent-teal); width:100%; min-width:0; font-size:12px; padding:2px 4px;" placeholder="Título de canción..." onchange="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onblur="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onkeydown="if(event.key==='Enter') this.blur();">
+                                    <input type="text" class="spreadsheet-inp text-left" value="${esc(tema)}" title="${esc(tema)}" style="font-weight:700; color:var(--accent-teal); width:100%; min-width:0; font-size:12px; padding:2px 4px;" placeholder="Título de canción..." onchange="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onblur="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onkeydown="if(event.key==='Enter') this.blur();">
                                 </span>
                                 <button type="button" class="btn-tema-nota ${notaTema ? 'has-note' : ''}" onclick="abrirModalEditarNotaCancion('${keyTema.replace(/'/g, "\\'")}', ${bIdx}, ${tIdx})" title="${notaTema ? 'Ver / Editar / Borrar Nota: ' + notaTema : 'Agregar Nota a la Canción'}">📝</button>
                             </div>
@@ -11584,7 +11588,117 @@
             });
 
             inicializarDragAndDrop();
+            riderAplicarAnchos(anchoSetlist);
+            riderAjustarAltura();
         }
+
+        // ---- Rider: ancho de columnas ajustable, barra horizontal visible y desplazamiento cómodo ----
+        const RIDER_ANCHO = { inst: 96, setlistMax: 380, setlistMin: 140, instMin: 70, max: 900, fijo: 36 };
+        let riderAnchosPers = {};
+        let riderUltimoAutoSetlist = 300;
+        function riderCargarAnchos() {
+            try { riderAnchosPers = JSON.parse(localStorage.getItem('mandala_rider_anchos_' + eventoActualId) || '{}') || {}; }
+            catch (e) { riderAnchosPers = {}; }
+        }
+        function riderGuardarAnchos() {
+            try {
+                if (Object.keys(riderAnchosPers).length) localStorage.setItem('mandala_rider_anchos_' + eventoActualId, JSON.stringify(riderAnchosPers));
+                else localStorage.removeItem('mandala_rider_anchos_' + eventoActualId);
+            } catch (e) { /* sin storage: el ancho vale hasta recargar */ }
+        }
+        function riderAplicarAnchos(autoSetlist) {
+            if (autoSetlist) riderUltimoAutoSetlist = autoSetlist;
+            const fila = document.getElementById('rider-header-row');
+            if (!fila) return;
+            let total = 0, css = '';
+            Array.from(fila.children).forEach((th, i) => {
+                const key = th.dataset.anchoKey;
+                let w = RIDER_ANCHO.fijo;
+                if (key === 'setlist') w = riderAnchosPers.setlist || Math.min(riderUltimoAutoSetlist, RIDER_ANCHO.setlistMax);
+                else if (key) w = riderAnchosPers[key] || RIDER_ANCHO.inst;
+                total += w;
+                css += `#tabla-rider-interactiva thead th:nth-child(${i + 1}){width:${w}px !important;min-width:${w}px !important;max-width:${w}px !important;}\n`;
+            });
+            let st = document.getElementById('rider-anchos-css');
+            if (!st) { st = document.createElement('style'); st.id = 'rider-anchos-css'; document.head.appendChild(st); }
+            st.textContent = `@media screen {\n#tabla-rider-interactiva{table-layout:fixed;width:${total}px;min-width:100%;}\n${css}}`;
+        }
+        function riderIniciarRedimension(ev) {
+            ev.preventDefault(); ev.stopPropagation();
+            const th = ev.target.closest('th'); if (!th) return;
+            const key = th.dataset.anchoKey;
+            const x0 = ev.clientX, w0 = th.getBoundingClientRect().width;
+            const min = key === 'setlist' ? RIDER_ANCHO.setlistMin : RIDER_ANCHO.instMin;
+            document.body.classList.add('rider-redimensionando');
+            const mover = e => {
+                riderAnchosPers[key] = Math.round(Math.max(min, Math.min(RIDER_ANCHO.max, w0 + e.clientX - x0)));
+                riderAplicarAnchos();
+            };
+            const fin = () => {
+                document.removeEventListener('pointermove', mover);
+                document.removeEventListener('pointerup', fin);
+                document.removeEventListener('pointercancel', fin);
+                document.body.classList.remove('rider-redimensionando');
+                riderGuardarAnchos();
+            };
+            document.addEventListener('pointermove', mover);
+            document.addEventListener('pointerup', fin);
+            document.addEventListener('pointercancel', fin);
+        }
+        function riderRestablecerAncho(ev) {
+            ev.preventDefault(); ev.stopPropagation();
+            const th = ev.target.closest('th'); if (!th) return;
+            delete riderAnchosPers[th.dataset.anchoKey];
+            riderGuardarAnchos();
+            riderAplicarAnchos();
+        }
+        // El contenedor ocupa el alto visible de la ventana: así la barra horizontal queda siempre a la vista
+        function riderAjustarAltura() {
+            const c = document.querySelector('#card-rider-bandas .table-responsive');
+            if (!c || !c.offsetParent) return;
+            if (document.querySelector('#card-rider-bandas.rider-fullscreen-active, .rider-fullscreen-active')) { c.style.maxHeight = ''; return; }
+            const top = Math.max(c.getBoundingClientRect().top, 0);
+            const h = Math.max(260, Math.min(window.innerHeight - top - 14, window.innerHeight - 60));
+            const v = Math.round(h) + 'px';
+            if (c.style.maxHeight !== v) c.style.maxHeight = v;
+        }
+        let riderAjusteProgramado = false;
+        function riderProgramarAjuste() {
+            if (riderAjusteProgramado) return;
+            riderAjusteProgramado = true;
+            requestAnimationFrame(() => { riderAjusteProgramado = false; riderAjustarAltura(); });
+        }
+        window.addEventListener('resize', riderProgramarAjuste);
+        document.addEventListener('scroll', riderProgramarAjuste, true);
+        // Auto-desplazamiento al arrastrar (músico, tema, columna o banda) cerca de los bordes de la tabla
+        document.addEventListener('dragover', e => {
+            const c = document.querySelector('#card-rider-bandas .table-responsive');
+            if (!c || !c.offsetParent) return;
+            const r = c.getBoundingClientRect(), z = 80, m = 40, topBorde = r.top + 44;
+            if (e.clientX < r.left - m || e.clientX > r.right + m || e.clientY < r.top - m || e.clientY > r.bottom + m) return;
+            const vel = d => Math.max(4, Math.round(Math.min(1, (z - Math.max(d, 0)) / z) * 24));
+            if (e.clientX > r.right - z) c.scrollLeft += vel(r.right - e.clientX);
+            else if (e.clientX < r.left + z) c.scrollLeft -= vel(e.clientX - r.left);
+            if (e.clientY > r.bottom - z) c.scrollTop += vel(r.bottom - e.clientY);
+            else if (e.clientY < topBorde + z / 2) c.scrollTop -= vel(e.clientY - topBorde);
+        });
+        // Shift + rueda = desplazamiento horizontal; botón central + arrastrar = mover la tabla como un mapa
+        document.addEventListener('wheel', e => {
+            const c = e.target.closest && e.target.closest('#card-rider-bandas .table-responsive');
+            if (c && e.shiftKey && c.scrollWidth > c.clientWidth) { e.preventDefault(); c.scrollLeft += (e.deltaY || e.deltaX); }
+        }, { passive: false });
+        document.addEventListener('mousedown', e => {
+            if (e.button !== 1) return;
+            const c = e.target.closest && e.target.closest('#card-rider-bandas .table-responsive');
+            if (!c) return;
+            e.preventDefault();
+            let x = e.clientX, y = e.clientY;
+            c.classList.add('rider-paneando');
+            const mover = ev => { c.scrollLeft -= ev.clientX - x; c.scrollTop -= ev.clientY - y; x = ev.clientX; y = ev.clientY; };
+            const fin = () => { document.removeEventListener('mousemove', mover); document.removeEventListener('mouseup', fin); c.classList.remove('rider-paneando'); };
+            document.addEventListener('mousemove', mover);
+            document.addEventListener('mouseup', fin);
+        });
 
         // Generar opciones contextuales del selector: Alumnos de la banda según instrumento + Carga manual (Sesionistas EXCLUIDOS)
         function generarOpcionesMusicosRider(banda, colObj, valorActual) {

@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v1.4">
-    <script src="src/ui/iconos.js?v=v1.4"></script>
+    <link rel="stylesheet" href="styles.css?v=v1.5">
+    <script src="src/ui/iconos.js?v=v1.5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -104,7 +104,7 @@
                     </div>
                 </div>
 
-                <div id="login-error-msg" style="display:none; padding:8px 12px; background:#fee2e2; border:1px solid #fecaca; border-radius:8px; color:#991b1b; font-size:11.5px; font-weight:600; text-align:left;"></div>
+                <div id="login-error-msg" style="display:none; padding:8px 12px; background:var(--bad-bg); border:1px solid color-mix(in srgb, var(--bad) 25%, white); border-radius:8px; color:var(--bad); font-size:11.5px; font-weight:600; text-align:left;"></div>
 
                 <button type="submit" id="btn-login-email-submit" class="btn-app btn-primary" style="width:100%; padding:10px 16px; border-radius:10px; font-size:13.5px; font-weight:700; display:flex; justify-content:center; align-items:center; gap:8px; margin-top:2px;">
                     <span>Iniciar Sesión</span>
@@ -283,7 +283,7 @@
                                 <button class="btn-app btn-secondary" style="display:none;" onclick="abrirModalCargaMasivaHistorico()" title="Importar festivales 2025-2026 a la base de datos">
                                     📥 Carga Histórica (.xlsx)
                                 </button>
-                                <button class="btn-app btn-secondary" style="display:none; background:#f0fdf4; border-color:#bbf7d0; color:#166534; font-weight:700;" onclick="restaurarFestivalesHistoricosEliminados()" title="Recuperar de inmediato los 9 festivales históricos originales de la carga masiva">
+                                <button class="btn-app btn-secondary" style="display:none; background:var(--ok-bg); border-color:color-mix(in srgb, var(--ok) 25%, white); color:var(--ok); font-weight:700;" onclick="restaurarFestivalesHistoricosEliminados()" title="Recuperar de inmediato los 9 festivales históricos originales de la carga masiva">
                                     ♻️ Recuperar Carga Masiva
                                 </button>
                                 <button class="btn-app btn-primary" onclick="abrirModalCrearEvento()">＋ Nuevo Evento</button>
@@ -572,6 +572,9 @@
                                         </div>
                                         <button class="btn-app btn-secondary" id="btn-toggle-todos-rider" onclick="toggleTodosRiderBandas()" title="Comprimir o descomprimir todas las bandas del rider">
                                             🔽 Expandir todo
+                                        </button>
+                                        <button type="button" class="btn-app btn-secondary" id="btn-rider-fullscreen" onclick="toggleRiderPantallaCompleta()" title="Agrandar la planilla a pantalla completa (Esc para salir)" aria-label="Pantalla completa">
+                                            <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pantalla completa
                                         </button>
                                         <button class="btn-app btn-secondary" onclick="imprimirRiderTecnico()" title="Imprimir planilla de rider técnico (Horizontal)" aria-label="Imprimir rider técnico">
                                             🖨️
@@ -1045,7 +1048,7 @@
                                 <!-- Columna Derecha: Selector de alumno (si aplica) + Previsualizacion WhatsApp -->
                                 <div>
                                     <!-- Selector contextual de Alumno para Incumplimiento -->
-                                    <div id="caja-selector-alumno-comunicado" style="display: none; background: #fff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                                    <div id="caja-selector-alumno-comunicado" style="display: none; background: #fff; border: 1px solid color-mix(in srgb, var(--info) 25%, white); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
                                         <label style="font-size: 12px; font-weight: 700; color: #1e40af; display: block; margin-bottom: 6px;">
                                             &#128100; Seleccionar Participante con Entradas Pendientes:
                                         </label>
@@ -1053,7 +1056,7 @@
                                             <select id="sel-alumno-comunicado" class="form-control" style="font-size: 12.5px; padding: 6px 10px; font-weight: 600;" onchange="alCambiarAlumnoComunicado(this.value)">
                                                 <!-- Opciones generadas dinamicamente -->
                                             </select>
-                                            <span id="badge-alumno-faltantes" class="pill-status" style="background:#fee2e2; color:#991b1b; white-space:nowrap; font-weight:700; font-size:11.5px;">-</span>
+                                            <span id="badge-alumno-faltantes" class="pill-status" style="background:var(--bad-bg); color:var(--bad); white-space:nowrap; font-weight:700; font-size:11.5px;">-</span>
                                         </div>
                                     </div>
 
@@ -1063,11 +1066,11 @@
                                             <span style="font-size: 11px; font-weight: 700; color: #54656f; text-transform: uppercase;">
                                                 &#128241; Previsualizaci&oacute;n del Mensaje (Pod&eacute;s editarlo antes de copiar):
                                             </span>
-                                            <button type="button" onclick="restablecerTextoComunicadoOriginal()" style="background: none; border: none; font-size: 11px; color: #0284c7; cursor: pointer; text-decoration: underline;">
+                                            <button type="button" onclick="restablecerTextoComunicadoOriginal()" style="background: none; border: none; font-size: 11px; color: var(--info); cursor: pointer; text-decoration: underline;">
                                                 Restablecer Original
                                             </button>
                                         </div>
-                                        <textarea id="txt-comunicado-preview" style="width: 100%; height: 280px; background: #ffffff; border-radius: 8px 8px 8px 0px; border: 1px solid #cbd5e1; padding: 12px 14px; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; resize: vertical; color: #111b21; outline: none;"></textarea>
+                                        <textarea id="txt-comunicado-preview" style="width: 100%; height: 280px; background: #ffffff; border-radius: 8px 8px 8px 0px; border: 1px solid var(--line-2); padding: 12px 14px; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; resize: vertical; color: #111b21; outline: none;"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -1163,7 +1166,7 @@
                                 </div>
                             </div>
 
-                            <div style="margin-top:20px; padding:14px; background:#eff6ff; border-radius:12px; border:1px solid #bfdbfe; font-size:13px; color:#1e40af;">
+                            <div style="margin-top:20px; padding:14px; background:var(--info-bg); border-radius:12px; border:1px solid color-mix(in srgb, var(--info) 25%, white); font-size:13px; color:#1e40af;">
                                 ℹ️ <strong>Regla de liquidación contractual:</strong> Si un alumno o artista no alcanza el cupo fijado, la diferencia de entradas se liquida automáticamente al valor de <strong>Entrada General (<span id="txt-cfg-regla-precio-general">$ 16.000</span>)</strong> configurado en el sistema.
                             </div>
                         </div>
@@ -1477,7 +1480,7 @@
                                                 <option value="2026" selected>2026</option>
                                                 <option value="2025">2025</option>
                                             </select>
-                                            <span id="badge-sync-caja-vivo" title="Sincronización en vivo activa entre operadores" style="display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700; color:#15803d; background:#dcfce7; border:1px solid #bbf7d0; padding:2px 8px; border-radius:999px;">
+                                            <span id="badge-sync-caja-vivo" title="Sincronización en vivo activa entre operadores" style="display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700; color:var(--ok); background:var(--ok-bg); border:1px solid color-mix(in srgb, var(--ok) 25%, white); padding:2px 8px; border-radius:999px;">
                                                 <span style="width:6px; height:6px; border-radius:50%; background:#22c55e;"></span> En vivo
                                             </span>
                                         </div>
@@ -1501,7 +1504,7 @@
                             <div class="caja-grid-2col">
                                 <!-- COLUMNA IZQUIERDA: INGRESOS (FESTIVALES + MANUALES + SALDO ANTERIOR) -->
                                 <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:12px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
-                                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid #e2e8f0; margin-bottom:8px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid var(--line); margin-bottom:8px;">
                                         <div style="display:flex; align-items:center; gap:6px;">
                                             <span style="width:8px; height:8px; border-radius:50%; background:var(--accent-green);"></span>
                                             <h4 style="margin:0; font-size:12.5px; font-weight:800; color:var(--text-main); text-transform:uppercase;">
@@ -1534,7 +1537,7 @@
                                                 <!-- Filas de ingresos generadas dinámicamente -->
                                             </tbody>
                                             <tfoot>
-                                                <tr style="background:#f0fdf4; font-weight:800; color:#14532d; border-top:2px solid #86efac;">
+                                                <tr style="background:var(--ok-bg); font-weight:800; color:#14532d; border-top:2px solid color-mix(in srgb, var(--ok) 40%, white);">
                                                     <td colspan="2" style="padding:8px 10px;">Total Ingresos</td>
                                                     <td style="text-align:right; font-family:'Geist Mono'; font-weight:800; padding:8px 10px;" id="total-ingresos-caja-pie">$ 0</td>
                                                     <td></td>
@@ -1546,7 +1549,7 @@
 
                                 <!-- COLUMNA DERECHA: GASTOS (DINÁMICO, EDITABLE IN-SITU) -->
                                 <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:12px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
-                                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid #e2e8f0; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid var(--line); margin-bottom:8px; flex-wrap:wrap; gap:8px;">
                                         <div style="display:flex; align-items:center; gap:6px;">
                                             <span style="width:8px; height:8px; border-radius:50%; background:var(--accent-red);"></span>
                                             <h4 style="margin:0; font-size:12.5px; font-weight:800; color:var(--text-main); text-transform:uppercase;">
@@ -1554,13 +1557,13 @@
                                             </h4>
                                         </div>
                                         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                            <span class="pill-status" style="background:#fee2e2; color:#991b1b; font-family:'Geist Mono'; font-weight:800; font-size:11.5px;" id="total-gastos-caja-badge">
+                                            <span class="pill-status" style="background:var(--bad-bg); color:var(--bad); font-family:'Geist Mono'; font-weight:800; font-size:11.5px;" id="total-gastos-caja-badge">
                                                 $ 0
                                             </span>
                                             <button type="button" class="btn-app btn-secondary" style="display:none; font-size:11px; padding:3px 9px;" onclick="descargarPlantillaExcelGastos()" title="Descargar planilla modelo para carga de gastos">
                                                 📄 Plantilla (.xlsx)
                                             </button>
-                                            <button type="button" class="btn-table-pill" style="display:none; font-size:11px; padding:3px 9px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;" onclick="abrirModalCargaMasivaGastos()" title="Carga masiva de gastos desde archivo Excel">
+                                            <button type="button" class="btn-table-pill" style="display:none; font-size:11px; padding:3px 9px; background:var(--info-bg); color:#1d4ed8; border:1px solid color-mix(in srgb, var(--info) 25%, white);" onclick="abrirModalCargaMasivaGastos()" title="Carga masiva de gastos desde archivo Excel">
                                                 📥 Carga Masiva (.xlsx)
                                             </button>
                                             <button type="button" class="btn-table-pill" style="font-size:11px; padding:3px 10px;" onclick="agregarGastoEscuelaCaja()">
@@ -1762,7 +1765,7 @@
                                         </span>
                                         <span id="wrap-badge-acuerdo-venue"><span class="pill-status pill-info" style="font-size:11px;">🏷️ Acuerdo Venue: 70% Escuela (Automático)</span></span>
                                         <button type="button" id="btn-restablecer-acuerdo-venue" class="btn-app btn-secondary" style="font-size:11px; padding:3px 8px; display:none;" onclick="restablecerAcuerdoVenue()" title="Volver al acuerdo predeterminado del venue">↺ Restablecer a Venue</button>
-                                        <div id="alerta-acuerdo-a-definir" style="display:none; flex-basis:100%; font-size:11.5px; color:#b91c1c; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:6px 8px; font-weight:600;">
+                                        <div id="alerta-acuerdo-a-definir" style="display:none; flex-basis:100%; font-size:11.5px; color:var(--bad); background:var(--bad-bg); border:1px solid color-mix(in srgb, var(--bad) 25%, white); border-radius:6px; padding:6px 8px; font-weight:600;">
                                             ⚠️ El venue asignado tiene acuerdo <strong>A definir</strong>. Ingresá el % pactado para liquidar este festival.
                                         </div>
                                     </div>
@@ -2195,7 +2198,7 @@
                                     <!-- Filas generadas dinámicamente agrupadas por evento -->
                                 </tbody>
                                 <tfoot>
-                                    <tr style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
+                                    <tr style="background:var(--surface-2); font-weight:800; border-top:2px solid var(--line-2);">
                                         <td class="col-chk-deudas"></td>
                                         <td style="text-align:right; padding:10px 14px; font-size:12.5px;">SALDO DE LO VISIBLE:</td>
                                         <td style="text-align:right; font-family:'Geist Mono'; font-size:13.5px;" id="td-tot-visibles-deudas">$ 0</td>
@@ -2265,7 +2268,7 @@
                                         <canvas id="chartGanancias"></canvas>
                                     </div>
                                 </div>
-                                <div style="font-size:11px; color:var(--text-muted); margin-top:10px; text-align:center; background:#f8fafc; padding:6px 10px; border-radius:6px; border:1px solid #e2e8f0;">
+                                <div style="font-size:11px; color:var(--text-muted); margin-top:10px; text-align:center; background:var(--surface-2); padding:6px 10px; border-radius:6px; border:1px solid var(--line);">
                                     💡 <em>Hacé click sobre los puntos (hitos) de la curva para ver el detalle financiero del festival.</em>
                                 </div>
                             </div>
@@ -2288,7 +2291,7 @@
                                         <canvas id="chartSplit"></canvas>
                                     </div>
                                 </div>
-                                <div id="resumen-valores-detalle-festival" style="display:flex; flex-wrap:wrap; justify-content:space-around; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed #e2e8f0; font-size:11px; font-family:'Geist Mono';">
+                                <div id="resumen-valores-detalle-festival" style="display:flex; flex-wrap:wrap; justify-content:space-around; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--line); font-size:11px; font-family:'Geist Mono';">
                                     <!-- Píldoras de valores clave pobladas dinámicamente -->
                                 </div>
                             </div>
@@ -2500,8 +2503,8 @@
                 <button class="btn-close-modal" id="pass-btn-cerrar" onclick="cerrarModales()">&times;</button>
             </div>
             <div class="modal-body">
-                <div id="pass-aviso-forzado" style="display:none; padding:10px 12px; background:#fef3c7; border:1px solid #fde68a; border-radius:8px; color:#92400e; font-size:12.5px; font-weight:600; margin-bottom:12px; line-height:1.4;">Por seguridad, tenés que cambiar tu contraseña inicial antes de continuar.</div>
-                <div id="pass-error-msg" style="display:none; padding:8px 12px; background:#fee2e2; border:1px solid #fecaca; border-radius:8px; color:#991b1b; font-size:12px; font-weight:600; margin-bottom:12px;"></div>
+                <div id="pass-aviso-forzado" style="display:none; padding:10px 12px; background:#fef3c7; border:1px solid color-mix(in srgb, var(--warn) 30%, white); border-radius:8px; color:var(--warn); font-size:12.5px; font-weight:600; margin-bottom:12px; line-height:1.4;">Por seguridad, tenés que cambiar tu contraseña inicial antes de continuar.</div>
+                <div id="pass-error-msg" style="display:none; padding:8px 12px; background:var(--bad-bg); border:1px solid color-mix(in srgb, var(--bad) 25%, white); border-radius:8px; color:var(--bad); font-size:12px; font-weight:600; margin-bottom:12px;"></div>
                 <div class="form-group">
                     <label>Contraseña Actual</label>
                     <input type="password" id="pass-actual" class="form-control" placeholder="Contraseña actual" autocomplete="current-password">
@@ -2565,7 +2568,7 @@
 
                 <div id="contenedor-campos-cuotas-deuda">
                     <!-- CONFIGURACIÓN MANUAL DE VALOR DE ENTRADA / MONTO REAL DE DEUDA -->
-                    <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #cbd5e1; margin-bottom:14px;">
+                    <div style="background:var(--surface-2); padding:12px; border-radius:10px; border:1px solid var(--line-2); margin-bottom:14px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                             <span style="font-size:11.5px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
                                 Monto
@@ -2622,7 +2625,7 @@
                         </select>
                     </div>
 
-                    <div id="modal-deuda-cuotas-preview" style="background:#f8fafc; padding:10px 14px; border-radius:8px; border:1px solid var(--border-color); font-size:12px; color:var(--text-muted);">
+                    <div id="modal-deuda-cuotas-preview" style="background:var(--surface-2); padding:10px 14px; border-radius:8px; border:1px solid var(--border-color); font-size:12px; color:var(--text-muted);">
                         Se generará 1 cuota de <strong>$ 17.000</strong> con vencimiento el 15/08/2026.
                     </div>
                 </div>
@@ -2648,15 +2651,15 @@
                     <div style="font-size:1.15em; font-weight:800; color:var(--accent-blue);" id="gsrv-titulo">-</div>
                     <div style="margin-top:6px; font-size:13px;" id="gsrv-detalle">-</div>
                 </div>
-                <div id="gsrv-aviso-pagada" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; border-radius:10px; padding:8px 12px; font-size:12px; margin-bottom:12px;">Este integrante ya pagó. Para excluirlo o absorber su cuota, primero deshacé el cobro.</div>
-                <div style="background:#f1f5f9; padding:12px; border-radius:10px; border:1px solid #cbd5e1; margin-bottom:12px;">
+                <div id="gsrv-aviso-pagada" style="display:none; background:var(--ok-bg); border:1px solid color-mix(in srgb, var(--ok) 30%, white); color:#065f46; border-radius:10px; padding:8px 12px; font-size:12px; margin-bottom:12px;">Este integrante ya pagó. Para excluirlo o absorber su cuota, primero deshacé el cobro.</div>
+                <div style="background:var(--surface-2); padding:12px; border-radius:10px; border:1px solid var(--line-2); margin-bottom:12px;">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700; font-size:13px;">
                         <input type="checkbox" id="gsrv-excluir" style="width:17px; height:17px; cursor:pointer;" onchange="actualizarOpcionesGestionServicio()">
                         <span>🚫 Excluir del pago de este servicio</span>
                     </label>
                     <span style="font-size:11.5px; color:var(--text-muted); display:block; margin-top:4px; margin-left:25px; line-height:1.35;">No paga este servicio y su parte se reparte entre los demás integrantes.</span>
                 </div>
-                <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #cbd5e1;">
+                <div style="background:var(--surface-2); padding:12px; border-radius:10px; border:1px solid var(--line-2);">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700; font-size:13px;">
                         <input type="checkbox" id="gsrv-absorber" style="width:17px; height:17px; cursor:pointer;">
                         <span>🏫 La escuela absorbe esta cuota</span>
@@ -2806,7 +2809,7 @@
             </div>
             <div class="modal-body">
                 <!-- Banner de Formato Requerido -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; margin-bottom:16px;">
+                <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin-bottom:16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <span style="font-size:12px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
                             📋 Columnas de la Planilla Excel
@@ -2815,7 +2818,7 @@
                             📄 Descargar Plantilla Modelo
                         </button>
                     </div>
-                    <div style="font-family:'Geist Mono'; font-size:11.5px; color:#475569; background:#ffffff; padding:8px 12px; border-radius:8px; border:1px solid #cbd5e1; word-break:break-all;">
+                    <div style="font-family:'Geist Mono'; font-size:11.5px; color:var(--ink-2); background:#ffffff; padding:8px 12px; border-radius:8px; border:1px solid var(--line-2); word-break:break-all;">
                         Nombre | Dirección | Contacto_Nombre | Contacto_Numero | Contacto_Tipo | Acuerdo | Capacidad
                     </div>
                     <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px; line-height:1.4;">
@@ -2885,7 +2888,7 @@
             </div>
             <div class="modal-body">
                 <!-- Banner de Formato Requerido -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; margin-bottom:16px;">
+                <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin-bottom:16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <span style="font-size:12px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
                             📋 Columnas de la Planilla Histórica
@@ -2894,8 +2897,8 @@
                             📄 Descargar Plantilla Modelo
                         </button>
                     </div>
-                    <div style="font-family:'Geist Mono'; font-size:11.5px; color:#475569; background:#ffffff; padding:8px 12px; border-radius:8px; border:1px solid #cbd5e1; word-break:break-all;">
-                        Año | Fecha | Nombre | Venue | Entradas_Vendidas | Recaudacion_Bruta | <span style="background:#fef3c7; color:#92400e; padding:1px 4px; border-radius:4px; font-weight:700;">Gastos_Festival</span> | Neto_Escuela | Estado
+                    <div style="font-family:'Geist Mono'; font-size:11.5px; color:var(--ink-2); background:#ffffff; padding:8px 12px; border-radius:8px; border:1px solid var(--line-2); word-break:break-all;">
+                        Año | Fecha | Nombre | Venue | Entradas_Vendidas | Recaudacion_Bruta | <span style="background:#fef3c7; color:var(--warn); padding:1px 4px; border-radius:4px; font-weight:700;">Gastos_Festival</span> | Neto_Escuela | Estado
                     </div>
                     <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px; line-height:1.4;">
                         • <strong>Año:</strong> ej: <code>2025</code> o <code>2026</code>.<br>
@@ -2906,10 +2909,10 @@
                 </div>
 
                 <!-- Tarjeta de Restauración Rápida -->
-                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:12px 16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                <div style="background:var(--ok-bg); border:1px solid color-mix(in srgb, var(--ok) 25%, white); border-radius:12px; padding:12px 16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
                     <div>
-                        <strong style="color:#166534; font-size:12.5px; display:block;">♻️ ¿Eliminaste festivales históricos por error?</strong>
-                        <span style="font-size:11.5px; color:#15803d;">Podés restaurar de inmediato los 9 festivales originales (2025-2026) con todos sus datos y finanzas intactos sin necesidad de volver a subir el archivo.</span>
+                        <strong style="color:var(--ok); font-size:12.5px; display:block;">♻️ ¿Eliminaste festivales históricos por error?</strong>
+                        <span style="font-size:11.5px; color:var(--ok);">Podés restaurar de inmediato los 9 festivales originales (2025-2026) con todos sus datos y finanzas intactos sin necesidad de volver a subir el archivo.</span>
                     </div>
                     <button type="button" class="btn-app" style="background:#16a34a; color:#ffffff; font-weight:700; white-space:nowrap; padding:6px 14px; font-size:12px;" onclick="restaurarFestivalesHistoricosEliminados()">
                         Restaurar 9 Festivales
@@ -2934,7 +2937,7 @@
                         <span>Festivales detectados en el archivo:</span>
                         <span class="pill-status pill-info" id="contador-preview-historico">0</span>
                     </div>
-                    <div class="table-responsive" style="max-height:240px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                    <div class="table-responsive" style="max-height:240px; overflow-y:auto; border:1px solid var(--line); border-radius:8px;">
                         <table class="spreadsheet-table" style="font-size:11.5px;">
                             <thead>
                                 <tr>
@@ -2976,7 +2979,7 @@
             </div>
             <div class="modal-body">
                 <!-- Banner de Formato Requerido y Plantilla -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; margin-bottom:16px;">
+                <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin-bottom:16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
                         <span style="font-size:12px; font-weight:800; color:var(--accent-red); text-transform:uppercase;">
                             📋 Formato de Columnas de la Planilla
@@ -2985,7 +2988,7 @@
                             📄 Descargar Plantilla Modelo (.xlsx)
                         </button>
                     </div>
-                    <div style="font-family:'Geist Mono'; font-size:11.5px; color:#475569; background:#ffffff; padding:8px 12px; border-radius:8px; border:1px solid #cbd5e1; word-break:break-all;">
+                    <div style="font-family:'Geist Mono'; font-size:11.5px; color:var(--ink-2); background:#ffffff; padding:8px 12px; border-radius:8px; border:1px solid var(--line-2); word-break:break-all;">
                         Año | Fecha | Concepto | Monto
                     </div>
                     <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px; line-height:1.4;">
@@ -2997,7 +3000,7 @@
                 </div>
 
                 <!-- Selector de Año Predeterminado si no viene en el Excel -->
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; background:#eff6ff; border:1px solid #bfdbfe; padding:10px 14px; border-radius:10px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; background:var(--info-bg); border:1px solid color-mix(in srgb, var(--info) 25%, white); padding:10px 14px; border-radius:10px;">
                     <label for="select-anio-carga-masiva-gastos" style="font-size:12px; font-weight:700; color:#1e40af; white-space:nowrap;">
                         📅 Imputar gastos prioritariamente al año:
                     </label>
@@ -3026,11 +3029,11 @@
                         <span>Gastos detectados en el archivo:</span>
                         <div style="display:flex; gap:8px;">
                             <span class="pill-status pill-info" id="contador-preview-gastos">0 filas</span>
-                            <span class="pill-status" style="background:#fee2e2; color:#991b1b; font-family:'Geist Mono'; font-weight:800;" id="total-preview-gastos">$ 0</span>
+                            <span class="pill-status" style="background:var(--bad-bg); color:var(--bad); font-family:'Geist Mono'; font-weight:800;" id="total-preview-gastos">$ 0</span>
                         </div>
                     </div>
 
-                    <div class="table-responsive" style="max-height:240px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                    <div class="table-responsive" style="max-height:240px; overflow-y:auto; border:1px solid var(--line); border-radius:8px;">
                         <table class="spreadsheet-table" style="font-size:11.5px;">
                             <thead>
                                 <tr>
@@ -3212,7 +3215,7 @@
             </div>
             <div class="modal-body">
                 <!-- Banner formato y descarga modelo -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; margin-bottom:16px;">
+                <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin-bottom:16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
                         <span style="font-size:12px; font-weight:800; color:var(--accent-teal); text-transform:uppercase;">
                             📋 Formato de Columnas de la Planilla
@@ -3221,7 +3224,7 @@
                             📄 Descargar Plantilla Modelo (.xlsx)
                         </button>
                     </div>
-                    <div style="font-family:'Geist Mono'; font-size:11px; color:#475569; background:#ffffff; padding:8px 12px; border-radius:8px; border:1px solid #cbd5e1; word-break:break-all;">
+                    <div style="font-family:'Geist Mono'; font-size:11px; color:var(--ink-2); background:#ffffff; padding:8px 12px; border-radius:8px; border:1px solid var(--line-2); word-break:break-all;">
                         Ítem / Instrumento | Origen / Responsable | Preparado | Listo para Salir | De Regreso | Notas / Observaciones
                     </div>
                     <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
@@ -3242,8 +3245,8 @@
                 </div>
 
                 <!-- Modo de Importación -->
-                <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px; background:#f0fdfa; border:1px solid #99f6e4; padding:10px 14px; border-radius:10px;">
-                    <span style="font-size:12px; font-weight:700; color:#0f766e;">Modo de Carga:</span>
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px; background:var(--teal-50); border:1px solid color-mix(in srgb, var(--teal) 30%, white); padding:10px 14px; border-radius:10px;">
+                    <span style="font-size:12px; font-weight:700; color:var(--teal-700);">Modo de Carga:</span>
                     <label style="font-size:12px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
                         <input type="radio" name="modo-import-checklist" value="agregar" checked>
                         <span>Agregar al checklist actual</span>
@@ -3260,7 +3263,7 @@
                         <span>Ítems detectados en el archivo:</span>
                         <span class="pill-status pill-info" id="contador-preview-checklist">0</span>
                     </div>
-                    <div class="table-responsive" style="max-height:220px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                    <div class="table-responsive" style="max-height:220px; overflow-y:auto; border:1px solid var(--line); border-radius:8px;">
                         <table class="spreadsheet-table" style="font-size:11.5px;">
                             <thead>
                                 <tr>
@@ -4082,19 +4085,19 @@
         }
 
         function getEmojiParaInstrumento(inst) {
-            if (!inst) return '🎵';
+            if (!inst) return window.IconosMandala.svg('musica');
             const s = String(inst).toLowerCase();
-            if (s.includes('bat')) return '🥁';
-            if (s.includes('gui') || s.includes('electr')) return '🎸';
-            if (s.includes('cajón') || s.includes('cajon') || s.includes('perc')) return '📦';
-            if (s.includes('cant') || s.includes('voz') || s.includes('vocal') || s.includes('coro')) return '🎤';
-            if (s.includes('pian') || s.includes('tecl') || s.includes('sint')) return '🎹';
-            if (s.includes('baj')) return '🎸';
-            if (s.includes('sax') || s.includes('vient')) return '🎷';
-            if (s.includes('tromp')) return '🎺';
-            if (s.includes('viol')) return '🎻';
-            if (s.includes('ukel') || s.includes('ucu')) return '🪕';
-            return '🎵';
+            if (s.includes('bat')) return window.IconosMandala.svg('bateria');
+            if (s.includes('gui') || s.includes('electr')) return window.IconosMandala.svg('guitarra');
+            if (s.includes('cajón') || s.includes('cajon') || s.includes('perc')) return window.IconosMandala.svg('percusion');
+            if (s.includes('cant') || s.includes('voz') || s.includes('vocal') || s.includes('coro')) return window.IconosMandala.svg('voz');
+            if (s.includes('pian') || s.includes('tecl') || s.includes('sint')) return window.IconosMandala.svg('teclado');
+            if (s.includes('baj')) return window.IconosMandala.svg('bajo');
+            if (s.includes('sax') || s.includes('vient')) return window.IconosMandala.svg('saxo');
+            if (s.includes('tromp')) return window.IconosMandala.svg('trompeta');
+            if (s.includes('viol')) return window.IconosMandala.svg('violin');
+            if (s.includes('ukel') || s.includes('ucu') || s.includes('charan')) return window.IconosMandala.svg('ukelele');
+            return window.IconosMandala.svg('musica');
         }
 
         function poblarInstrumentosDesdeFirestore(lista) {
@@ -4664,7 +4667,7 @@
                 tr.id = `venue-row-${v.id}`;
 
                 let contactosHtml = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-bottom:5px; border-bottom:1px dashed #e2e8f0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-bottom:5px; border-bottom:1px dashed var(--line);">
                         <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Contactos</span>
                         <button type="button" class="btn-table-pill" style="font-size:11px; padding:3px 10px;" onclick="agregarContactoVenueInSitu('${v.id}')" title="Agregar contacto a este venue">＋ Contacto</button>
                     </div>
@@ -4676,14 +4679,14 @@
                     const hasTel = cleanTel.length >= 6;
                     contactosHtml += `
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <select class="spreadsheet-inp" style="width:95px; min-width:95px; font-size:11px; font-weight:500; padding:4px 6px; border:1px solid #e2e8f0; border-radius:6px; background:#f8fafc;" onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'tipo', this.value)">
+                            <select class="spreadsheet-inp" style="width:95px; min-width:95px; font-size:11px; font-weight:500; padding:4px 6px; border:1px solid var(--line); border-radius:6px; background:var(--surface-2);" onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'tipo', this.value)">
                                 <option value="Encargado" ${c.tipo === 'Encargado' ? 'selected' : ''}>Encargado</option>
                                 <option value="Productor" ${c.tipo === 'Productor' ? 'selected' : ''}>Productor</option>
                                 <option value="Sonidista" ${c.tipo === 'Sonidista' ? 'selected' : ''}>Sonidista</option>
                             </select>
-                            <input type="text" class="spreadsheet-inp text-left" style="width:130px; min-width:130px; font-size:12px; font-weight:400; padding:4px 8px; border:1px solid #e2e8f0; border-radius:6px;" value="${esc(c.nombre || '')}" placeholder="Nombre..." onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'nombre', this.value)">
+                            <input type="text" class="spreadsheet-inp text-left" style="width:130px; min-width:130px; font-size:12px; font-weight:400; padding:4px 8px; border:1px solid var(--line); border-radius:6px;" value="${esc(c.nombre || '')}" placeholder="Nombre..." onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'nombre', this.value)">
                             <div style="display:inline-flex; align-items:center; gap:4px;">
-                                <input type="text" class="spreadsheet-inp text-left" style="width:155px; min-width:155px; font-size:11.5px; font-weight:400; font-family:'Geist Mono'; padding:4px 8px; border:1px solid #e2e8f0; border-radius:6px;" value="${esc(c.telefono || '')}" placeholder="+54 9 11..." onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'telefono', this.value); renderizarTablaVenues();">
+                                <input type="text" class="spreadsheet-inp text-left" style="width:155px; min-width:155px; font-size:11.5px; font-weight:400; font-family:'Geist Mono'; padding:4px 8px; border:1px solid var(--line); border-radius:6px;" value="${esc(c.telefono || '')}" placeholder="+54 9 11..." onchange="actualizarContactoVenueInSitu('${v.id}', ${cIdx}, 'telefono', this.value); renderizarTablaVenues();">
                                 <button type="button" class="btn-ws-icon ${hasTel ? '' : 'disabled'}" onclick="abrirWhatsAppDirecto('${escJs(c.telefono || '')}', '${escJs(c.nombre || '')}')" title="Enviar WhatsApp a ${esc(c.nombre || 'este contacto')}">💬</button>
                             </div>
                             <button type="button" class="btn-row-del" style="font-size:11.5px; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px;" onclick="eliminarContactoVenueInSitu('${v.id}', ${cIdx})" title="Quitar contacto">✕</button>
@@ -4694,31 +4697,31 @@
                 contactosHtml += `</div>`;
 
                 tr.innerHTML = `
-                    <td style="vertical-align:middle; padding:8px 12px; background:#ffffff; border:1px solid #cbd5e1; font-weight:800; font-size:13.5px; color:var(--accent-blue);">
+                    <td style="vertical-align:middle; padding:8px 12px; background:#ffffff; border:1px solid var(--line-2); font-weight:800; font-size:13.5px; color:var(--accent-blue);">
                         <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13.5px; color:var(--accent-blue); padding:4px 6px;" value="${esc(v.nombre || '')}" placeholder="Nombre Venue..." onchange="actualizarCampoVenueInSitu('${v.id}', 'nombre', this.value)">
                     </td>
-                    <td style="vertical-align:middle; padding:8px 12px; background:#ffffff; border:1px solid #cbd5e1;">
+                    <td style="vertical-align:middle; padding:8px 12px; background:#ffffff; border:1px solid var(--line-2);">
                         <input type="text" class="spreadsheet-inp text-left" style="font-size:12px; font-weight:400; padding:4px 6px;" value="${esc(v.direccion || '')}" placeholder="Dirección..." onchange="actualizarCampoVenueInSitu('${v.id}', 'direccion', this.value)">
                     </td>
-                    <td style="vertical-align:middle; padding:8px 12px; border:1px solid #cbd5e1; background:#ffffff; min-width:470px;">
+                    <td style="vertical-align:middle; padding:8px 12px; border:1px solid var(--line-2); background:#ffffff; min-width:470px;">
                         ${contactosHtml}
                     </td>
-                    <td style="vertical-align:middle; padding:6px 10px; background:#ffffff; border:1px solid #cbd5e1; text-align:center;">
-                        <select class="spreadsheet-inp text-center" style="font-size:12px; font-weight:700; color:var(--accent-blue); padding:4px 6px; width:100%; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc;" onchange="actualizarCampoVenueInSitu('${v.id}', 'acuerdo', this.value)">
+                    <td style="vertical-align:middle; padding:6px 10px; background:#ffffff; border:1px solid var(--line-2); text-align:center;">
+                        <select class="spreadsheet-inp text-center" style="font-size:12px; font-weight:700; color:var(--accent-blue); padding:4px 6px; width:100%; border:1px solid var(--line-2); border-radius:6px; background:var(--surface-2);" onchange="actualizarCampoVenueInSitu('${v.id}', 'acuerdo', this.value)">
                             <option value="70% Escuela / 30% Venue" ${v.acuerdo === '70% Escuela / 30% Venue' ? 'selected' : ''}>70% Escuela / 30% Venue</option>
                             <option value="100% Escuela" ${v.acuerdo === '100% Escuela' ? 'selected' : ''}>100% Escuela</option>
                             <option value="A definir" ${v.acuerdo === 'A definir' ? 'selected' : ''}>A definir</option>
                             ${(!['70% Escuela / 30% Venue', '100% Escuela', 'A definir'].includes(v.acuerdo || '')) ? `<option value="${(v.acuerdo || '').replace(/"/g, '&quot;')}" selected>${v.acuerdo}</option>` : ''}
                         </select>
                     </td>
-                    <td style="vertical-align:middle; padding:8px; background:#ffffff; border:1px solid #cbd5e1; text-align:center;">
+                    <td style="vertical-align:middle; padding:8px; background:#ffffff; border:1px solid var(--line-2); text-align:center;">
                         <div style="display:inline-flex; align-items:center; gap:4px; justify-content:center;">
-                            <input type="number" class="spreadsheet-inp text-center" style="width:60px; font-family:'Geist Mono'; font-size:12px; font-weight:400; border:1px solid #e2e8f0; border-radius:4px; padding:3px 4px;" value="${v.capMin || 0}" placeholder="Mín" onchange="actualizarCampoVenueInSitu('${v.id}', 'capMin', parseInt(this.value)||0)">
+                            <input type="number" class="spreadsheet-inp text-center" style="width:60px; font-family:'Geist Mono'; font-size:12px; font-weight:400; border:1px solid var(--line); border-radius:4px; padding:3px 4px;" value="${v.capMin || 0}" placeholder="Mín" onchange="actualizarCampoVenueInSitu('${v.id}', 'capMin', parseInt(this.value)||0)">
                             <span style="color:var(--text-muted); font-size:11px;">-</span>
-                            <input type="number" class="spreadsheet-inp text-center" style="width:60px; font-family:'Geist Mono'; font-size:12px; font-weight:400; border:1px solid #e2e8f0; border-radius:4px; padding:3px 4px;" value="${v.capMax || 0}" placeholder="Máx" onchange="actualizarCampoVenueInSitu('${v.id}', 'capMax', parseInt(this.value)||0)">
+                            <input type="number" class="spreadsheet-inp text-center" style="width:60px; font-family:'Geist Mono'; font-size:12px; font-weight:400; border:1px solid var(--line); border-radius:4px; padding:3px 4px;" value="${v.capMax || 0}" placeholder="Máx" onchange="actualizarCampoVenueInSitu('${v.id}', 'capMax', parseInt(this.value)||0)">
                         </div>
                     </td>
-                    <td style="vertical-align:middle; text-align:center; padding:8px; background:#ffffff; border:1px solid #cbd5e1;">
+                    <td style="vertical-align:middle; text-align:center; padding:8px; background:#ffffff; border:1px solid var(--line-2);">
                         <button class="btn-row-del" onclick="eliminarVenue('${v.id}', event)" title="Eliminar este venue">✕</button>
                     </td>
                 `;
@@ -5587,7 +5590,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v1.4";
+        const APP_VERSION = "v1.5";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -5968,13 +5971,13 @@
             if (!card) return;
             const activo = card.classList.toggle('rider-fullscreen-active');
             if (btn) {
-                btn.innerHTML = activo ? '✕ (Esc)' : '⛶ Pantalla Completa';
-                btn.className = 'btn-table-pill';
-                btn.style.borderColor = activo ? 'var(--accent-red)' : '';
-                btn.style.color = activo ? 'var(--accent-red)' : '';
-                btn.style.background = activo ? '#fef2f2' : '';
-                btn.title = activo ? 'Salir de pantalla completa (Esc)' : 'Agrandar planilla a pantalla completa';
+                btn.innerHTML = activo
+                    ? '<svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg> Salir (Esc)'
+                    : '<svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pantalla completa';
+                btn.title = activo ? 'Salir de pantalla completa (Esc)' : 'Agrandar la planilla a pantalla completa (Esc para salir)';
             }
+            document.body.style.overflow = activo ? 'hidden' : '';
+            if (typeof riderAjustarAltura === 'function') riderAjustarAltura();
         }
 
         function abrirDetalleEvento(id, registrar = true) {
@@ -6400,7 +6403,7 @@
                 <div style="display:inline-flex; align-items:center; justify-content:flex-end; width:100%;">
                     <input type="number" 
                         class="spreadsheet-inp" 
-                        style="width:130px; text-align:right; font-weight:700; font-family:'Geist Mono'; font-size:13.5px; padding:4px 8px; border:1px solid var(--accent-teal); border-radius:6px; background:#f0fdf4;" 
+                        style="width:130px; text-align:right; font-weight:700; font-family:'Geist Mono'; font-size:13.5px; padding:4px 8px; border:1px solid var(--accent-teal); border-radius:6px; background:var(--ok-bg);" 
                         value="${precioNum}" 
                         min="0"
                         step="100">
@@ -6474,7 +6477,7 @@
                 const estAc = obtenerEstadoAcuerdoFestival(id);
                 if (estAc) {
                     if (estAc.tipo === 'indefinido') {
-                        acuerdoTextoCabecera = `<span style="color:#b91c1c; font-weight:700;">A definir (se usa ${estAc.porcEfectivo}%)</span>`;
+                        acuerdoTextoCabecera = `<span style="color:var(--bad); font-weight:700;">A definir (se usa ${estAc.porcEfectivo}%)</span>`;
                     } else if (estAc.porcFinal === 100) {
                         acuerdoTextoCabecera = '100% Escuela' + (estAc.esManual ? ' (Manual)' : '');
                     } else {
@@ -7335,7 +7338,7 @@
                                         <input type="date" class="caja-date-native-input" value="${isoFest}" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}" onchange="cambiarFechaCalendarioCaja('festival', '${idFest}', this.value)">
                                     </div>
                                 </td>
-                                <td style="font-weight:500; color:#0f172a; padding:6px;">🎪 ${esc(item.concepto)}</td>
+                                <td style="font-weight:500; color:var(--ink); padding:6px;">🎪 ${esc(item.concepto)}</td>
                                 <td style="text-align:right; padding:4px 6px;">
                                     <span class="cell-caja-editable cell-caja-monto" data-monto="${montoNum}" title="${montoNum < 0 ? 'Festival con resultado negativo. ' : ''}Click para ajustar el resultado neto del festival" style="font-family:'Geist Mono'; font-weight:500; color:${montoNum < 0 ? 'var(--accent-red)' : 'var(--accent-green)'}; width:100%; text-align:right; display:block;" contenteditable="true" onfocus="iniciarEdicionMonto(this, 'festival', '${idFest}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionMonto(this, '${idFest}', 'festival')">${formatearMonedaAr(montoNum)}</span>
                                 </td>
@@ -7353,7 +7356,7 @@
                                     </div>
                                 </td>
                                 <td style="padding:4px 6px;">
-                                    <span class="cell-caja-editable cell-concepto" data-placeholder="Nuevo ingreso..." style="font-weight:500; color:#0f172a; width:100%; display:block;" contenteditable="true" onfocus="iniciarEdicionCaja('ingreso', '${item.id}', 'concepto', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="if(this.innerText.trim()===''){this.innerHTML='';} finalizarEdicionCaja('ingreso', '${item.id}', 'concepto', this)">${item.concepto ? item.concepto : ''}</span>
+                                    <span class="cell-caja-editable cell-concepto" data-placeholder="Nuevo ingreso..." style="font-weight:500; color:var(--ink); width:100%; display:block;" contenteditable="true" onfocus="iniciarEdicionCaja('ingreso', '${item.id}', 'concepto', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="if(this.innerText.trim()===''){this.innerHTML='';} finalizarEdicionCaja('ingreso', '${item.id}', 'concepto', this)">${item.concepto ? item.concepto : ''}</span>
                                 </td>
                                 <td style="text-align:right; padding:4px 6px;">
                                     <span class="cell-caja-editable cell-caja-monto" data-monto="${montoNum}" style="font-family:'Geist Mono'; font-weight:500; color:var(--accent-green); width:100%; text-align:right; display:block;" contenteditable="true" onfocus="iniciarEdicionMonto(this, 'ingreso', '${item.id}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionMonto(this, '${item.id}', 'ingreso')">${formatearMonedaAr(montoNum)}</span>
@@ -7399,7 +7402,7 @@
                                 </div>
                             </td>
                             <td style="padding:4px 6px;">
-                                <span class="cell-caja-editable cell-concepto" data-placeholder="Nuevo gasto..." style="font-weight:500; color:#0f172a; width:100%; display:block;" contenteditable="true" onfocus="iniciarEdicionCaja('gasto', '${g.id}', 'concepto', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="if(this.innerText.trim()===''){this.innerHTML='';} finalizarEdicionCaja('gasto', '${g.id}', 'concepto', this)">${g.concepto ? g.concepto : ''}</span>
+                                <span class="cell-caja-editable cell-concepto" data-placeholder="Nuevo gasto..." style="font-weight:500; color:var(--ink); width:100%; display:block;" contenteditable="true" onfocus="iniciarEdicionCaja('gasto', '${g.id}', 'concepto', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="if(this.innerText.trim()===''){this.innerHTML='';} finalizarEdicionCaja('gasto', '${g.id}', 'concepto', this)">${g.concepto ? g.concepto : ''}</span>
                             </td>
                             <td style="text-align:right; padding:4px 6px;">
                                 <span class="cell-caja-editable cell-caja-monto" data-monto="${montoGasto}" style="font-family:'Geist Mono'; font-weight:500; color:var(--accent-red); width:100%; text-align:right; display:block;" contenteditable="true" onfocus="iniciarEdicionMonto(this, 'gasto', '${g.id}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionMonto(this, '${g.id}', 'gasto')">${formatearMonedaAr(montoGasto)}</span>
@@ -7838,7 +7841,7 @@
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
                                 <td style="text-align:center; font-family:'Geist Mono'; font-weight:700; color:var(--text-main);">${item.anio}</td>
-                                <td style="text-align:center; font-family:'Geist Mono'; color:#475569;">${item.fecha || '-'}</td>
+                                <td style="text-align:center; font-family:'Geist Mono'; color:var(--ink-2);">${item.fecha || '-'}</td>
                                 <td style="font-weight:600; color:var(--text-main);">${esc(item.concepto)}</td>
                                 <td style="text-align:right; font-family:'Geist Mono'; font-weight:700; color:var(--accent-red);">${formatearMonedaAr(item.monto)}</td>
                             `;
@@ -9088,7 +9091,7 @@
                                 <button type="button" class="dropdown-item" onclick="duplicarEvento(event, '${fId}', '${escJs(fest.nombre || 'Festival')}', '${escJs(fest.venue || 'Venue')}')">
                                     📋 Duplicar Festival
                                 </button>
-                                <div style="border-top:1px solid #f1f5f9; margin:4px 0;"></div>
+                                <div style="border-top:1px solid var(--surface-2); margin:4px 0;"></div>
                                 <div style="padding:4px 10px 2px 10px; font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.4px; text-align:left;">
                                     🏷️ Cambiar Estado
                                 </div>
@@ -9108,7 +9111,7 @@
                                     <span>⚪ Finalizado</span>
                                     <span class="chk-est" style="font-weight:900; color:var(--text-muted);">${estActualMenu === 'Finalizado' ? '✓' : ''}</span>
                                 </button>
-                                <div style="border-top:1px solid #f1f5f9; margin:4px 0;"></div>
+                                <div style="border-top:1px solid var(--surface-2); margin:4px 0;"></div>
                                 <button type="button" class="dropdown-item danger" onclick="eliminarEventoFestival(event, '${fId}', '${escJs(fest.nombre || 'Festival')}')">
                                     🗑️ Eliminar Festival
                                 </button>
@@ -9164,8 +9167,8 @@
                     trSubfila.setAttribute('data-fest-id', fId);
                     trSubfila.innerHTML = `
                         <td colspan="7">
-                            <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:12px 16px; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:6px; border-bottom:1px dashed #e2e8f0;">
+                            <div style="background:#ffffff; border:1px solid var(--line-2); border-radius:10px; padding:12px 16px; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:6px; border-bottom:1px dashed var(--line);">
                                     <span style="font-size:11.5px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
                                         🔍 Detalle — ${esc(fest.nombre || 'Festival')} (${esc(fest.venue || 'Venue')})
                                     </span>
@@ -10200,7 +10203,7 @@
             }).join('');
 
             container.innerHTML = `
-                <div style="border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; margin-bottom:14px; background:#f8fafc;"
+                <div style="border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:14px; background:var(--surface-2);"
                      title="Estos alumnos arrastran entradas impagas de festivales anteriores. Al asignarlos a una banda, se suman a su cupo exigible.">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
                         <span style="font-size:13px;">🔄 <strong>${traspasos.length} ${traspasos.length === 1 ? 'alumno arrastra' : 'alumnos arrastran'} entradas</strong>${origenes.length ? ' de ' + esc(origenes.join(', ')) : ''}
@@ -10335,7 +10338,7 @@
                             <div class="group-header-left" style="flex:1; display:flex; align-items:center; gap:8px;">
                                 <span class="group-arrow" id="arrow-ens-${artIdx}" onclick="toggleEnsambleGrupo(${artIdx})" title="${expandido ? 'Comprimir' : 'Expandir'}">${expandido ? '▼' : '▶'}</span>
                                 <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13px; color:var(--accent-blue); background:#ffffff; border:1px solid var(--border-color); border-radius:6px; padding:3px 8px; width:auto; min-width:160px; max-width:280px;" value="${esc(art.nombre || '')}" placeholder="Nombre Banda / Artista..." onchange="actualizarNombreArtistaEnTabla(${artIdx}, this.value)" oninput="actualizarNombreArtistaEnTabla(${artIdx}, this.value)">
-                                <select class="form-control" style="width:auto; padding:3px 8px; font-size:12px; font-weight:700; height:28px; border-radius:6px; background:#f8fafc; border:1px solid var(--border-color);" onchange="cambiarTipoArtistaEnTabla(${artIdx}, this.value)" title="Tipo de participante para cupo contractual y cobertura">
+                                <select class="form-control" style="width:auto; padding:3px 8px; font-size:12px; font-weight:700; height:28px; border-radius:6px; background:var(--surface-2); border:1px solid var(--border-color);" onchange="cambiarTipoArtistaEnTabla(${artIdx}, this.value)" title="Tipo de participante para cupo contractual y cobertura">
                                     <option value="ensamble" ${art.tipo === 'ensamble' || !art.tipo ? 'selected' : ''}>🏫 Banda de la Escuela</option>
                                     <option value="invitado" ${art.tipo === 'invitado' ? 'selected' : ''}>⭐ Invitado</option>
                                     <option value="jam" ${art.tipo === 'jam' ? 'selected' : ''}>🎷 JAM</option>
@@ -10416,7 +10419,7 @@
                                     onchange="cambiarAlumnoIntegranteDirecto(${artIdx}, ${intIdx}, this.value)">
                                 ${(al && typeof al === 'object' && al.alumnoId) ? '<span title="Vinculado a un alumno de Admisión" style="font-size:12px; opacity:0.7;">🔗</span>' : ''}
                                 ${traspasoActivo ? `
-                                    <span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #c4b5fd; font-size:11px; font-weight:800; padding:2px 8px; white-space:nowrap;" title="Arrastra ${traspasoActivo.cantEntradas} entrada/s pendientes de ${traspasoActivo.origenFestNombre}">
+                                    <span class="pill-status" style="background:var(--violet-bg); color:var(--violet); border:1px solid #c4b5fd; font-size:11px; font-weight:800; padding:2px 8px; white-space:nowrap;" title="Arrastra ${traspasoActivo.cantEntradas} entrada/s pendientes de ${traspasoActivo.origenFestNombre}">
                                         🔄 +${traspasoActivo.cantEntradas} ent. (${traspasoActivo.origenFestNombre})
                                     </span>
                                 ` : ''}
@@ -11246,20 +11249,20 @@
         }
 
         function obtenerEmojiInstrumento(inst) {
-            if (!inst) return '🎵';
+            if (!inst) return window.IconosMandala.svg('musica');
             const s = String(inst).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            if (s.includes('bater') || s.includes('drum')) return '🥁';
-            if (s.includes('bajo') || s.includes('bass')) return '🎸';
-            if (s.includes('guit') || s.includes('gtr')) return '🎸';
-            if (s.includes('cant') || s.includes('voz') || s.includes('vocal') || s.includes('coro') || s.includes('mic')) return '🎤';
-            if (s.includes('tecl') || s.includes('pian') || s.includes('synth') || s.includes('sint') || s.includes('key')) return '🎹';
-            if (s.includes('sax')) return '🎷';
-            if (s.includes('viol')) return '🎻';
-            if (s.includes('perc')) return '🪘';
-            if (s.includes('tromp')) return '🎺';
-            if (s.includes('flaut')) return '🪈';
-            if (s.includes('linea') || s.includes('line')) return '🔌';
-            return '🎵';
+            if (s.includes('bater') || s.includes('drum')) return window.IconosMandala.svg('bateria');
+            if (s.includes('bajo') || s.includes('bass')) return window.IconosMandala.svg('bajo');
+            if (s.includes('guit') || s.includes('gtr')) return window.IconosMandala.svg('guitarra');
+            if (s.includes('cant') || s.includes('voz') || s.includes('vocal') || s.includes('coro') || s.includes('mic')) return window.IconosMandala.svg('voz');
+            if (s.includes('tecl') || s.includes('pian') || s.includes('synth') || s.includes('sint') || s.includes('key')) return window.IconosMandala.svg('teclado');
+            if (s.includes('sax')) return window.IconosMandala.svg('saxo');
+            if (s.includes('viol')) return window.IconosMandala.svg('violin');
+            if (s.includes('perc')) return window.IconosMandala.svg('percusion');
+            if (s.includes('tromp')) return window.IconosMandala.svg('trompeta');
+            if (s.includes('flaut')) return window.IconosMandala.svg('flauta');
+            if (s.includes('linea') || s.includes('line')) return window.IconosMandala.svg('linea');
+            return window.IconosMandala.svg('musica');
         }
 
         function normalizarColumnasRider(rawCols) {
@@ -11513,7 +11516,7 @@
 
                     const trTema = document.createElement('tr');
                     trTema.className = `draggable-row rider-tema-row child-rider-${bIdx}`;
-                    trTema.style.cssText = 'border-bottom:1px solid #cbd5e1;';
+                    trTema.style.cssText = 'border-bottom:1px solid var(--line-2);';
                     trTema.draggable = !modoVista;
                     trTema.dataset.bandaIndex = bIdx;
                     trTema.dataset.temaIndex = tIdx;
@@ -11548,7 +11551,7 @@
                         const safeBandaNombre = (banda.nombre || '').replace(/'/g, "\\'");
 
                         celdasInstHtml += `
-                            <td class="celda-instrumento-drop ${esVacia ? 'rider-celda-vacia' : ''}" data-col="${colKey}" data-key="${keyTema}" ondragover="handleCellDragOver(event)" ondrop="handleCellDrop(event, this)" style="border:1px solid #cbd5e1; padding:2px 3px; width:90px; min-width:82px; max-width:115px;">
+                            <td class="celda-instrumento-drop ${esVacia ? 'rider-celda-vacia' : ''}" data-col="${colKey}" data-key="${keyTema}" ondragover="handleCellDragOver(event)" ondrop="handleCellDrop(event, this)" style="border:1px solid var(--line-2); padding:2px 3px; width:90px; min-width:82px; max-width:115px;">
                                 <span class="print-musico-val">${esc(valorActual)}</span>
                                 <div class="musico-screen-cell-wrap" style="display:flex; align-items:center; gap:1px; justify-content:center;">
                                     <span class="musico-draggable-tag" draggable="true" ondragstart="handleMusicoDragStart(event, this)" data-banda="${esc(banda.nombre)}" data-tema="${esc(tema)}" data-col="${colKey}" data-musico="${valorActual}" title="Arrastrá este músico sobre otro para intercambiar posiciones" style="cursor:grab; font-size:10px; color:var(--text-muted); padding:0 1px;">⠿</span>
@@ -11566,8 +11569,8 @@
 
                     const notaTemaAttr = notaTema ? notaTema.replace(/"/g, '&quot;') : '';
                     trTema.innerHTML = `
-                        <td class="drag-handle col-drag-cell" title="Mover canción con el mouse" style="border:1px solid #cbd5e1; width:36px; min-width:36px;">⠿</td>
-                        <td class="rider-tema-nombre-cell" style="border:1px solid #cbd5e1; width:${anchoSetlist}px; min-width:${anchoSetlist}px; padding:2px 6px; vertical-align:middle; position:relative; white-space:nowrap;">
+                        <td class="drag-handle col-drag-cell" title="Mover canción con el mouse" style="border:1px solid var(--line-2); width:36px; min-width:36px;">⠿</td>
+                        <td class="rider-tema-nombre-cell" style="border:1px solid var(--line-2); width:${anchoSetlist}px; min-width:${anchoSetlist}px; padding:2px 6px; vertical-align:middle; position:relative; white-space:nowrap;">
                             <div class="rider-tema-screen-content" style="display:flex; align-items:center; gap:6px; width:100%;">
                                 <span class="rider-song-name-wrapper rider-hover-target" ${notaTema ? `data-nota="${notaTemaAttr}"` : ''} style="flex:1; min-width:0; display:inline-block; position:relative;">
                                     <input type="text" class="spreadsheet-inp text-left" value="${esc(tema)}" title="${esc(tema)}" style="font-weight:700; color:var(--accent-teal); width:100%; min-width:0; font-size:12px; padding:2px 4px;" placeholder="Título de canción..." onchange="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onblur="renombrarCancionBanda(${bIdx}, ${tIdx}, this.value)" onkeydown="if(event.key==='Enter') this.blur();">
@@ -11579,7 +11582,7 @@
                             </div>
                         </td>
                         ${celdasInstHtml}
-                        <td class="col-accion-cell" style="width:36px; min-width:36px; text-align:center; vertical-align:middle; border:1px solid #e2e8f0; background:#ffffff;">
+                        <td class="col-accion-cell" style="width:36px; min-width:36px; text-align:center; vertical-align:middle; border:1px solid var(--line); background:#ffffff;">
                             <button class="btn-row-del" onclick="eliminarCancionBanda(${bIdx}, ${tIdx})" title="Eliminar canción">✕</button>
                         </td>
                     `;
@@ -12346,7 +12349,7 @@
                                 <td style="text-align:center;">${prep ? '✅' : '⬜'}</td>
                                 <td style="text-align:center;">${listo ? '✅' : '⬜'}</td>
                                 <td style="text-align:center;">${regr ? '✅' : '⬜'}</td>
-                                <td style="color:#64748b;">${esc(notas || '-')}</td>
+                                <td style="color:var(--ink-2);">${esc(notas || '-')}</td>
                             `;
                             tbodyPreview.appendChild(tr);
                         }
@@ -12985,7 +12988,7 @@
                 let badgeEstadoHtml = '';
                 if (plan === '-') {
                     dataCob.estadoCobro = 'no_aplica';
-                    badgeEstadoHtml = `<span class="pill-status" style="background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1; font-size:11px; font-weight:700;" title="Sin cobertura contratada">⚪ No aplica</span>`;
+                    badgeEstadoHtml = `<span class="pill-status" style="background:var(--surface-2); color:var(--ink-2); border:1px solid var(--line-2); font-size:11px; font-weight:700;" title="Sin cobertura contratada">⚪ No aplica</span>`;
                 } else {
                     const pagadasCount = dataCob.pagosDetalle.filter(p => p && p.pagada).length;
                     if (pagadasCount === 0) {
@@ -12996,7 +12999,7 @@
                         badgeEstadoHtml = `<span class="pill-status" style="background:#ffedd5; color:#9a3412; border:1px solid #fdba74; font-size:11px; font-weight:700;" title="Pagos parciales registrados en Finanzas">🟠 Parcial (${pagadasCount}/${totalPagos})</span>`;
                     } else {
                         dataCob.estadoCobro = 'pagado';
-                        badgeEstadoHtml = `<span class="pill-status" style="background:#dcfce7; color:#166534; border:1px solid #86efac; font-size:11px; font-weight:700;" title="Todos los pagos completados en Finanzas">🟢 Pagado</span>`;
+                        badgeEstadoHtml = `<span class="pill-status" style="background:var(--ok-bg); color:var(--ok); border:1px solid color-mix(in srgb, var(--ok) 40%, white); font-size:11px; font-weight:700;" title="Todos los pagos completados en Finanzas">🟢 Pagado</span>`;
                     }
                 }
 
@@ -13005,10 +13008,10 @@
 
                 const celdaReelsHtml = aplicaReels
                     ? `<input type="number" class="spreadsheet-inp inp-cant-reels" value="${reels}" min="1" style="font-weight:700; text-align:center; width:60px;" onchange="actualizarDatoCoberturaBanda('${safeNombre}', 'reels', this.value)">`
-                    : `<span style="color:#94a3b8; font-weight:800; font-size:14px; display:inline-block; text-align:center; width:60px;" title="No aplica cantidad de reels para este plan">-</span>`;
+                    : `<span style="color:var(--ink-3); font-weight:800; font-size:14px; display:inline-block; text-align:center; width:60px;" title="No aplica cantidad de reels para este plan">-</span>`;
 
                 const celdaFormaCobroHtml = (plan === '-')
-                    ? `<div style="text-align:center; color:#94a3b8; font-weight:800; font-size:14px;">-</div>`
+                    ? `<div style="text-align:center; color:var(--ink-3); font-weight:800; font-size:14px;">-</div>`
                     : `<div style="display:flex; align-items:center; gap:6px;">
                         <select class="form-control" style="padding:4px 8px; font-size:12px; flex:1; min-width:110px;" onchange="actualizarDatoCoberturaBanda('${safeNombre}', 'formaCobro', this.value)">
                             <option value="Transferencia" ${formaCobro === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
@@ -13016,7 +13019,7 @@
                             <option value="Efectivo" ${formaCobro === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
                         </select>
                         ${formaCobro === 'Cuotas' ? `
-                        <select class="form-control" style="padding:4px 6px; font-size:11.5px; font-weight:700; width:92px; background:#eff6ff; color:#1d4ed8; border-color:#93c5fd;" title="Cantidad de cuotas" onchange="actualizarDatoCoberturaBanda('${safeNombre}', 'cantCuotas', parseInt(this.value))">
+                        <select class="form-control" style="padding:4px 6px; font-size:11.5px; font-weight:700; width:92px; background:var(--info-bg); color:#1d4ed8; border-color:#93c5fd;" title="Cantidad de cuotas" onchange="actualizarDatoCoberturaBanda('${safeNombre}', 'cantCuotas', parseInt(this.value))">
                             <option value="2" ${cantCuotas === 2 ? 'selected' : ''}>2 cuotas</option>
                             <option value="3" ${cantCuotas === 3 ? 'selected' : ''}>3 cuotas</option>
                             <option value="4" ${cantCuotas === 4 ? 'selected' : ''}>4 cuotas</option>
@@ -13525,14 +13528,14 @@
             const estado = pendiente > 0
                 ? `<span class="pill-status pill-warning" style="font-size:11px;">Por cobrar ${htmlMonto(pendiente)}</span>`
                 : '<span class="pill-status pill-success" style="font-size:11px;">Todo cobrado</span>';
-            const absorbidoTxt = pg.absorbido > 0 ? ` · <span style="color:#475569;">Absorbido por la escuela ${htmlMonto(pg.absorbido)}</span>` : '';
+            const absorbidoTxt = pg.absorbido > 0 ? ` · <span style="color:var(--ink-2);">Absorbido por la escuela ${htmlMonto(pg.absorbido)}</span>` : '';
             let html = `<div class="srv-pagos"><span class="srv-pagos-toggle" onclick="toggleDetallePagosServicio('${sb}', ${sIdx}, ${abierto})">${abierto ? '▾' : '▸'} Pagos · ${htmlMonto(pg.cobrado)} de ${htmlMonto(pg.total)} <span class="srv-barra"><i style="width:${pct}%"></i></span> ${estado}${absorbidoTxt}</span>`;
             if (abierto) {
                 const filas = pg.filas.map(f => {
                     const sn = escJs(f.nombre);
                     const gear = `<button type="button" class="btn-app btn-secondary" style="font-size:12px; padding:3px 7px;" title="Gestionar: excluir del pago o absorber la cuota" onclick="abrirModalGestionarServicioIntegrante('${sb}', ${sIdx}, '${sn}')">⚙️</button>`;
                     if (f.estado === 'excluido') {
-                        return `<tr style="color:#94a3b8;"><td>${esc(f.nombre)}</td><td class="r m-cero">—</td><td><span class="pill-status pill-neutral" style="font-size:11px;">Excluido</span></td><td></td><td class="r">${gear}</td></tr>`;
+                        return `<tr style="color:var(--ink-3);"><td>${esc(f.nombre)}</td><td class="r m-cero">—</td><td><span class="pill-status pill-neutral" style="font-size:11px;">Excluido</span></td><td></td><td class="r">${gear}</td></tr>`;
                     }
                     const pago = f.pago || {};
                     const pagada = f.estado === 'pagada';
@@ -13589,13 +13592,13 @@
             const cubiertoHtml = salaPropia
                 ? '<div class="srv-campo"><span class="srv-k">Resultado</span><span class="pill-status pill-info" title="Lo que cobran los alumnos es ganancia de la escuela; no se paga a ningún proveedor">🏫 Ingreso de la escuela</span></div>'
                 : `<div class="srv-campo"><span class="srv-k">Proveedor</span>${srv.pagadoProveedor
-                    ? `<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 9px; background:#f0fdf4; color:#166534; border-color:#bbf7d0;" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, false)" title="Click para desmarcar">☑ Cubierto</button>`
+                    ? `<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 9px; background:var(--ok-bg); color:var(--ok); border-color:color-mix(in srgb, var(--ok) 25%, white);" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, false)" title="Click para desmarcar">☑ Cubierto</button>`
                     : `<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 9px;" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, true)" title="Tildalo cuando el proveedor ya cobró este servicio. Si los alumnos todavía no pagaron, la escuela lo adelanta y figura como gasto hasta recuperarlo">☐ Cubierto</button>`}</div>`;
             const cuotaExacta = resPag.pagadores.length > 0 ? total / resPag.pagadores.length : 0;
             const hayExcluidos = resPag.excluidos.length > 0;
             const cuotaHtml = resPag.pagadores.length > 0
                 ? `<strong class="sec-mono">${htmlMonto(resPag.cuota)}</strong>${hayExcluidos ? ` <span class="pill-status pill-neutral" style="font-size:11px;" title="Se gestiona con el engranaje de cada integrante">Pagan ${resPag.pagadores.length} de ${resPag.nombres.length}</span>` : ''}`
-                : '<span style="font-size:11px; color:#b45309; font-weight:700;">Sin pagadores: lo absorbe la escuela</span>';
+                : '<span style="font-size:11px; color:var(--warn); font-weight:700;">Sin pagadores: lo absorbe la escuela</span>';
             const cuotaTitulo = resPag.pagadores.length > 0 ? `Exacto ${htmlMonto(Math.round(cuotaExacta)).replace(/<[^>]+>/g, '')}, redondeado al millar` : '';
 
             const pagos = total > 0 ? htmlPagosServicio(srv, resPag, bNombre, sIdx) : { html: '', cantPagaron: 0, cantPagadores: 0 };
@@ -13610,7 +13613,7 @@
                     ${cubiertoHtml}
                     <div class="srv-campo srv-crece"><span class="srv-k">Observación</span><input type="text" class="table-inp" value="${esc(srv.obs || '')}" placeholder="Comentario o detalle..." onchange="actualizarServicioAdicional('${sb}', ${sIdx}, 'obs', this.value)"></div>
                     <div class="srv-campo" title="${esc(cuotaTitulo)}"><span class="srv-k">Cuota</span><span style="padding:6px 0; white-space:nowrap;">${cuotaHtml}</span></div>
-                    <div class="srv-campo"><span class="srv-k">&nbsp;</span><button type="button" class="btn-app" style="color:#dc2626; border-color:#fecaca; padding:3px 8px;" onclick="eliminarServicioAdicional('${sb}', ${sIdx})" title="Eliminar servicio">✕</button></div>
+                    <div class="srv-campo"><span class="srv-k">&nbsp;</span><button type="button" class="btn-app" style="color:var(--bad); border-color:color-mix(in srgb, var(--bad) 25%, white); padding:3px 8px;" onclick="eliminarServicioAdicional('${sb}', ${sIdx})" title="Eliminar servicio">✕</button></div>
                 </div>
                 ${pagos.html}
             </div>`;
@@ -14788,7 +14791,7 @@
                 { key: 'cantGeneral', nombre: 'General', nota: 'valor de contrato', precio: Number(ent.general) || 0, cantidad: Number(datos.cantGeneral) || 0 },
                 { key: 'cantPuerta', nombre: 'En puerta', nota: '', precio: Number(ent.puerta) || 0, cantidad: Number(datos.cantPuerta) || 0 }
             ];
-            const estiloInpCant = "font-family:'Geist Mono'; font-weight:800; text-align:center; width:90px; color:var(--accent-blue); background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:4px 6px;";
+            const estiloInpCant = "font-family:'Geist Mono'; font-weight:800; text-align:center; width:90px; color:var(--accent-blue); background:#fff; border:1px solid var(--line-2); border-radius:8px; padding:4px 6px;";
 
             filasBase.forEach(f => {
                 const sub = f.precio * f.cantidad;
@@ -14862,7 +14865,7 @@
                 { key: 'cantGeneral', nombre: 'General', nota: 'valor de contrato', valor: Number(entVal.general) || 0, cantidad: Number(datos.cantGeneral) || 0 },
                 { key: 'cantPuerta', nombre: 'En puerta', nota: '', valor: Number(entVal.puerta) || 0, cantidad: Number(datos.cantPuerta) || 0 }
             ];
-            const estiloInpCierre = "font-family:'Geist Mono'; font-weight:800; text-align:center; width:95px; color:var(--accent-blue); background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:4px 6px;";
+            const estiloInpCierre = "font-family:'Geist Mono'; font-weight:800; text-align:center; width:95px; color:var(--accent-blue); background:#fff; border:1px solid var(--line-2); border-radius:8px; padding:4px 6px;";
 
             filasBase.forEach(f => {
                 const tr = document.createElement('tr');
@@ -15031,7 +15034,7 @@
                     inpEscuela.style.background = '#fef2f2';
                 }
                 if (wrapBadge) {
-                    wrapBadge.innerHTML = `<span class="pill-status pill-danger" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-size:11px; font-weight:700;">⚠️ Venue: A definir</span>`;
+                    wrapBadge.innerHTML = `<span class="pill-status pill-danger" style="background:var(--bad-bg); color:var(--bad); border:1px solid color-mix(in srgb, var(--bad) 25%, white); font-size:11px; font-weight:700;">⚠️ Venue: A definir</span>`;
                 }
                 if (badgeAcuerdoSup) {
                     badgeAcuerdoSup.textContent = `Acuerdo: A definir (${estado.venueNombre || 'Venue'})`;
@@ -15072,7 +15075,7 @@
                     inpEscuela.value = estado.porcFinal;
                 }
                 if (inpEscuela) {
-                    inpEscuela.style.border = '1px solid #cbd5e1';
+                    inpEscuela.style.border = '1px solid var(--line-2)';
                     inpEscuela.style.background = '#ffffff';
                 }
                 const colorBg = estado.porcFinal === 100 ? '#dcfce7' : '#e0f2fe';
@@ -15198,7 +15201,7 @@
             if (txtNeto) txtNeto.innerHTML = htmlMonto(netoEscuelaOnline, { resultado: true });
             if (txtSubNeto) {
                 if (esIndefinido) {
-                    txtSubNeto.innerHTML = `<span style="color:#b91c1c; font-weight:700;">⚠️ % no definido: se usa ${porcEscuela}% del saldo posterior a SADAIC (editable)</span>`;
+                    txtSubNeto.innerHTML = `<span style="color:var(--bad); font-weight:700;">⚠️ % no definido: se usa ${porcEscuela}% del saldo posterior a SADAIC (editable)</span>`;
                 } else if (porcEscuela === 100) {
                     txtSubNeto.textContent = `100% del saldo posterior a SADAIC (Sin % para venue)`;
                 } else {
@@ -15876,13 +15879,13 @@
                     return { deudaHtml: ceroGris, estadoHtml: '<span class="pill-status pill-info" title="Sesionista: no debe entradas">Exento</span>', accionHtml: '' };
                 case 'traspaso': {
                     const n = e.traspasoEntradas || falt || 1;
-                    return { deudaHtml: ceroGris, estadoHtml: `<span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe;">Traspasa ${n} entrada${n === 1 ? '' : 's'}</span>`, accionHtml: envolver(btnPlan('Plan de traspaso', '⚙️ Plan', 0, n)) };
+                    return { deudaHtml: ceroGris, estadoHtml: `<span class="pill-status" style="background:var(--violet-bg); color:var(--violet); border:1px solid color-mix(in srgb, var(--violet) 30%, white);">Traspasa ${n} entrada${n === 1 ? '' : 's'}</span>`, accionHtml: envolver(btnPlan('Plan de traspaso', '⚙️ Plan', 0, n)) };
                 }
                 case 'completo':
                     return { deudaHtml: ceroGris, estadoHtml: '<span class="pill-status pill-success">Cupo completo</span>', accionHtml: '' };
                 case 'pagado':
                     return {
-                        deudaHtml: `<span style="color:#94a3b8; text-decoration:line-through; font-weight:600;">-$ ${monto.toLocaleString('es-AR')}</span>`,
+                        deudaHtml: `<span style="color:var(--ink-3); text-decoration:line-through; font-weight:600;">-$ ${monto.toLocaleString('es-AR')}</span>`,
                         estadoHtml: `<span class="pill-status pill-success" title="Deuda saldada en Finanzas → Cobros">Pagado ${e.cuotasPagadas}/${e.totalCuotasPlan}</span>`,
                         accionHtml: envolver(`<button type="button" class="link-jump-pill" onclick="irACobrosDesdeCierreEntradas('${sid}')" title="Ver pago en Finanzas → Cobros & Cuotas Alumnos">💳 Cobros</button>`)
                     };
@@ -16342,7 +16345,7 @@
                         elPill.textContent = `${nIncumplen} incumplen`;
                     } else if (nTraspaso > 0) {
                         elPill.className = 'pill-status';
-                        elPill.setAttribute('style', 'background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe;');
+                        elPill.setAttribute('style', 'background:var(--violet-bg); color:var(--violet); border:1px solid color-mix(in srgb, var(--violet) 30%, white);');
                         elPill.textContent = `${nTraspaso} traspaso${nTraspaso === 1 ? '' : 's'}`;
                     } else {
                         elPill.className = 'pill-status pill-success';
@@ -16752,7 +16755,7 @@
                         <td><strong>${esc(nombre)}</strong></td>
                         <td>Traspasa ${n} entrada${n === 1 ? '' : 's'}</td>
                         <td class="r sec-mono">${htmlMonto(0)}</td>
-                        <td><span class="pill-status" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe;">Traspaso</span></td>
+                        <td><span class="pill-status" style="background:var(--violet-bg); color:var(--violet); border:1px solid color-mix(in srgb, var(--violet) 30%, white);">Traspaso</span></td>
                         <td style="font-size:11.5px; color:var(--text-muted);">Se salda con ${n} entrada${n === 1 ? '' : 's'} extra en el próximo festival.</td>
                         <td></td>
                     </tr>`;
@@ -16811,7 +16814,7 @@
                     g.filas += `<tr data-part-id="${esc(safeId)}">
                         <td><strong>${esc(nombre)}</strong></td>
                         <td>${esc(concepto)}</td>
-                        <td class="r"><input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:700; ${p.pagada ? 'color:#94a3b8;' : ''} font-size:12.5px; text-align:right; width:110px; border:none; cursor:pointer;" title="Click para editar el monto real de este cobro" value="${formatearMonedaAr(p.monto)}" onfocus="enfocarInputMontoCuotaContrato(this, '${sid}', ${cIdx})" onblur="formatearInputMontoCuotaContrato(this, '${sid}', ${cIdx})" onchange="actualizarMontoCuotaContratoAlumno('${sid}', ${cIdx}, this.value)"></td>
+                        <td class="r"><input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:700; ${p.pagada ? 'color:var(--ink-3);' : ''} font-size:12.5px; text-align:right; width:110px; border:none; cursor:pointer;" title="Click para editar el monto real de este cobro" value="${formatearMonedaAr(p.monto)}" onfocus="enfocarInputMontoCuotaContrato(this, '${sid}', ${cIdx})" onblur="formatearInputMontoCuotaContrato(this, '${sid}', ${cIdx})" onchange="actualizarMontoCuotaContratoAlumno('${sid}', ${cIdx}, this.value)"></td>
                         <td>${htmlEstadoCobro(p.pagada ? 'pagada' : 'debe')}</td>
                         <td>${htmlDetallePagoCobro(p, h, { obs: true })}</td>
                         <td class="r"><div style="display:inline-flex; align-items:center; gap:4px;">
@@ -17089,7 +17092,7 @@
                             festFecha,
                             tipo: 'escuela_cobertura',
                             tipoCat: 'escuela',
-                            tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:#fef2f2; color:#991b1b; border:1px solid #fecaca; border-radius:12px; padding:2px 8px;">● Cobertura Escuela</span>',
+                            tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:var(--bad-bg); color:var(--bad); border:1px solid color-mix(in srgb, var(--bad) 25%, white); border-radius:12px; padding:2px 8px;">● Cobertura Escuela</span>',
                             concepto: '🎬 Saldo Cobertura Escuela',
                             categoria: 'Cobertura Audiovisual',
                             banda: 'Mandala House',
@@ -17161,7 +17164,7 @@
                                 festFecha,
                                 tipo: 'alumno_traspaso',
                                 tipoCat: 'traspasos',
-                                tipoBadge: `<span class="pill-status" style="font-size:11px; font-weight:700; background:#f3e8ff; color:#7e22ce; border:1px solid #d8b4fe; border-radius:12px; padding:2px 8px;">🔄 Traspaso</span>`,
+                                tipoBadge: `<span class="pill-status" style="font-size:11px; font-weight:700; background:var(--violet-bg); color:#7e22ce; border:1px solid color-mix(in srgb, var(--violet) 30%, white); border-radius:12px; padding:2px 8px;">🔄 Traspaso</span>`,
                                 concepto: `👤 ${c.nombre}`,
                                 banda: c.banda || 'Participantes',
                                 faltantes: cantTraspaso,
@@ -17193,7 +17196,7 @@
                                     festFecha,
                                     tipo: 'alumno_entrada',
                                     tipoCat: 'alumnos',
-                                    tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; border-radius:12px; padding:2px 8px;">● Entrada Alumno</span>',
+                                    tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:var(--ok-bg); color:var(--ok); border:1px solid color-mix(in srgb, var(--ok) 25%, white); border-radius:12px; padding:2px 8px;">● Entrada Alumno</span>',
                                     concepto: `👤 ${c.nombre}`,
                                     banda: c.banda || 'Participantes',
                                     faltantes: c.faltantes,
@@ -17239,7 +17242,7 @@
                                     festFecha,
                                     tipo: 'banda_cobertura',
                                     tipoCat: 'cobertura',
-                                    tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:#f3e8ff; color:#7e22ce; border:1px solid #d8b4fe; border-radius:12px; padding:2px 8px;">● Cobertura Banda</span>',
+                                    tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:var(--violet-bg); color:#7e22ce; border:1px solid color-mix(in srgb, var(--violet) 30%, white); border-radius:12px; padding:2px 8px;">● Cobertura Banda</span>',
                                     concepto: `🎸 ${bNombre} (${dataCob.plan === 'ambas' ? 'Fotos + Reel' : dataCob.plan})`,
                                     banda: bNombre,
                                     categoria: cantCuotas > 1 ? `Cuota ${pIdx + 1}/${cantCuotas}` : '1 pago único',
@@ -17279,7 +17282,7 @@
                                     festFecha,
                                     tipo: 'servicio_proveedor',
                                     tipoCat: 'escuela',
-                                    tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:#fef2f2; color:#991b1b; border:1px solid #fecaca; border-radius:12px; padding:2px 8px;">● Pago Servicio</span>',
+                                    tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:var(--bad-bg); color:var(--bad); border:1px solid color-mix(in srgb, var(--bad) 25%, white); border-radius:12px; padding:2px 8px;">● Pago Servicio</span>',
                                     concepto: `🛠️ ${srv.tipo === 'sesionista' ? 'Sesionista' : 'Ensayo'}: ${srv.proveedor || 'Proveedor'}`,
                                     banda: bNombre,
                                     categoria: `${srv.horas || 1}h - ${bNombre}`,
@@ -17310,7 +17313,7 @@
                                         festFecha,
                                         tipo: 'servicio_alumno',
                                         tipoCat: 'alumnos',
-                                        tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; border-radius:12px; padding:2px 8px;">● Servicio Banda</span>',
+                                        tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:var(--ok-bg); color:var(--ok); border:1px solid color-mix(in srgb, var(--ok) 25%, white); border-radius:12px; padding:2px 8px;">● Servicio Banda</span>',
                                         concepto: `👤 ${intgNombre}`,
                                         banda: bNombre,
                                         categoria: `${srv.tipo === 'sesionista' ? 'Sesionista' : 'Ensayo'} (${srv.horas || 1}h)${srv.pagadoProveedor ? ' · la escuela ya pagó al proveedor' : ''}`,
@@ -17400,7 +17403,7 @@
             const elSub = document.getElementById('deudas-subtitulo');
             if (elSub) {
                 const base = 'Lo que la escuela debe pagar y lo que le deben cobrar. Todo se ve desde que el evento está En Curso, salvo las entradas incumplidas, que aparecen el día siguiente al evento.';
-                elSub.innerHTML = esc(base) + (fechaSimuladaDeudas() ? ' <strong style="color:#b45309;">⚠️ Simulando el día ' + fechaHoyDeudas().toLocaleDateString('es-AR') + ' (los datos no se modifican).</strong>' : '');
+                elSub.innerHTML = esc(base) + (fechaSimuladaDeudas() ? ' <strong style="color:var(--warn);">⚠️ Simulando el día ' + fechaHoyDeudas().toLocaleDateString('es-AR') + ' (los datos no se modifican).</strong>' : '');
             }
             filtrarTablaDeudas();
         }
@@ -17542,10 +17545,10 @@
                     </td>
                     <td style="padding-left:24px;">
                         <span style="font-size:12.5px;">${esc(item.concepto)}</span>${wa}
-                        ${sub.length ? `<div style="font-size:11px; color:#64748b;">${sub.join(' · ')}</div>` : ''}
+                        ${sub.length ? `<div style="font-size:11px; color:var(--ink-2);">${sub.join(' · ')}</div>` : ''}
                     </td>
                     <td class="num-cell" style="text-align:right; font-family:'Geist Mono'; font-weight:700; font-size:12.5px; font-variant-numeric:tabular-nums; white-space:nowrap;">${montoTxt}</td>
-                    <td style="font-size:11.5px; ${sinFecha ? 'color:#94a3b8;' : ''}">${venceTxt}</td>
+                    <td style="font-size:11.5px; ${sinFecha ? 'color:var(--ink-3);' : ''}">${venceTxt}</td>
                     <td class="col-accion-deudas col-accion-cell" style="text-align:center; white-space:nowrap;">
                         <div style="display:inline-flex; align-items:center; gap:4px; justify-content:center;">
                             ${botonAccion}${botonAbsorber}${botonCuotas}
@@ -17562,9 +17565,9 @@
                 det.style.display = 'none';
                 det.innerHTML = `
                     <td></td>
-                    <td colspan="4" style="background:#f8fafc; padding:8px 14px 8px 24px;">
+                    <td colspan="4" style="background:var(--surface-2); padding:8px 14px 8px 24px;">
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:11.5px;">
-                            ${esTraspasoItem ? `<span style="color:#475569;">${esc(item.obs || '')}</span>` : `
+                            ${esTraspasoItem ? `<span style="color:var(--ink-2);">${esc(item.obs || '')}</span>` : `
                             <label style="display:inline-flex; align-items:center; gap:4px;">Medio ${selMedio(item)}</label>
                             <label style="display:inline-flex; align-items:center; gap:4px;">Responsable
                                 <select class="installment-select" style="font-size:11.5px; padding:3px 6px; border-radius:6px;" onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'responsable', this.value)">${opcionesResponsablesHTML(item.responsable)}</select></label>
@@ -17583,7 +17586,7 @@
                 // Cabecera del festival
                 const trHeader = document.createElement('tr');
                 trHeader.className = 'group-header-row';
-                trHeader.style.cssText = 'background:#f1f5f9; border-top:2px solid #cbd5e1;';
+                trHeader.style.cssText = 'background:var(--surface-2); border-top:2px solid var(--line-2);';
                 trHeader.innerHTML = `
                     <td class="col-chk-deudas"></td>
                     <td colspan="2" style="padding:10px 14px;">
@@ -17617,7 +17620,7 @@
                         <td class="col-chk-deudas"></td>
                         <td><span class="banda-chevron" style="display:inline-block; width:14px; font-size:11px; transition:transform .15s; transform:rotate(${colapsada ? '-90deg' : '0deg'});">▼</span>
                             <span style="font-size:12.5px; font-weight:700;">🏫 MANDALA ENSAMBLES</span>
-                            <span style="font-size:11px; color:#64748b; margin-left:4px;">(${pasivosEscuela.length} ${pasivosEscuela.length === 1 ? 'pendiente' : 'pendientes'})</span></td>
+                            <span style="font-size:11px; color:var(--ink-2); margin-left:4px;">(${pasivosEscuela.length} ${pasivosEscuela.length === 1 ? 'pendiente' : 'pendientes'})</span></td>
                         <td class="num-cell" style="text-align:right; font-family:'Geist Mono'; font-weight:700; font-size:12.5px; padding-right:12px;">${fmt(tot)}</td>
                         <td colspan="2"></td>`;
                     tbody.appendChild(trG);
@@ -17645,7 +17648,7 @@
                         <td class="col-chk-deudas"></td>
                         <td><span class="banda-chevron" style="display:inline-block; width:14px; font-size:11px; transition:transform .15s; transform:rotate(${colapsada ? '-90deg' : '0deg'});">▼</span>
                             <span style="font-size:12.5px; font-weight:700;">🎸 ${esc(bandaNombre.toUpperCase())}</span>
-                            <span style="font-size:11px; color:#64748b; margin-left:4px;">(${itemsBanda.every(i => i.soloSeguimiento) ? itemsBanda.length + ' en seguimiento' : itemsBanda.length + (itemsBanda.length === 1 ? ' pendiente' : ' pendientes')})</span></td>
+                            <span style="font-size:11px; color:var(--ink-2); margin-left:4px;">(${itemsBanda.every(i => i.soloSeguimiento) ? itemsBanda.length + ' en seguimiento' : itemsBanda.length + (itemsBanda.length === 1 ? ' pendiente' : ' pendientes')})</span></td>
                         <td class="num-cell" style="text-align:right; font-family:'Geist Mono'; font-weight:700; font-size:12.5px; padding-right:12px;">${totBanda > 0 ? fmt(totBanda) : ''}</td>
                         <td colspan="2"></td>`;
                     tbody.appendChild(trB);
@@ -18644,19 +18647,19 @@
 
             if (elPills) {
                 elPills.innerHTML = `
-                    <div style="background:#f1f5f9; padding:4px 8px; border-radius:6px; color:#1e293b;">
+                    <div style="background:var(--surface-2); padding:4px 8px; border-radius:6px; color:var(--ink);">
                         Bruto: <strong>$ ${bruto.toLocaleString('es-AR')}</strong>
                     </div>
-                    <div style="background:#fef2f2; padding:4px 8px; border-radius:6px; color:#b91c1c;">
+                    <div style="background:var(--bad-bg); padding:4px 8px; border-radius:6px; color:var(--bad);">
                         Gastos: <strong>-$ ${gastos.toLocaleString('es-AR')}</strong>
                     </div>
-                    <div style="background:#fffbeb; padding:4px 8px; border-radius:6px; color:#b45309;">
+                    <div style="background:var(--warn-bg); padding:4px 8px; border-radius:6px; color:var(--warn);">
                         SADAIC: <strong>-$ ${sadaic.toLocaleString('es-AR')}</strong>
                     </div>
-                    <div style="background:#ecfdf5; padding:4px 8px; border-radius:6px; color:#047857;">
+                    <div style="background:var(--ok-bg); padding:4px 8px; border-radius:6px; color:#047857;">
                         70% Esc: <strong>+$ ${escuela70.toLocaleString('es-AR')}</strong>
                     </div>
-                    <div style="background:#f0f9ff; padding:4px 8px; border-radius:6px; color:#0369a1;">
+                    <div style="background:#f0f9ff; padding:4px 8px; border-radius:6px; color:var(--info);">
                         30% Venue: <strong>$ ${venue30.toLocaleString('es-AR')}</strong>
                     </div>
                 `;

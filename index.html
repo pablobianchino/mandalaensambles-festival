@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v1.10">
-    <script src="src/ui/iconos.js?v=v1.10"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.0">
+    <script src="src/ui/iconos.js?v=v2.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v1.10" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.0" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1113,7 +1113,7 @@
                                         Valores base por defecto aplicados automáticamente al crear un nuevo festival. Al programar cada evento se congelan estos precios, pudiendo ser editados en la pestaña "Entradas" de cada festival.
                                     </span>
                                 </div>
-                                <button class="btn-app btn-primary" onclick="guardarConfiguracionPrecios()">💾 Guardar Configuración General</button>
+                                <button class="btn-app btn-primary" onclick="guardarConfiguracionPrecios()">💾 Guardar configuración general</button>
                             </div>
 
                             <div class="form-grid" style="margin-top:16px;">
@@ -1328,8 +1328,11 @@
                                 <button class="btn-app btn-secondary" style="display:none;" onclick="abrirModalCargaMasivaVenues()" title="Importar múltiples salas desde un archivo .xlsx">
                                     📥 Carga Masiva (.xlsx)
                                 </button>
+                                <button class="btn-app btn-secondary" onclick="abrirRevisionNombresVenues()" title="Detecta festivales cuyo venue no coincide con ninguno de la lista y permite unificarlos">
+                                    🔍 Revisar nombres
+                                </button>
                                 <button class="btn-app btn-primary" onclick="agregarFilaVenueDirecto()">
-                                    ＋ Nuevo Venue
+                                    ＋ Nuevo venue
                                 </button>
                             </div>
                         </div>
@@ -2374,7 +2377,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
-                <button class="btn-app btn-primary" id="btn-submit-crear-evento" onclick="guardarNuevoEvento()">Crear Evento</button>
+                <button class="btn-app btn-primary" id="btn-submit-crear-evento" onclick="guardarNuevoEvento()">Crear evento</button>
             </div>
         </div>
     </div>
@@ -2476,7 +2479,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-app btn-secondary" onclick="cerrarModalConAviso('form-edit-evento')">Cancelar</button>
-                    <button type="submit" class="btn-app btn-primary">Guardar Cambios</button>
+                    <button type="submit" class="btn-app btn-primary">Guardar</button>
                 </div>
             </form>
         </div>
@@ -2731,6 +2734,21 @@
         </div>
     </div>
 
+    <!-- Modal Revisar nombres de venues (unifica el venue escrito en los festivales con la lista de Venues) -->
+    <div id="modal-revision-venues" class="modal-overlay">
+        <div class="modal-box" style="width:620px; max-height:90vh; overflow-y:auto;">
+            <div class="modal-header">
+                <h3>🔍 Revisar nombres de venues</h3>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div class="modal-body" id="revision-venues-cuerpo"></div>
+            <div class="modal-footer">
+                <button class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
+                <button class="btn-app btn-primary" id="btn-aplicar-revision-venues" onclick="aplicarRevisionNombresVenues()">Aplicar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Nuevo / Editar Venue con Capacidad en Rango -->
     <div id="modal-nuevo-venue" class="modal-overlay">
         <div class="modal-box" style="width:520px;">
@@ -2811,7 +2829,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
-                <button class="btn-app btn-primary" onclick="guardarVenue()">💾 Guardar Venue</button>
+                <button class="btn-app btn-primary" onclick="guardarVenue()">💾 Guardar venue</button>
             </div>
         </div>
     </div>
@@ -3188,7 +3206,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
-                <button type="button" class="btn-app btn-primary" onclick="confirmarAgregarColumnaRider()">＋ Agregar Columna</button>
+                <button type="button" class="btn-app btn-primary" onclick="confirmarAgregarColumnaRider()">＋ Agregar columna</button>
             </div>
         </div>
     </div>
@@ -3213,10 +3231,10 @@
                 </div>
             </div>
             <div class="modal-footer" style="display:flex; justify-content:space-between;">
-                <button type="button" class="btn-app btn-danger" onclick="borrarNotaRiderActual()">🗑️ Borrar Nota</button>
+                <button type="button" class="btn-app btn-danger" onclick="borrarNotaRiderActual()">🗑️ Eliminar nota</button>
                 <div style="display:flex; gap:8px;">
                     <button type="button" class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
-                    <button type="button" class="btn-app btn-primary" onclick="guardarNotaRiderActual()">Guardar Nota</button>
+                    <button type="button" class="btn-app btn-primary" onclick="guardarNotaRiderActual()">Guardar nota</button>
                 </div>
             </div>
         </div>
@@ -4921,6 +4939,104 @@
             actualizarSelectsVenues();
         }
 
+        // ---- Revisión de nombres de venues ----
+        // Los festivales guardan el venue como texto. Esta revisión lista los nombres que no coinciden con
+        // ningún venue de la lista y deja elegir a cuál corresponden. No cambia nada hasta tocar "Aplicar".
+        let revisionVenuesGrupos = [];
+
+        function normalizarNombreVenueRev(s) {
+            return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        }
+
+        function sugerirVenueParaNombre(nombre) {
+            const n = normalizarNombreVenueRev(nombre);
+            const palabras = n.split(' ').filter(p => p.length > 2);
+            let mejor = null, mejorPuntos = 0;
+            Object.values(venuesData).forEach(v => {
+                if (!v || !v.nombre) return;
+                const vn = normalizarNombreVenueRev(v.nombre);
+                let puntos = 0;
+                if (vn === n) puntos = 100;
+                else if (vn.includes(n) || n.includes(vn)) puntos = 50;
+                else puntos = vn.split(' ').filter(p => p.length > 2 && palabras.includes(p)).length * 10;
+                if (puntos > mejorPuntos) { mejorPuntos = puntos; mejor = v; }
+            });
+            return mejor;
+        }
+
+        function abrirRevisionNombresVenues() {
+            const exactos = new Set(Object.values(venuesData).map(v => String((v && v.nombre) || '').trim().toLowerCase()));
+            const porNombre = {};
+            Object.values(infoFestivales || {}).forEach(f => {
+                const nom = String((f && f.venue) || '').trim();
+                if (!nom || exactos.has(nom.toLowerCase())) return;
+                (porNombre[nom] = porNombre[nom] || []).push(f);
+            });
+            revisionVenuesGrupos = Object.keys(porNombre).map(nombre => ({ nombre, festivales: porNombre[nombre] }));
+            const cuerpo = document.getElementById('revision-venues-cuerpo');
+            const btn = document.getElementById('btn-aplicar-revision-venues');
+            if (!revisionVenuesGrupos.length) {
+                cuerpo.innerHTML = '<p style="margin:0; font-size:13.5px;">Todos los festivales tienen un venue que coincide con la lista. No hay nada para unificar.</p>';
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = '';
+                const opcionesVenues = Object.values(venuesData).filter(v => v && v.nombre).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+                    .map(v => ({ id: v.id, nombre: v.nombre }));
+                cuerpo.innerHTML = '<p style="margin:0 0 12px; font-size:13px; color:var(--text-muted);">Estos nombres de venue están escritos en festivales pero no coinciden con ninguno de la lista. Elegí a cuál corresponde cada uno; si no querés cambiar algo, dejalo en "No cambiar".</p>' +
+                    revisionVenuesGrupos.map((g, i) => {
+                        const sug = sugerirVenueParaNombre(g.nombre);
+                        const fests = g.festivales.map(f => esc(f.nombre || f.id)).join(', ');
+                        return `<div style="padding:10px 0; border-top:1px solid var(--line);">
+                            <div style="font-weight:700; font-size:13.5px;">${esc(g.nombre)}</div>
+                            <div style="font-size:12px; color:var(--text-muted); margin:2px 0 6px;">${g.festivales.length} festival${g.festivales.length === 1 ? '' : 'es'}: ${fests}</div>
+                            <select class="form-control" id="rev-venue-sel-${i}">
+                                <option value="">No cambiar</option>
+                                ${opcionesVenues.map(o => `<option value="${esc(o.nombre)}" ${sug && sug.id === o.id ? 'selected' : ''}>Unificar con: ${esc(o.nombre)}</option>`).join('')}
+                                <option value="__crear__">Crear un venue nuevo llamado "${esc(g.nombre)}"</option>
+                            </select>
+                        </div>`;
+                    }).join('');
+            }
+            document.getElementById('modal-revision-venues').classList.add('active');
+        }
+        window.abrirRevisionNombresVenues = abrirRevisionNombresVenues;
+
+        async function aplicarRevisionNombresVenues() {
+            let festCambiados = 0, creados = 0;
+            for (let i = 0; i < revisionVenuesGrupos.length; i++) {
+                const g = revisionVenuesGrupos[i];
+                const sel = document.getElementById('rev-venue-sel-' + i);
+                const destino = sel ? sel.value : '';
+                if (!destino) continue;
+                let nombreFinal = destino;
+                if (destino === '__crear__') {
+                    nombreFinal = g.nombre;
+                    const nuevoId = 'venue-' + Date.now() + '-' + i;
+                    const nuevo = { id: nuevoId, nombre: nombreFinal, direccion: '', contactos: [{ tipo: 'Encargado', nombre: '', telefono: '' }], acuerdo: 'A definir', capMin: 0, capMax: 0 };
+                    venuesData[nuevoId] = nuevo;
+                    try { if (window.MandalaApp && window.MandalaApp.venues) await window.MandalaApp.venues.guardar(nuevoId, nuevo); }
+                    catch (e) { console.warn('[Mandala Venues] No se pudo crear el venue', nombreFinal, e); }
+                    creados++;
+                }
+                for (const f of g.festivales) {
+                    f.venue = nombreFinal;
+                    try { if (window.MandalaApp && window.MandalaApp.festivales) await window.MandalaApp.festivales.actualizarCampos(f.id, { venue: nombreFinal }); }
+                    catch (e) { console.warn('[Mandala Venues] No se pudo actualizar el venue del festival', f.id, e); }
+                    festCambiados++;
+                }
+            }
+            guardarVenuesLocalCache();
+            cerrarModales();
+            renderizarTablaVenues();
+            actualizarSelectsVenues();
+            document.querySelectorAll('#tbody-eventos-dinamicos tr[data-fest-id]').forEach(tr => {
+                const f = infoFestivales[tr.getAttribute('data-fest-id')];
+                if (f && tr.children[2]) tr.children[2].textContent = f.venue;
+            });
+            mostrarToast(festCambiados ? `Se unificaron ${festCambiados} festival${festCambiados === 1 ? '' : 'es'}${creados ? ` y se crearon ${creados} venue${creados === 1 ? '' : 's'}` : ''}.` : 'No se cambió nada.', festCambiados ? 'success' : 'info');
+        }
+        window.aplicarRevisionNombresVenues = aplicarRevisionNombresVenues;
+
         async function agregarContactoVenueInSitu(venueId) {
             const v = venuesData[venueId];
             if (!v) return;
@@ -5738,7 +5854,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v1.10";
+        const APP_VERSION = "v2.0";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -9511,9 +9627,16 @@
             let recaudacionEntradas = Math.round(brutoTotal * 0.7);
 
             let montoSadaicUsado = null;
+            let datosVenue = { montoVenue: null, esAlquiler: false, porcEscuela: null };
             if (tieneDatosIngresos && fin) {
                 // Mismo cálculo que usa la pantalla del festival (una sola fuente de verdad)
                 const taq = calcularTaquillaFestival(fId, fin, ent);
+                // Lo que se lleva el venue: monto fijo, o lo que queda del saldo posterior a SADAIC según el porcentaje
+                datosVenue = {
+                    montoVenue: taq.esAlquiler ? taq.alquilerSala : Math.max(0, Math.round(taq.basePostSadaic) - taq.netoEscuelaOnline),
+                    esAlquiler: taq.esAlquiler,
+                    porcEscuela: taq.porcEscuela
+                };
                 brutoTotal = taq.brutoTotal;
                 recaudacionEntradas = taq.recaudacionEntradas;
                 montoSadaicUsado = taq.montoSadaic;
@@ -9567,6 +9690,9 @@
                 serviciosPorCobrar: serv.porCobrar,
                 serviciosCostoPendiente: serv.costoPendiente,
                 gananciaEscuela,
+                montoVenue: datosVenue.montoVenue,
+                venueMontoFijo: datosVenue.esAlquiler,
+                porcEscuelaAcuerdo: datosVenue.porcEscuela,
                 montoSadaic: montoSadaicUsado !== null ? montoSadaicUsado : calcularMontoSadaicFestival(fId, brutoTotal).monto
             };
         }
@@ -10321,10 +10447,25 @@
                                 }
                             });
 
+                            // ¿Ya cubrió esas entradas en este festival? Se compara lo vendido contra su cupo propio:
+                            // lo que vendió por encima del cupo base se imputa primero a las entradas traspasadas.
+                            let entradasCubiertas = 0;
+                            if (bandaAsignada && typeof obtenerListaParticipantesContratoFestival === 'function') {
+                                try {
+                                    const contDestino = (obtenerListaParticipantesContratoFestival(festActualId) || []).find(x => x && !x.esSes && !x.excluido && mismoAlumno(x.nombre, x.alumnoId, c.nombre, c.alumnoId));
+                                    if (contDestino) {
+                                        const cupoBase = Math.max(0, Number(contDestino.cupo || 0) - Number(contDestino.cupoExtra || 0));
+                                        entradasCubiertas = Math.min(cant, Math.max(0, Number(contDestino.vendidas || 0) - cupoBase));
+                                    }
+                                } catch (e) { console.warn('[Traspasos] No se pudo calcular lo cubierto de', c.nombre, e); }
+                            }
+
                             pendientes.push({
                                 alumnoNombre: c.nombre,
                                 alumnoId: c.alumnoId || null,
                                 cantEntradas: cant,
+                                entradasCubiertas,
+                                cubierto: entradasCubiertas >= cant,
                                 origenFestId: fId,
                                 origenFestNombre: festInfo?.nombre || c.origenFestNombre || 'Festival Anterior',
                                 estaAsignado: Boolean(bandaAsignada),
@@ -10364,13 +10505,20 @@
             container.style.display = 'block';
             const bandas = (typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[festId]) ? participantesFestivalesDB[festId] : [];
             const sinAsignar = traspasos.filter(t => !t.estaAsignado).length;
+            const cubiertos = traspasos.filter(t => t.cubierto).length;
             const abierto = (traspasosDetalleAbierto === null) ? (sinAsignar > 0) : traspasosDetalleAbierto;
             const origenes = Array.from(new Set(traspasos.map(t => t.origenFestNombre).filter(Boolean)));
 
             const filas = traspasos.map(t => {
                 const safeNom = t.alumnoNombre.replace(/'/g, "\\'");
+                const estadoCobertura = !t.estaAsignado ? ''
+                    : (t.cubierto
+                        ? ` <span class="pill-status pill-success" style="font-size:11px;" title="Ya vendió las entradas que arrastraba">Cubiertas</span>`
+                        : (t.entradasCubiertas > 0
+                            ? ` <span class="pill-status pill-warning" style="font-size:11px;" title="Vendió una parte de las entradas que arrastraba">Cubrió ${t.entradasCubiertas} de ${t.cantEntradas}</span>`
+                            : ''));
                 const celdaAsignado = t.estaAsignado
-                    ? `<span class="pill-status pill-success" style="font-size:11px;">✓ ${esc(t.bandaAsignada)}</span>`
+                    ? `<span class="pill-status pill-success" style="font-size:11px;">✓ ${esc(t.bandaAsignada)}</span>${estadoCobertura}`
                     : `<select class="form-control" style="font-size:11.5px; padding:3px 8px; border-radius:6px; max-width:200px;" onchange="asignarAlumnoRolloverABandaDirecto('${safeNom}', this.value)">
                            <option value="">＋ Asignar a banda...</option>
                            ${bandas.map((b, idx) => `<option value="${idx}">${esc(b.nombre || ('Banda ' + (idx + 1)))}</option>`).join('')}
@@ -10388,7 +10536,7 @@
                      title="Estos alumnos arrastran entradas impagas de festivales anteriores. Al asignarlos a una banda, se suman a su cupo exigible.">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
                         <span style="font-size:13px;">🔄 <strong>${traspasos.length} ${traspasos.length === 1 ? 'alumno arrastra' : 'alumnos arrastran'} entradas</strong>${origenes.length ? ' de ' + esc(origenes.join(', ')) : ''}
-                            <span class="pill-status ${sinAsignar > 0 ? 'pill-warning' : 'pill-success'}" style="font-size:11px; margin-left:6px;">${sinAsignar > 0 ? sinAsignar + ' sin asignar' : 'Todos asignados'}</span></span>
+                            <span class="pill-status ${sinAsignar > 0 ? 'pill-warning' : 'pill-success'}" style="font-size:11px; margin-left:6px;">${sinAsignar > 0 ? sinAsignar + ' sin asignar' : 'Todos asignados'}</span>${cubiertos > 0 ? `<span class="pill-status pill-success" style="font-size:11px; margin-left:6px;">${cubiertos === traspasos.length ? 'Todos cubrieron sus entradas' : cubiertos + ' ya cubrieron sus entradas'}</span>` : ''}</span>
                         <button type="button" class="btn-table-pill" onclick="alternarDetalleTraspasos()">${abierto ? 'Ocultar detalle ▴' : 'Ver detalle ▾'}</button>
                     </div>
                     <div id="detalle-traspasos-participantes" style="display:${abierto ? 'block' : 'none'}; margin-top:8px;">
@@ -18919,13 +19067,29 @@
             let sadaic = 0;
             let escuela70 = 0;
             let venue30 = 0;
+            let etiquetaEscuela = '70% Escuela', etiquetaVenue = '30% Venue';
+            let etiquetaEscuelaCorta = '70% Esc', etiquetaVenueCorta = '30% Venue';
 
             if (metricas) {
                 bruto = Math.max(0, metricas.brutoTotal || 0);
                 gastos = Math.max(0, (metricas.gastosOperativos || 0) + (metricas.gastosCobertura || 0));
                 sadaic = Math.max(0, metricas.montoSadaic || Math.round(bruto * 0.03));
                 escuela70 = Math.max(0, metricas.gananciaEscuela || 0);
-                venue30 = Math.max(0, metricas.montoVenue || Math.round((bruto - sadaic) * 0.3));
+                venue30 = (metricas.montoVenue !== null && metricas.montoVenue !== undefined)
+                    ? Math.max(0, metricas.montoVenue)
+                    : Math.max(0, Math.round((bruto - sadaic) * 0.3));
+                if (metricas.venueMontoFijo) {
+                    etiquetaEscuela = 'Escuela (100% del saldo)';
+                    etiquetaVenue = 'Venue (monto fijo)';
+                    etiquetaEscuelaCorta = 'Escuela';
+                    etiquetaVenueCorta = 'Monto fijo venue';
+                } else if (metricas.porcEscuelaAcuerdo !== null && metricas.porcEscuelaAcuerdo !== undefined) {
+                    const pe = Math.round(metricas.porcEscuelaAcuerdo);
+                    etiquetaEscuela = `${pe}% Escuela`;
+                    etiquetaVenue = `${100 - pe}% Venue`;
+                    etiquetaEscuelaCorta = `${pe}% Esc`;
+                    etiquetaVenueCorta = `${100 - pe}% Venue`;
+                }
             } else {
                 bruto = Math.max(0, Number(fest.recaudacionBruta || 0));
                 gastos = Math.max(0, Number(fest.gastosFestival || 0));
@@ -18938,7 +19102,7 @@
             chartSplitInstance = new Chart(ctxSplit, {
                 type: 'doughnut',
                 data: {
-                    labels: ['70% Escuela', '30% Venue', 'Gastos Totales', 'Canon SADAIC'],
+                    labels: [etiquetaEscuela, etiquetaVenue, 'Gastos Totales', 'Canon SADAIC'],
                     datasets: [{
                         data: [escuela70, venue30, gastos, sadaic],
                         backgroundColor: ['#10b981', '#0ea5e9', '#ef4444', '#f59e0b'],
@@ -18976,10 +19140,10 @@
                         SADAIC: <strong>-$ ${sadaic.toLocaleString('es-AR')}</strong>
                     </div>
                     <div style="background:var(--ok-bg); padding:4px 8px; border-radius:6px; color:#047857;">
-                        70% Esc: <strong>+$ ${escuela70.toLocaleString('es-AR')}</strong>
+                        ${etiquetaEscuelaCorta}: <strong>+$ ${escuela70.toLocaleString('es-AR')}</strong>
                     </div>
                     <div style="background:#f0f9ff; padding:4px 8px; border-radius:6px; color:var(--info);">
-                        30% Venue: <strong>$ ${venue30.toLocaleString('es-AR')}</strong>
+                        ${etiquetaVenueCorta}: <strong>$ ${venue30.toLocaleString('es-AR')}</strong>
                     </div>
                 `;
             }

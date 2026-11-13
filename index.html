@@ -12,14 +12,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v1.6">
-    <script src="src/ui/iconos.js?v=v1.6"></script>
+    <link rel="stylesheet" href="styles.css?v=v1.7">
+    <script src="src/ui/iconos.js?v=v1.7"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v1.6" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v1.7" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1771,7 +1771,8 @@
                                             <input type="number" id="inp-ingresos-porc-escuela" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:80px; padding:3px 6px;" value="70" min="0" max="100" oninput="alCambiarPorcentajeEscuelaManual(this.value)"> % Escuela
                                         </span>
                                         <span id="box-alquiler-sala" style="display:none; align-items:center; gap:6px;">
-                                            Monto fijo $ <input type="number" id="inp-ingresos-alquiler" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:120px; padding:3px 6px;" value="0" min="0" step="1000" oninput="alCambiarAlquilerManual(this.value)">
+                                            Importe <strong id="txt-ingresos-alquiler" style="font-family:'Geist Mono'; font-weight:800;" title="Valor del venue al armar el evento. Queda congelado: si el venue lo cambia después, este evento no se modifica">$ 0</strong> <span title="Congelado: si el venue cambia su valor, este evento no se modifica">🔒</span>
+                                            &nbsp; Seña ya pagada $ <input type="text" inputmode="numeric" autocomplete="off" id="inp-ingresos-sena" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:110px; padding:3px 6px; text-align:right;" value="0" oninput="formatearMontoInput(this); alCambiarSenaVenue(montoDesdeInput(this.value))" title="Seña entregada al venue para reservar. Se descuenta de lo que se paga el día del festival (no cambia el ingreso neto: el monto fijo es el mismo)">
                                         </span>
                                         <span id="wrap-badge-acuerdo-venue"><span class="pill-status pill-info" style="font-size:11px;">🏷️ Acuerdo Venue: 70% Escuela (Automático)</span></span>
                                         <button type="button" id="btn-restablecer-acuerdo-venue" class="btn-app btn-secondary btn-sm" style="display:none;" onclick="restablecerAcuerdoVenue()" title="Volver al acuerdo predeterminado del venue">↺ Restablecer a Venue</button>
@@ -1790,10 +1791,12 @@
                                             <div class="fin-r"><em id="rot-calc-sadaic">Canon SADAIC</em><strong id="txt-calc-monto-sadaic">$ 0</strong></div>
                                             <div class="fin-r"><em id="rot-calc-parte-venue">Parte del venue</em><strong id="txt-calc-parte-venue">$ 0</strong></div>
                                             <div class="fin-r fin-tot"><em>Total descuentos</em><strong id="txt-calc-descuentos-tot">$ 0</strong></div>
+                                            <div class="fin-r" id="fila-sena-venue" style="display:none; color:var(--ink-3);"><em>Seña ya pagada al venue</em><strong id="txt-calc-sena-venue">$ 0</strong></div>
+                                            <div class="fin-r" id="fila-saldo-venue" style="display:none;"><em>A pagar al venue el día del festival</em><strong id="txt-calc-saldo-venue">$ 0</strong></div>
                                         </div>
                                         <div class="fin-g fin-g-res"><h4>Resultado</h4>
                                             <div class="fin-r fin-tot" style="border-top:0; margin-top:0;"><em>Ingreso neto de la escuela</em><strong id="txt-calc-neto-escuela">$ 0</strong></div>
-                                            <div class="fin-r"><em>Saldo posterior a SADAIC</em><strong id="txt-calc-base-post-sadaic">$ 0</strong></div>
+                                            <div class="fin-r" id="fila-saldo-post-sadaic"><em>Saldo posterior a SADAIC</em><strong id="txt-calc-base-post-sadaic">$ 0</strong></div>
                                             <div style="padding:5px 12px; font-size:11.5px; color:var(--text-muted);" id="txt-calc-sub-neto-escuela">70% del saldo posterior a SADAIC</div>
                                         </div>
                                     </div>
@@ -2765,14 +2768,14 @@
                     <select id="venue-acuerdo-select" class="form-control" onchange="cambiarSelectAcuerdoVenue(this.value)" style="font-weight:600;">
                         <option value="70% Escuela / 30% Venue">70% Escuela / 30% Venue (Estándar)</option>
                         <option value="100% Escuela">100% Escuela (Sin % para venue)</option>
-                        <option value="alquiler">Alquiler de sala (monto fijo)</option>
+                        <option value="alquiler">Monto fijo (por evento)</option>
                         <option value="A definir">A definir (Requiere acordar por evento)</option>
                         <option value="otro">Otro porcentaje personalizado...</option>
                     </select>
                     <div id="venue-alquiler-wrap" style="display:none; margin-top:8px;">
-                        <label style="font-size:12px; font-weight:700; color:var(--ink-3);">Monto del alquiler por evento ($)</label>
-                        <input type="number" id="venue-alquiler-monto" class="form-control" min="0" step="1000" placeholder="Ej: 150000" style="font-family:'Geist Mono'; font-weight:700;">
-                        <div style="font-size:11.5px; color:var(--ink-3); margin-top:4px;">La escuela se queda con el 100% de la taquilla y paga este monto al venue el día del festival. Se puede cambiar en cada evento.</div>
+                        <label style="font-size:12px; font-weight:700; color:var(--ink-3);">Importe por evento ($)</label>
+                        <input type="text" inputmode="numeric" autocomplete="off" id="venue-alquiler-monto" class="form-control" placeholder="Ej: 150.000" oninput="formatearMontoInput(this)" style="font-family:'Geist Mono'; font-weight:700;">
+                        <div style="font-size:11.5px; color:var(--ink-3); margin-top:4px;">La escuela se queda con el 100% de la taquilla y paga este monto al venue el día del festival. Cada evento toma este valor al armarse y lo conserva: si después lo cambiás acá, los eventos ya armados no se modifican.</div>
                     </div>
                     <div id="venue-acuerdo-custom-wrap" style="display:none; margin-top:8px;">
                         <input type="text" id="venue-acuerdo-inp" class="form-control" placeholder="Ej: 60% Escuela / 40% Venue">
@@ -3733,6 +3736,9 @@
             const esAlquiler = Boolean(acuerdo && acuerdo.esAlquiler);
             const alquilerSala = esAlquiler ? Math.max(0, Number(acuerdo.alquilerMonto) || 0) : 0;
             const netoEscuelaOnline = esAlquiler ? Math.round(basePostSadaic) - alquilerSala : Math.round(basePostSadaic * (porcEscuela / 100));
+            // Seña ya entregada al venue: no cambia el ingreso neto (el alquiler es el mismo), solo lo que resta pagar el día del festival
+            const senaVenue = esAlquiler ? Math.min(alquilerSala, Math.max(0, Number(fin.senaVenue) || 0)) : 0;
+            const saldoVenue = esAlquiler ? alquilerSala - senaVenue : 0;
 
             let totVentasEspeciales = 0;
             let cantVentasEspeciales = 0;
@@ -3745,7 +3751,7 @@
             return {
                 cantPreventa: cPrev, cantGeneral: cGen, cantPuerta: cPue,
                 cantTaquilla, brutoTaquilla, usaBrutoHistorico,
-                porcEscuela, porcAsumido, acuerdo, esAlquiler, alquilerSala,
+                porcEscuela, porcAsumido, acuerdo, esAlquiler, alquilerSala, senaVenue, saldoVenue,
                 sadaicRes, montoSadaic, basePostSadaic, netoEscuelaOnline,
                 totVentasEspeciales, cantVentasEspeciales,
                 brutoTotal: brutoTaquilla + totVentasEspeciales,
@@ -4385,10 +4391,19 @@
         }
 
         // Obtener porcentaje numérico de acuerdo para la escuela según el venue (ej: "70% Escuela / 30% Venue" -> 70, "100% Escuela" -> 100, "A definir" -> null)
+        // Nombre del acuerdo de monto fijo con el venue (un solo lugar para cambiarlo). Se sigue reconociendo "alquiler" en textos viejos.
+        const NOMBRE_PAGO_FIJO = 'Monto fijo';
+        window.NOMBRE_PAGO_FIJO = NOMBRE_PAGO_FIJO;
+        const RE_PAGO_FIJO = /(monto fijo|pago fijo|alquiler)/i;
+        // Números con puntos de miles en los campos de monto (ej.: 200.000)
+        function montoDesdeInput(txt) { return parseInt(String(txt || '').replace(/[^0-9]/g, ''), 10) || 0; }
+        function formatearMontoInput(el) { const n = montoDesdeInput(el.value); el.value = n ? n.toLocaleString('es-AR') : ''; }
+        window.montoDesdeInput = montoDesdeInput;
+        window.formatearMontoInput = formatearMontoInput;
         function parsearPorcentajeAcuerdoVenue(textoAcuerdo) {
             if (!textoAcuerdo) return null;
             const str = String(textoAcuerdo).trim().toLowerCase();
-            if (str.includes('alquiler')) return 100; // alquiler de sala: la escuela se queda con el 100% y paga el monto fijo
+            if (RE_PAGO_FIJO.test(str)) return 100; // monto fijo: la escuela se queda con el 100% y paga el monto fijo
             if (str.includes('definir')) return null;
             if (str.includes('100') || str.includes('100%')) return 100;
             const match = str.match(/(\d+)\s*%/);
@@ -4400,17 +4415,17 @@
         }
         window.parsearPorcentajeAcuerdoVenue = parsearPorcentajeAcuerdoVenue;
 
-        // Alquiler de sala: el acuerdo del venue se guarda como texto "Alquiler de sala: $ 150.000"
+        // Monto fijo: el acuerdo del venue se guarda como texto "Monto fijo: $ 150.000"
         function parsearAlquilerAcuerdoVenue(textoAcuerdo) {
             const str = String(textoAcuerdo || '').trim();
-            if (!/alquiler/i.test(str)) return null;
+            if (!RE_PAGO_FIJO.test(str)) return null;
             const digitos = str.replace(/^[^:]*:/, '').replace(/[^0-9]/g, '');
             const n = parseInt(digitos, 10);
             return Number.isFinite(n) ? n : 0;
         }
         function construirAcuerdoAlquiler(monto) {
             const n = Math.max(0, Math.round(Number(monto) || 0));
-            return 'Alquiler de sala: $ ' + n.toLocaleString('es-AR');
+            return NOMBRE_PAGO_FIJO + ': $ ' + n.toLocaleString('es-AR');
         }
         window.parsearAlquilerAcuerdoVenue = parsearAlquilerAcuerdoVenue;
         window.construirAcuerdoAlquiler = construirAcuerdoAlquiler;
@@ -4430,6 +4445,17 @@
         }
         window.obtenerAcuerdoVenuePorNombre = obtenerAcuerdoVenuePorNombre;
 
+        // Guarda el monto fijo congelado del evento (merge sobre "finanzas"); funciona para cualquier evento, esté abierto o no
+        const _alquilerPendienteGuardar = {};
+        function persistirAlquilerCongelado(fId, valor) {
+            if (!fId || _alquilerPendienteGuardar[fId] === valor) return;
+            _alquilerPendienteGuardar[fId] = valor;
+            if (!window.MandalaApp || !window.MandalaApp.festivales || typeof window.MandalaApp.festivales.actualizarCampos !== 'function') { delete _alquilerPendienteGuardar[fId]; return; }
+            setTimeout(() => {
+                Promise.resolve(window.MandalaApp.festivales.actualizarCampos(fId, { finanzas: { alquilerCongelado: valor } }))
+                    .catch(e => { console.warn('[Mandala] No se pudo guardar el monto fijo congelado', fId, e); delete _alquilerPendienteGuardar[fId]; });
+            }, 800);
+        }
         function obtenerEstadoAcuerdoFestival(festivalId) {
             const fId = festivalId || (typeof eventoActualId !== 'undefined' ? eventoActualId : null);
             const fInfo = (typeof infoFestivales !== 'undefined' && fId) ? infoFestivales[fId] : null;
@@ -4439,16 +4465,23 @@
 
             const d = (typeof ingresosFestivalesDB !== 'undefined' && fId && ingresosFestivalesDB[fId]) ? ingresosFestivalesDB[fId] : null;
 
-            // Alquiler de sala: monto fijo al venue, sin % (se paga en el momento del festival, no genera deuda)
-            const alquilerAuto = parsearAlquilerAcuerdoVenue(acuerdoTexto);
+            // Monto fijo: monto fijo al venue, sin % (se paga en el momento del festival, no genera deuda).
+            // El valor del venue se CONGELA en el evento la primera vez que se usa: si el venue lo cambia después, el evento conserva el suyo.
+            const alquilerAuto = parsearAlquilerAcuerdoVenue(acuerdoTexto); // valor actual del venue
             if (alquilerAuto !== null) {
-                const alquilerEsManual = Boolean(d && d.alquilerManual === true && Number.isFinite(Number(d.alquilerMonto)));
+                let congelado = null;
+                if (d) {
+                    if (Number.isFinite(Number(d.alquilerCongelado)) && d.alquilerCongelado !== null) congelado = Number(d.alquilerCongelado);
+                    else if (d.alquilerManual === true && Number.isFinite(Number(d.alquilerMonto))) { congelado = Number(d.alquilerMonto); d.alquilerCongelado = congelado; } // eventos con monto cargado antes
+                    else { congelado = alquilerAuto; d.alquilerCongelado = congelado; persistirAlquilerCongelado(fId, congelado); }
+                }
+                const monto = (congelado !== null) ? Math.max(0, congelado) : alquilerAuto;
                 return {
                     festivalId: fId, venueNombre, acuerdoTexto,
                     porcAuto: 100, porcFinal: 100, porcEfectivo: 100,
                     tipo: 'alquiler', esManual: false,
-                    esAlquiler: true, alquilerAuto, alquilerEsManual,
-                    alquilerMonto: alquilerEsManual ? Math.max(0, Number(d.alquilerMonto)) : alquilerAuto
+                    esAlquiler: true, alquilerAuto, alquilerMonto: monto,
+                    alquilerDifiere: congelado !== null && congelado !== alquilerAuto
                 };
             }
             const esManual = Boolean(d && d.porcEscuelaManual === true);
@@ -4564,7 +4597,7 @@
             if (alqWrapE) alqWrapE.style.display = (alqMontoE !== null) ? 'block' : 'none';
             if (alqMontoE !== null) {
                 if (selAc) selAc.value = 'alquiler';
-                const inpM = document.getElementById('venue-alquiler-monto'); if (inpM) inpM.value = alqMontoE;
+                const inpM = document.getElementById('venue-alquiler-monto'); if (inpM) inpM.value = alqMontoE ? alqMontoE.toLocaleString('es-AR') : '';
                 if (customWrap) customWrap.style.display = 'none';
             } else if (['70% Escuela / 30% Venue', '100% Escuela', 'A definir'].includes(acVal)) {
                 if (selAc) selAc.value = acVal;
@@ -4603,7 +4636,7 @@
             const selAc = document.getElementById('venue-acuerdo-select');
             let acuerdo = '70% Escuela / 30% Venue';
             if (selAc && selAc.value === 'alquiler') {
-                acuerdo = construirAcuerdoAlquiler(document.getElementById('venue-alquiler-monto')?.value);
+                acuerdo = construirAcuerdoAlquiler(montoDesdeInput(document.getElementById('venue-alquiler-monto')?.value));
             } else if (selAc && selAc.value === 'otro') {
                 acuerdo = document.getElementById('venue-acuerdo-inp')?.value.trim() || '70% Escuela / 30% Venue';
             } else if (selAc) {
@@ -4780,11 +4813,11 @@
                         <select class="spreadsheet-inp text-center" style="font-size:12px; font-weight:700; color:var(--accent-blue); padding:4px 6px; width:100%; border:1px solid var(--line-2); border-radius:6px; background:var(--surface-2);" onchange="cambiarAcuerdoVenueTabla('${v.id}', this.value)">
                             <option value="70% Escuela / 30% Venue" ${v.acuerdo === '70% Escuela / 30% Venue' ? 'selected' : ''}>70% Escuela / 30% Venue</option>
                             <option value="100% Escuela" ${v.acuerdo === '100% Escuela' ? 'selected' : ''}>100% Escuela</option>
-                            <option value="__alquiler__" ${parsearAlquilerAcuerdoVenue(v.acuerdo) !== null ? 'selected' : ''}>Alquiler de sala (monto fijo)</option>
+                            <option value="__alquiler__" ${parsearAlquilerAcuerdoVenue(v.acuerdo) !== null ? 'selected' : ''}>Monto fijo</option>
                             <option value="A definir" ${v.acuerdo === 'A definir' ? 'selected' : ''}>A definir</option>
                             ${(!['70% Escuela / 30% Venue', '100% Escuela', 'A definir'].includes(v.acuerdo || '') && parsearAlquilerAcuerdoVenue(v.acuerdo) === null) ? `<option value="${(v.acuerdo || '').replace(/"/g, '&quot;')}" selected>${v.acuerdo}</option>` : ''}
                         </select>
-                        ${parsearAlquilerAcuerdoVenue(v.acuerdo) !== null ? `<div style="display:flex; align-items:center; gap:4px; margin-top:6px; justify-content:center; font-size:12px;">$ <input type="number" class="spreadsheet-inp text-center" min="0" step="1000" style="width:100px; font-family:'Geist Mono'; font-weight:700;" value="${parsearAlquilerAcuerdoVenue(v.acuerdo)}" onchange="actualizarCampoVenueInSitu('${v.id}', 'acuerdo', construirAcuerdoAlquiler(this.value))" title="Monto del alquiler por evento"></div>` : ''}
+                        ${parsearAlquilerAcuerdoVenue(v.acuerdo) !== null ? `<div style="display:flex; align-items:center; gap:4px; margin-top:6px; justify-content:center; font-size:12px;">$ <input type="text" inputmode="numeric" autocomplete="off" class="spreadsheet-inp text-center" style="width:110px; font-family:'Geist Mono'; font-weight:700;" value="${parsearAlquilerAcuerdoVenue(v.acuerdo).toLocaleString('es-AR')}" oninput="formatearMontoInput(this)" onchange="actualizarCampoVenueInSitu('${v.id}', 'acuerdo', construirAcuerdoAlquiler(montoDesdeInput(this.value)))" title="Monto del monto fijo por evento (los eventos ya armados conservan el valor anterior)"></div>` : ''}
                     </td>
                     <td style="vertical-align:middle; padding:8px; background:#ffffff; border:1px solid var(--line-2); text-align:center;">
                         <div style="display:inline-flex; align-items:center; gap:4px; justify-content:center;">
@@ -5699,7 +5732,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v1.6";
+        const APP_VERSION = "v1.7";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6416,11 +6449,7 @@
 
             const resSadaic = calcularMontoSadaicFestival(eventoActualId);
 
-            const sadaicFilaHtml = resSadaic.omitido ? `
-                <tr style="background:var(--surface-2);">
-                    <td style="font-weight:700; padding:10px 14px; vertical-align:middle; color:var(--ink-3);">🎶 Canon SADAIC</td>
-                    <td style="text-align:right; padding:8px 14px; vertical-align:middle; color:var(--ink-3); font-style:italic;">No aplica en este evento</td>
-                </tr>` : `
+            const sadaicFilaHtml = resSadaic.omitido ? '' : `
                 <tr style="background:#fff1f2;">
                     <td style="font-weight:700; padding:10px 14px; vertical-align:middle; color:#9f1239;">
                         🎶 Canon SADAIC <span style="font-weight:600; font-size:11.5px; color:#be123c;">(${esc(resSadaic.descripcion)})</span>
@@ -6621,7 +6650,7 @@
                 const estAc = obtenerEstadoAcuerdoFestival(id);
                 if (estAc) {
                     if (estAc.esAlquiler) {
-                        acuerdoTextoCabecera = 'Alquiler de sala (' + formatearMonedaAr(estAc.alquilerMonto) + ')' + (estAc.alquilerEsManual ? ' (Manual)' : '');
+                        acuerdoTextoCabecera = NOMBRE_PAGO_FIJO + ' (' + formatearMonedaAr(estAc.alquilerMonto) + ')';
                     } else if (estAc.tipo === 'indefinido') {
                         acuerdoTextoCabecera = `<span style="color:var(--bad); font-weight:700;">A definir (se usa ${estAc.porcEfectivo}%)</span>`;
                     } else if (estAc.porcFinal === 100) {
@@ -15214,22 +15243,24 @@
             const boxPorc = document.getElementById('box-porc-escuela');
             const boxAlq = document.getElementById('box-alquiler-sala');
             const rotRegla = document.getElementById('rot-regla-acuerdo');
-            const inpAlq = document.getElementById('inp-ingresos-alquiler');
+            const txtAlq = document.getElementById('txt-ingresos-alquiler');
             if (boxPorc) boxPorc.style.display = estado.esAlquiler ? 'none' : 'inline-flex';
             if (boxAlq) boxAlq.style.display = estado.esAlquiler ? 'inline-flex' : 'none';
-            if (rotRegla) rotRegla.textContent = estado.esAlquiler ? 'Alquiler de sala' : '% de la escuela';
+            if (rotRegla) rotRegla.textContent = estado.esAlquiler ? NOMBRE_PAGO_FIJO : '% de la escuela';
 
             if (estado.esAlquiler) {
-                if (inpAlq && document.activeElement !== inpAlq) inpAlq.value = estado.alquilerMonto;
+                if (txtAlq) txtAlq.textContent = formatearMonedaAr(estado.alquilerMonto);
+                const inpSena = document.getElementById('inp-ingresos-sena');
+                if (inpSena && document.activeElement !== inpSena) { const sv = obtenerDatosIngresosEventoActual().senaVenue || 0; inpSena.value = sv ? sv.toLocaleString('es-AR') : ''; }
                 if (wrapBadge) {
-                    wrapBadge.innerHTML = `<span class="pill-status pill-info" style="font-size:11px; font-weight:700;">🏷️ Acuerdo Venue: Alquiler de sala (${formatearMonedaAr(estado.alquilerAuto)})${estado.alquilerEsManual ? ' · monto modificado en este evento' : ''}</span>`;
+                    wrapBadge.innerHTML = `<span class="pill-status pill-info" style="font-size:11px; font-weight:700;">🏷️ Acuerdo Venue: ${NOMBRE_PAGO_FIJO} (${formatearMonedaAr(estado.alquilerMonto)})</span>` + (estado.alquilerDifiere ? ` <span class="pill-status pill-warning" style="font-size:11px; font-weight:700;" title="Este evento conserva el valor con el que se armó">El venue hoy tiene ${formatearMonedaAr(estado.alquilerAuto)}</span>` : '');
                 }
                 if (badgeAcuerdoSup) {
-                    badgeAcuerdoSup.textContent = `Acuerdo: Alquiler de sala (${formatearMonedaAr(estado.alquilerMonto)})`;
+                    badgeAcuerdoSup.textContent = `Acuerdo: ${NOMBRE_PAGO_FIJO} (${formatearMonedaAr(estado.alquilerMonto)})`;
                     badgeAcuerdoSup.className = 'pill-status pill-neutral';
                 }
                 if (btnRestablecer) {
-                    if (estado.alquilerEsManual) { btnRestablecer.style.display = 'inline-flex'; btnRestablecer.innerHTML = `↺ Restablecer a Venue (${formatearMonedaAr(estado.alquilerAuto)})`; }
+                    if (estado.alquilerDifiere) { btnRestablecer.style.display = 'inline-flex'; btnRestablecer.innerHTML = `↺ Actualizar al valor del venue (${formatearMonedaAr(estado.alquilerAuto)})`; btnRestablecer.title = 'Cambia el monto fijo de este evento al que tiene hoy el venue'; }
                     else btnRestablecer.style.display = 'none';
                 }
                 if (alertaIndefinido) alertaIndefinido.style.display = 'none';
@@ -15325,24 +15356,22 @@
         }
         window.alCambiarPorcentajeEscuelaManual = alCambiarPorcentajeEscuelaManual;
 
-        // Alquiler de sala: cambiar el monto solo en este evento (el del venue queda igual)
-        function alCambiarAlquilerManual(val) {
+        // Seña entregada al venue para reservar (solo con alquiler de sala)
+        function alCambiarSenaVenue(val) {
             const d = obtenerDatosIngresosEventoActual();
-            const estado = obtenerEstadoAcuerdoFestival(eventoActualId);
             const num = parseFloat(val);
-            if (isNaN(num) || num < 0) return;
-            if (num === estado.alquilerAuto) { d.alquilerManual = false; delete d.alquilerMonto; }
-            else { d.alquilerManual = true; d.alquilerMonto = Math.round(num); }
+            d.senaVenue = (isNaN(num) || num < 0) ? 0 : Math.round(num);
             recalcularIngresosFestival(true);
-            actualizarBadgesAcuerdoUI();
         }
-        window.alCambiarAlquilerManual = alCambiarAlquilerManual;
+        window.alCambiarSenaVenue = alCambiarSenaVenue;
 
         function restablecerAcuerdoVenue() {
             const d = obtenerDatosIngresosEventoActual();
             if (obtenerEstadoAcuerdoFestival(eventoActualId).esAlquiler) {
-                d.alquilerManual = false; delete d.alquilerMonto;
-                mostrarToast('Monto del alquiler restablecido al del venue', 'info');
+                const vigente = obtenerEstadoAcuerdoFestival(eventoActualId).alquilerAuto;
+                d.alquilerCongelado = vigente; d.alquilerManual = false; delete d.alquilerMonto;
+                persistirAlquilerCongelado(eventoActualId, vigente);
+                mostrarToast('Monto fijo actualizado al valor actual del venue', 'info');
                 renderizarIngresosFestival();
                 recalcularIngresosFestival(true);
                 return;
@@ -15426,19 +15455,35 @@
             const parteVenue = Math.max(0, basePostSadaic - netoEscuelaOnline);
             montoHtml('txt-calc-parte-venue', parteVenue);
             const rotVenue = document.getElementById('rot-calc-parte-venue');
-            if (rotVenue) rotVenue.textContent = taq.esAlquiler ? 'Alquiler de sala (monto fijo)' : (esIndefinido ? 'Parte del venue (a definir)' : `Parte del venue (${Math.max(0, 100 - porcEscuela)}%)`);
+            if (rotVenue) rotVenue.textContent = taq.esAlquiler ? NOMBRE_PAGO_FIJO : (esIndefinido ? 'Parte del venue (a definir)' : `Parte del venue (${Math.max(0, 100 - porcEscuela)}%)`);
             montoHtml('txt-calc-descuentos-tot', montoSadaic + parteVenue);
+            // Si SADAIC no aplica al evento, no se nombra en ningún lado de la liquidación
+            const sinSadaic = Boolean(sadaicRes.omitido);
+            const filaSadaic = document.getElementById('rot-calc-sadaic')?.closest('.fin-r');
+            if (filaSadaic) filaSadaic.style.display = sinSadaic ? 'none' : '';
+            const filaBase = document.getElementById('fila-saldo-post-sadaic');
+            if (filaBase) filaBase.style.display = sinSadaic ? 'none' : '';
+            const baseTxt = sinSadaic ? 'la taquilla bruta' : 'el saldo posterior a SADAIC';
+            // Seña al venue (solo con alquiler de sala): se descuenta de lo que se paga el día del festival
+            const filaSena = document.getElementById('fila-sena-venue');
+            const filaSaldoV = document.getElementById('fila-saldo-venue');
+            if (filaSena) filaSena.style.display = (taq.esAlquiler && taq.senaVenue > 0) ? '' : 'none';
+            if (filaSaldoV) filaSaldoV.style.display = (taq.esAlquiler && taq.senaVenue > 0) ? '' : 'none';
+            if (taq.esAlquiler && taq.senaVenue > 0) {
+                montoHtml('txt-calc-sena-venue', taq.senaVenue);
+                montoHtml('txt-calc-saldo-venue', taq.saldoVenue);
+            }
             if (txtBase) txtBase.innerHTML = htmlMonto(basePostSadaic);
             if (txtNeto) txtNeto.innerHTML = htmlMonto(netoEscuelaOnline, { resultado: true });
             if (txtSubNeto) {
                 if (taq.esAlquiler) {
-                    txtSubNeto.textContent = 'Saldo posterior a SADAIC menos el alquiler de sala (se paga el día del festival)';
+                    txtSubNeto.textContent = `${sinSadaic ? 'Taquilla bruta' : 'Saldo posterior a SADAIC'} menos el monto fijo al venue (se paga el día del festival)`;
                 } else if (esIndefinido) {
-                    txtSubNeto.innerHTML = `<span style="color:var(--bad); font-weight:700;">⚠️ % no definido: se usa ${porcEscuela}% del saldo posterior a SADAIC (editable)</span>`;
+                    txtSubNeto.innerHTML = `<span style="color:var(--bad); font-weight:700;">⚠️ % no definido: se usa ${porcEscuela}% de ${baseTxt} (editable)</span>`;
                 } else if (porcEscuela === 100) {
-                    txtSubNeto.textContent = `100% del saldo posterior a SADAIC (Sin % para venue)`;
+                    txtSubNeto.textContent = `100% de ${baseTxt} (Sin % para venue)`;
                 } else {
-                    txtSubNeto.textContent = `${porcEscuela}% del saldo posterior a SADAIC`;
+                    txtSubNeto.textContent = `${porcEscuela}% de ${baseTxt}`;
                 }
             }
 
@@ -15486,8 +15531,8 @@
                     montoSadaic,
                     porcEscuela: esIndefinido ? null : porcEscuela,
                     porcEscuelaManual: Boolean(datos.porcEscuelaManual),
-                    alquilerManual: Boolean(datos.alquilerManual),
-                    alquilerMonto: datos.alquilerManual ? Number(datos.alquilerMonto) || 0 : null,
+                    senaVenue: Math.max(0, Number(datos.senaVenue) || 0),
+                    alquilerCongelado: (datos.alquilerCongelado !== undefined && datos.alquilerCongelado !== null) ? Number(datos.alquilerCongelado) : null,
                     ventasEspeciales: datos.ventasEspeciales || [],
                     gastosOperativos: datos.gastosOperativos || [],
                     coberturaEscuelaPagada: Boolean(datos.coberturaEscuelaPagada),

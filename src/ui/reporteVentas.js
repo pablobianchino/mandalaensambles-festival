@@ -75,8 +75,9 @@
         doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.setTextColor.apply(doc, INK);
         doc.text(txt(info.nombre || 'Evento'), M, y);
         y += 6;
+        var nombrePF = window.NOMBRE_PAGO_FIJO || 'Monto fijo';
         var acuerdoTxt = acuerdo.esAlquiler
-            ? 'Alquiler de sala (monto fijo)'
+            ? nombrePF
             : (acuerdo.porcFinal === 100 ? '100% Escuela' : (acuerdo.porcFinal != null ? acuerdo.porcFinal + '% Escuela / ' + (100 - acuerdo.porcFinal) + '% Venue' : 'A definir'));
         doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor.apply(doc, INK2);
         doc.text(txt([info.fecha, info.venue ? 'Venue: ' + info.venue : '', 'Acuerdo: ' + acuerdoTxt].filter(Boolean).join('   |   ')), M, y);
@@ -143,9 +144,10 @@
         titulo('Como se llega al ingreso neto');
         var calc = [['Taquilla bruta', ars(taq.brutoTaquilla)]];
         var s = taq.sadaicRes || {};
-        calc.push(s.omitido ? ['SADAIC', 'No aplica en este evento'] : ['SADAIC (' + txt(s.descripcion || '') + ')', '- ' + ars(taq.montoSadaic)]);
-        if (taq.esAlquiler) calc.push(['Alquiler de sala (monto fijo acordado)', '- ' + ars(taq.alquilerSala)]);
+        if (!s.omitido) calc.push(['SADAIC (' + txt(s.descripcion || '') + ')', '- ' + ars(taq.montoSadaic)]);
+        if (taq.esAlquiler) calc.push([nombrePF + ' acordado', '- ' + ars(taq.alquilerSala)]);
         else calc.push(['Parte del venue (' + Math.max(0, 100 - taq.porcEscuela) + '% de ' + ars(taq.basePostSadaic) + ')', '- ' + ars(taq.basePostSadaic - taq.netoEscuelaOnline)]);
+        var hayAlquilerConSena = taq.esAlquiler && taq.senaVenue > 0;
         calc.push(['Ventas especiales (100% de la escuela)', '+ ' + ars(taq.totVentasEspeciales)]);
         doc.autoTable(Object.assign({}, estiloTabla, {
             startY: y,
@@ -155,7 +157,24 @@
             footStyles: { fillColor: TEAL_CLARO, textColor: TEAL_OSC, fontStyle: 'bold', fontSize: 11, cellPadding: { top: 3, bottom: 3, left: 2.5, right: 2.5 } },
             didParseCell: function (d) { if (d.section === 'foot' && d.column.index === 1) d.cell.styles.halign = 'right'; if (d.section === 'body' && d.column.index === 1 && /^- /.test(String(d.cell.raw))) d.cell.styles.textColor = ROJO; }
         }));
-        y = doc.lastAutoTable.finalY + 6;
+        y = doc.lastAutoTable.finalY + 8;
+
+        // Pago al venue: solo si hay alquiler de sala con seña (informativo; el alquiler ya está descontado arriba)
+        if (hayAlquilerConSena) {
+            if (y > 235) { doc.addPage(); y = 20; }
+            titulo('Pago al venue (' + nombrePF.toLowerCase() + ')');
+            doc.autoTable(Object.assign({}, estiloTabla, {
+                startY: y,
+                body: [
+                    [nombrePF + ' acordado', ars(taq.alquilerSala)],
+                    ['Seña ya pagada para reservar', '- ' + ars(taq.senaVenue)]
+                ],
+                foot: [['Saldo pagado al venue el dia del festival', ars(taq.saldoVenue)]],
+                columnStyles: { 1: { halign: 'right' } },
+                didParseCell: function (d) { if (d.section === 'foot' && d.column.index === 1) d.cell.styles.halign = 'right'; if (d.section === 'body' && d.column.index === 1 && /^- /.test(String(d.cell.raw))) d.cell.styles.textColor = ROJO; }
+            }));
+            y = doc.lastAutoTable.finalY + 6;
+        }
         doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor.apply(doc, INK3);
         doc.text('Este reporte muestra solo ingresos. No incluye gastos del evento ni la cobertura audiovisual.', M, y);
 

@@ -12,14 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v1.8">
-    <script src="src/ui/iconos.js?v=v1.8"></script>
+    <link rel="stylesheet" href="styles.css?v=v1.9">
+    <script src="src/ui/iconos.js?v=v1.9"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v1.8" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="src/ui/reporteVentas.js?v=v1.9" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1627,8 +1626,8 @@
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <button type="button" class="btn-app btn-secondary" onclick="generarReporteVentasPDF(eventoActualId)" title="Descargar el reporte de ventas de este evento en PDF (sin gastos ni cobertura)">
-                                    <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 14h6M9 17h4"/></svg> Reporte de ventas (PDF)
+                                <button type="button" class="btn-app btn-secondary" onclick="generarReporteVentasImagen(eventoActualId)" title="Descargar el reporte de ventas de este evento como imagen (sin gastos ni cobertura)">
+                                    <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/></svg> Reporte de ventas (imagen)
                                 </button>
                                 <div class="mode-switch-pill">
                                     <button type="button" class="mode-switch-btn" onclick="abrirDetalleEvento(eventoActualId, true)">
@@ -1773,7 +1772,8 @@
                                         <span id="box-alquiler-sala" style="display:none; align-items:center; gap:6px; flex-wrap:wrap;">
                                             Importe <strong id="txt-ingresos-alquiler" style="font-family:'Geist Mono'; font-weight:800;" title="Valor del venue al armar el evento. Queda congelado: si el venue lo cambia después, este evento no se modifica">$ 0</strong> <span title="Congelado: si el venue cambia su valor, este evento no se modifica">🔒</span>
                                             &nbsp; Seña ya pagada $ <input type="text" inputmode="numeric" autocomplete="off" id="inp-ingresos-sena" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:110px; padding:3px 6px; text-align:right;" value="0" oninput="formatearMontoInput(this); alCambiarSenaVenue(montoDesdeInput(this.value))" title="Seña entregada al venue para reservar. Se descuenta de lo que se paga el día del festival (no cambia el ingreso neto: el monto fijo es el mismo)">
-                                            &nbsp; Entradas que cobró el venue en efectivo <input type="number" id="inp-ingresos-efvenue-cant" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:62px; padding:3px 6px; text-align:center;" value="0" min="0" step="1" oninput="alCambiarEfectivoVenue()" title="Entradas de puerta que el venue cobró y se quedó como parte del pago. Tienen que estar incluidas en la cantidad vendida en puerta."> × $ <input type="text" inputmode="numeric" autocomplete="off" id="inp-ingresos-efvenue-valor" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:100px; padding:3px 6px; text-align:right;" placeholder="precio puerta" oninput="formatearMontoInput(this); alCambiarEfectivoVenue()" title="Valor de cada entrada. Si lo dejás vacío se usa el precio de puerta del evento.">
+                                            &nbsp; Entradas que cobró el venue en efectivo <input type="number" id="inp-ingresos-efvenue-cant" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:62px; padding:3px 6px; text-align:center;" value="0" min="0" step="1" oninput="alCambiarEfectivoVenue()" title="Entradas de puerta que el venue cobró y se quedó como parte del pago. Tienen que estar incluidas en la cantidad vendida en puerta."> × $ <input type="text" inputmode="numeric" autocomplete="off" id="inp-ingresos-efvenue-valor" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:100px; padding:3px 6px; text-align:right;" placeholder="puerta" oninput="formatearMontoInput(this); alCambiarEfectivoVenue()" title="Valor de cada entrada. Si lo dejás vacío se usa el precio de puerta del evento.">
+                                            <span id="txt-efvenue-ayuda" style="font-size:11.5px; color:var(--ink-3);"></span>
                                         </span>
                                         <span id="wrap-badge-acuerdo-venue"><span class="pill-status pill-info" style="font-size:11px;">🏷️ Acuerdo Venue: 70% Escuela (Automático)</span></span>
                                         <button type="button" id="btn-restablecer-acuerdo-venue" class="btn-app btn-secondary btn-sm" style="display:none;" onclick="restablecerAcuerdoVenue()" title="Volver al acuerdo predeterminado del venue">↺ Restablecer a Venue</button>
@@ -5738,7 +5738,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v1.8";
+        const APP_VERSION = "v1.9";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -15263,7 +15263,8 @@
                 const inpEfV = document.getElementById('inp-ingresos-efvenue-valor');
                 if (inpEfC && document.activeElement !== inpEfC) inpEfC.value = dEf.efectivoVenueCant || 0;
                 if (inpEfV && document.activeElement !== inpEfV) inpEfV.value = dEf.efectivoVenueValor ? Number(dEf.efectivoVenueValor).toLocaleString('es-AR') : '';
-                if (inpEfV) inpEfV.placeholder = 'puerta ' + formatearMonedaAr(Number((obtenerEntradasEventoActual() || {}).puerta) || 0);
+                const ayudaEf = document.getElementById('txt-efvenue-ayuda');
+                if (ayudaEf) ayudaEf.textContent = dEf.efectivoVenueValor ? '' : '(vacío = precio de puerta: ' + formatearMonedaAr(Number((obtenerEntradasEventoActual() || {}).puerta) || 0) + ')';
                 if (wrapBadge) {
                     wrapBadge.innerHTML = `<span class="pill-status pill-info" style="font-size:11px; font-weight:700;">🏷️ Acuerdo Venue: ${NOMBRE_PAGO_FIJO} (${formatearMonedaAr(estado.alquilerMonto)})</span>` + (estado.alquilerDifiere ? ` <span class="pill-status pill-warning" style="font-size:11px; font-weight:700;" title="Este evento conserva el valor con el que se armó">El venue hoy tiene ${formatearMonedaAr(estado.alquilerAuto)}</span>` : '');
                 }
@@ -15383,6 +15384,8 @@
             d.efectivoVenueCant = Math.max(0, parseInt(document.getElementById('inp-ingresos-efvenue-cant')?.value, 10) || 0);
             const v = montoDesdeInput(document.getElementById('inp-ingresos-efvenue-valor')?.value);
             d.efectivoVenueValor = v > 0 ? v : null;
+            const ayudaEf = document.getElementById('txt-efvenue-ayuda');
+            if (ayudaEf) ayudaEf.textContent = d.efectivoVenueValor ? '' : '(vacío = precio de puerta: ' + formatearMonedaAr(Number((obtenerEntradasEventoActual() || {}).puerta) || 0) + ')';
             recalcularIngresosFestival(true);
         }
         window.alCambiarEfectivoVenue = alCambiarEfectivoVenue;

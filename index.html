@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.0">
-    <script src="src/ui/iconos.js?v=v2.0"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.1">
+    <script src="src/ui/iconos.js?v=v2.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.0" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.1" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1328,7 +1328,7 @@
                                 <button class="btn-app btn-secondary" style="display:none;" onclick="abrirModalCargaMasivaVenues()" title="Importar múltiples salas desde un archivo .xlsx">
                                     📥 Carga Masiva (.xlsx)
                                 </button>
-                                <button class="btn-app btn-secondary" onclick="abrirRevisionNombresVenues()" title="Detecta festivales cuyo venue no coincide con ninguno de la lista y permite unificarlos">
+                                <button class="btn-app btn-secondary" style="display:none;" onclick="abrirRevisionNombresVenues()" title="Detecta festivales cuyo venue no coincide con ninguno de la lista y permite unificarlos">
                                     🔍 Revisar nombres
                                 </button>
                                 <button class="btn-app btn-primary" onclick="agregarFilaVenueDirecto()">
@@ -5854,7 +5854,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.0";
+        const APP_VERSION = "v2.1";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -10447,15 +10447,14 @@
                                 }
                             });
 
-                            // ¿Ya cubrió esas entradas en este festival? Se compara lo vendido contra su cupo propio:
-                            // lo que vendió por encima del cupo base se imputa primero a las entradas traspasadas.
+                            // ¿Ya cubrió esas entradas en este festival? Lo vendido se imputa primero a las traspasadas (la deuda más vieja).
                             let entradasCubiertas = 0;
                             if (bandaAsignada && typeof obtenerListaParticipantesContratoFestival === 'function') {
                                 try {
                                     const contDestino = (obtenerListaParticipantesContratoFestival(festActualId) || []).find(x => x && !x.esSes && !x.excluido && mismoAlumno(x.nombre, x.alumnoId, c.nombre, c.alumnoId));
                                     if (contDestino) {
-                                        const cupoBase = Math.max(0, Number(contDestino.cupo || 0) - Number(contDestino.cupoExtra || 0));
-                                        entradasCubiertas = Math.min(cant, Math.max(0, Number(contDestino.vendidas || 0) - cupoBase));
+                                        // Lo más viejo se cubre primero: las ventas se imputan antes a las entradas traspasadas que al cupo del festival actual
+                                        entradasCubiertas = Math.min(cant, Math.max(0, Number(contDestino.vendidas || 0)));
                                     }
                                 } catch (e) { console.warn('[Traspasos] No se pudo calcular lo cubierto de', c.nombre, e); }
                             }

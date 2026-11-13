@@ -2400,8 +2400,58 @@ tr.drag-over {
 .mandala-toast-success, .mandala-toast-warning, .mandala-toast-error, .mandala-toast-info { border-left: 1px solid var(--line); }
 .mandala-toast-error { border-color: var(--bad-bg); }
 
-.btn-danger { background: var(--bad); color: #fff; border: 1px solid transparent; }
-.btn-danger:hover { filter: brightness(.92); }
+/* =======================================================================
+   BOTONES — definición de la suite (un solo molde). Alias: btn-app = ds-btn.
+   Tamaños: btn-sm 30px · base 36px · btn-lg 42px. Variantes: primary, secondary, danger, ghost, ok.
+   ======================================================================= */
+.btn-app, .ds-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 36px; padding: 0 14px; border-radius: var(--r-sm);
+    border: 1px solid transparent; font: 700 13px var(--font); font-family: inherit;
+    cursor: pointer; white-space: nowrap; box-shadow: none; transform: none;
+    transition: background .15s, border-color .15s;
+}
+.btn-app.btn-sm, .ds-btn.sm { height: 30px; padding: 0 10px; font-size: 12px; }
+.btn-app.btn-lg, .ds-btn.lg { height: 42px; padding: 0 18px; font-size: 14px; }
+.btn-app .ico-e, .btn-app .ico-linea, .ds-btn .ico-linea { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; vertical-align: 0; }
+.btn-app .ico-e-w { vertical-align: 0; }
+.ds-btn.block, .btn-app.block { width: 100%; }
+
+.btn-primary, .ds-btn-primary { background: var(--teal); color: #fff; border-color: transparent; }
+.btn-primary:hover, .ds-btn-primary:hover { background: var(--teal-700); filter: none; }
+.btn-secondary, .ds-btn-secondary { background: var(--surface); color: var(--ink); border-color: var(--line-2); }
+.btn-secondary .ico-e, .btn-secondary .ico-linea, .ds-btn-secondary .ico-linea { color: var(--ink-3); }
+.btn-secondary:hover, .ds-btn-secondary:hover { background: var(--surface-2); }
+.btn-danger, .btn-outline-danger, .ds-btn-danger { background: var(--surface); color: var(--bad); border-color: #e3b7ae; }
+.btn-danger:hover, .btn-outline-danger:hover, .ds-btn-danger:hover { background: var(--bad-bg); filter: none; }
+.btn-ghost, .ds-btn-ghost { background: transparent; color: var(--teal); border-color: transparent; }
+.btn-ghost:hover, .ds-btn-ghost:hover { background: var(--teal-50); }
+.btn-ok, .ds-btn-ok { background: var(--ok); color: #fff; border-color: transparent; }
+.btn-ok:hover, .ds-btn-ok:hover { background: var(--ok); filter: brightness(.92); }
+/* Borrado definitivo en la ventana de confirmación: relleno rojo */
+.mandala-dialog-footer .btn-danger, .btn-danger.relleno { background: var(--bad); color: #fff; border-color: var(--bad); }
+.mandala-dialog-footer .btn-danger:hover, .btn-danger.relleno:hover { background: var(--bad); filter: brightness(.92); }
+.mandala-dialog-footer .btn-app { flex: 1; }
+
+/* Estados */
+.btn-app:focus-visible, .ds-btn:focus-visible, .btn-table-pill:focus-visible, .btn-row-del:focus-visible, .btn-icon-dots:focus-visible, .btn-close-modal:focus-visible { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-100); }
+.btn-app:disabled, .btn-app.is-disabled, .ds-btn:disabled { opacity: .5; cursor: not-allowed; pointer-events: none; }
+.btn-app.loading, .btn-app.is-loading { pointer-events: none; opacity: 1; }
+.btn-app.loading::before, .btn-app.is-loading::before { content: ''; width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-top-color: transparent; opacity: .8; animation: ds-btn-gira .8s linear infinite; }
+@keyframes ds-btn-gira { to { transform: rotate(360deg); } }
+
+/* Píldoras "+ …" de tabla = botón de texto pequeño; ✕ de fila y tres puntos = botón de ícono */
+.btn-table-pill { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px; border-radius: var(--r-sm); border: 1px solid transparent; background: transparent; color: var(--teal); font: 700 12px var(--font); font-family: inherit; cursor: pointer; white-space: nowrap; box-shadow: none; }
+.btn-table-pill:hover { background: var(--teal-50); }
+.btn-row-del { width: 28px; height: 28px; padding: 0; display: inline-grid; place-items: center; border-radius: var(--r-sm); border: 1px solid transparent; background: transparent; color: var(--ink-3); font-size: 14px; line-height: 1; cursor: pointer; box-shadow: none; }
+.btn-row-del:hover { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+.btn-icon-dots { width: 32px; height: 32px; border-radius: var(--r-sm); border: 1px solid transparent; background: transparent; color: var(--ink-3); box-shadow: none; transform: none; }
+.btn-icon-dots:hover { background: var(--surface-2); border-color: var(--line); transform: none; box-shadow: none; color: var(--ink); }
+
+/* Pie de ventana: peligro a la izquierda, Cancelar y principal a la derecha */
+.modal-footer { justify-content: flex-end; gap: 10px; }
+.modal-footer > .btn-danger { margin-right: auto; }
+@media (max-width: 600px) { .modal-footer { flex-wrap: wrap; } .modal-footer .btn-app { flex: 1 1 auto; } }
 
 /* TABLAS DE LISTA: una sola piel (referencia: Eventos) para Eventos, Venues, Sesionistas, Finanzas y Deudas */
 #tabla-eventos-filas, #tabla-venues-lista, #tabla-sesionistas-lista, #tabla-finanzas-resumen-filas, #tabla-deudas-consolidada { border: 0 !important; background: transparent !important; }
@@ -2409,6 +2459,8 @@ tr.drag-over {
 #tabla-eventos-filas td, #tabla-venues-lista td, #tabla-sesionistas-lista td, #tabla-finanzas-resumen-filas td { border: 0 !important; border-bottom: 1px solid var(--line) !important; padding: 12px 14px !important; vertical-align: middle; }
 #tabla-eventos-filas tr:last-child td, #tabla-venues-lista tr:last-child td, #tabla-sesionistas-lista tr:last-child td, #tabla-finanzas-resumen-filas tr:last-child td { border-bottom: 0 !important; }
 #tabla-eventos-filas tbody tr:hover td, #tabla-venues-lista tbody tr:hover td, #tabla-sesionistas-lista tbody tr:hover td, #tabla-finanzas-resumen-filas tbody tr:hover td { background: var(--surface-2) !important; }
+#tabla-deudas-consolidada td.col-accion-deudas { white-space: normal !important; }
+#tabla-deudas-consolidada td.col-accion-deudas > div { flex-wrap: wrap; }
 /* Deudas: mismas líneas finas; cabecera de evento como banda y detalle con fondo suave */
 #tabla-deudas-consolidada td { border: 0 !important; border-bottom: 1px solid var(--line) !important; }
 #tabla-deudas-consolidada tr.group-header-row { background: var(--surface-2) !important; border-top: 0 !important; }
@@ -3556,7 +3608,9 @@ td .pill-status { min-width: 84px; text-align: center; justify-content: center; 
 .rider-banda-chip.on small { color: #ccfbf1; }
 .rider-bandeja { align-items: center; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; padding: 7px 10px; background: var(--warn-bg); border: 1px solid color-mix(in srgb, var(--warn) 30%, white); border-radius: 8px; font-size: 12.5px; }
 .rider-bandeja .rb-tit { font-weight: 700; color: var(--warn); }
-.rider-bandeja .rb-mus { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 2px 9px; font-weight: 600; }
+.rider-bandeja .rb-mus { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 2px 4px 2px 9px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: grab; }
+.rider-bandeja .rb-btn { border: 0; background: var(--teal-50); color: var(--teal-700); border-radius: 6px; padding: 2px 8px; font: 700 11px inherit; font-family: inherit; cursor: pointer; }
+.rider-bandeja .rb-btn:hover { background: var(--teal-100); }
 .rider-bandeja .rb-ayuda { color: var(--text-muted); font-size: 11.5px; }
 
 /* =======================================================================
@@ -3573,7 +3627,6 @@ td .pill-status { min-width: 84px; text-align: center; justify-content: center; 
 @keyframes sync-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 body.body-action-busy button, body.body-action-busy select { pointer-events:none !important; cursor:wait !important; }
 body.body-action-busy dialog[open] button { pointer-events:auto !important; cursor:pointer !important; }
-.btn-app:disabled, .btn-app.loading, button.loading { opacity:.72; cursor:not-allowed; pointer-events:none; }
 .mandala-toast-content { white-space: pre-line; }
 
 /* DEUDAS (v1.0): indicadores neutros, selector A pagar / A cobrar / Traspasos */
@@ -3675,19 +3728,6 @@ tr.cierre-banda-h:hover td { background: var(--surface-2); }
    ======================================================================= */
 
 /* Botones */
-.ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: var(--r-sm); border: 1px solid transparent; font: 700 13px var(--font); cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s; }
-.ds-btn.sm { height: 30px; padding: 0 10px; font-size: 12px; }
-.ds-btn.lg { height: 42px; padding: 0 18px; font-size: 14px; }
-.ds-btn.block { width: 100%; }
-.ds-btn-primary { background: var(--teal); color: #fff; }
-.ds-btn-primary:hover { background: var(--teal-700); }
-.ds-btn-secondary { background: var(--surface); color: var(--ink); border-color: var(--line-2); }
-.ds-btn-secondary:hover { background: var(--surface-2); }
-.ds-btn-ghost { background: transparent; color: var(--teal); }
-.ds-btn-ghost:hover { background: var(--teal-50); }
-.ds-btn-danger { background: var(--bad); color: #fff; }
-.ds-btn:disabled, .ds-btn.loading { opacity: .6; cursor: not-allowed; }
-.ds-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
 
 /* Etiquetas (chips): el color comunica estado */
 .ds-chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: var(--r-pill); font-size: 12px; font-weight: 700; background: #f0ece4; color: var(--ink-2); white-space: nowrap; }

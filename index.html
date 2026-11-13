@@ -12,11 +12,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v1.5">
-    <script src="src/ui/iconos.js?v=v1.5"></script>
+    <link rel="stylesheet" href="styles.css?v=v1.6">
+    <script src="src/ui/iconos.js?v=v1.6"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="src/ui/reporteVentas.js?v=v1.6" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -106,7 +109,7 @@
 
                 <div id="login-error-msg" style="display:none; padding:8px 12px; background:var(--bad-bg); border:1px solid color-mix(in srgb, var(--bad) 25%, white); border-radius:8px; color:var(--bad); font-size:11.5px; font-weight:600; text-align:left;"></div>
 
-                <button type="submit" id="btn-login-email-submit" class="btn-app btn-primary" style="width:100%; padding:10px 16px; border-radius:10px; font-size:13.5px; font-weight:700; display:flex; justify-content:center; align-items:center; gap:8px; margin-top:2px;">
+                <button type="submit" id="btn-login-email-submit" class="btn-app btn-primary btn-lg" style="width:100%; display:flex; justify-content:center; align-items:center; gap:8px; margin-top:2px;">
                     <span>Iniciar Sesión</span>
                 </button>
             </form>
@@ -283,7 +286,7 @@
                                 <button class="btn-app btn-secondary" style="display:none;" onclick="abrirModalCargaMasivaHistorico()" title="Importar festivales 2025-2026 a la base de datos">
                                     📥 Carga Histórica (.xlsx)
                                 </button>
-                                <button class="btn-app btn-secondary" style="display:none; background:var(--ok-bg); border-color:color-mix(in srgb, var(--ok) 25%, white); color:var(--ok); font-weight:700;" onclick="restaurarFestivalesHistoricosEliminados()" title="Recuperar de inmediato los 9 festivales históricos originales de la carga masiva">
+                                <button class="btn-app btn-secondary" style="display:none; background:var(--ok-bg); border-color:color-mix(in srgb, var(--ok) 25%, white); color:var(--ok);" onclick="restaurarFestivalesHistoricosEliminados()" title="Recuperar de inmediato los 9 festivales históricos originales de la carga masiva">
                                     ♻️ Recuperar Carga Masiva
                                 </button>
                                 <button class="btn-app btn-primary" onclick="abrirModalCrearEvento()">＋ Nuevo Evento</button>
@@ -747,7 +750,7 @@
                                         <svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Tarifas congeladas
                                     </span>
                                     <!-- Solo se muestra cuando las tarifas del evento están desactualizadas -->
-                                    <button class="btn-app btn-secondary" id="btn-actualizar-tarifas" style="display:none; font-size:12px; padding:3px 10px;" onclick="actualizarTarifasDesdePreset()" title="Actualizar tarifas de este evento a los valores vigentes de la productora">
+                                    <button class="btn-app btn-secondary btn-sm" id="btn-actualizar-tarifas" style="display:none;" onclick="actualizarTarifasDesdePreset()" title="Actualizar tarifas de este evento a los valores vigentes de la productora">
                                         <svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg> Actualizar tarifas
                                     </button>
                                 </div>
@@ -1002,7 +1005,7 @@
                                     <button type="button" class="btn-app btn-primary" onclick="copiarComunicadoActualWhatsApp()">
                                         &#128203; Copiar mensaje
                                     </button>
-                                    <button type="button" class="btn-app btn-secondary" onclick="abrirWhatsAppWebComunicadoActual()" style="font-weight:700;">
+                                    <button type="button" class="btn-app btn-secondary" onclick="abrirWhatsAppWebComunicadoActual()">
                                         &#128241; Abrir WhatsApp
                                     </button>
                                 </div>
@@ -1560,7 +1563,7 @@
                                             <span class="pill-status" style="background:var(--bad-bg); color:var(--bad); font-family:'Geist Mono'; font-weight:800; font-size:11.5px;" id="total-gastos-caja-badge">
                                                 $ 0
                                             </span>
-                                            <button type="button" class="btn-app btn-secondary" style="display:none; font-size:11px; padding:3px 9px;" onclick="descargarPlantillaExcelGastos()" title="Descargar planilla modelo para carga de gastos">
+                                            <button type="button" class="btn-app btn-secondary btn-sm" style="display:none;" onclick="descargarPlantillaExcelGastos()" title="Descargar planilla modelo para carga de gastos">
                                                 📄 Plantilla (.xlsx)
                                             </button>
                                             <button type="button" class="btn-table-pill" style="display:none; font-size:11px; padding:3px 9px; background:var(--info-bg); color:#1d4ed8; border:1px solid color-mix(in srgb, var(--info) 25%, white);" onclick="abrirModalCargaMasivaGastos()" title="Carga masiva de gastos desde archivo Excel">
@@ -1624,6 +1627,9 @@
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; gap:10px;">
+                                <button type="button" class="btn-app btn-secondary" onclick="generarReporteVentasPDF(eventoActualId)" title="Descargar el reporte de ventas de este evento en PDF (sin gastos ni cobertura)">
+                                    <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 14h6M9 17h4"/></svg> Reporte de ventas (PDF)
+                                </button>
                                 <div class="mode-switch-pill">
                                     <button type="button" class="mode-switch-btn" onclick="abrirDetalleEvento(eventoActualId, true)">
                                         <span>Producción</span>
@@ -1733,6 +1739,7 @@
                                     <!-- Reglas de la liquidación: canon SADAIC y % de la escuela -->
                                     <div class="regla-liq">
                                         <b>SADAIC</b>
+                                        <label><input type="checkbox" id="chk-sadaic-omitir" onchange="alternarOmitirSadaicFestival(this.checked)"> No aplica en este evento</label>
                                         <label><input type="radio" name="opt-sadaic-tipo" id="opt-sadaic-tipo-entradas" value="entradas" onchange="cambiarModoSadaicFestival('entradas')" checked> Por cantidad de entradas</label>
                                         <label><input type="radio" name="opt-sadaic-tipo" id="opt-sadaic-tipo-porcentaje" value="porcentaje" onchange="cambiarModoSadaicFestival('porcentaje')"> Por porcentaje (%)</label>
 
@@ -1759,12 +1766,15 @@
                                     </div>
 
                                     <div class="regla-liq">
-                                        <b>% de la escuela</b>
-                                        <span style="display:inline-flex; align-items:center; gap:6px;">
+                                        <b id="rot-regla-acuerdo">% de la escuela</b>
+                                        <span id="box-porc-escuela" style="display:inline-flex; align-items:center; gap:6px;">
                                             <input type="number" id="inp-ingresos-porc-escuela" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:80px; padding:3px 6px;" value="70" min="0" max="100" oninput="alCambiarPorcentajeEscuelaManual(this.value)"> % Escuela
                                         </span>
+                                        <span id="box-alquiler-sala" style="display:none; align-items:center; gap:6px;">
+                                            Monto fijo $ <input type="number" id="inp-ingresos-alquiler" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:120px; padding:3px 6px;" value="0" min="0" step="1000" oninput="alCambiarAlquilerManual(this.value)">
+                                        </span>
                                         <span id="wrap-badge-acuerdo-venue"><span class="pill-status pill-info" style="font-size:11px;">🏷️ Acuerdo Venue: 70% Escuela (Automático)</span></span>
-                                        <button type="button" id="btn-restablecer-acuerdo-venue" class="btn-app btn-secondary" style="font-size:11px; padding:3px 8px; display:none;" onclick="restablecerAcuerdoVenue()" title="Volver al acuerdo predeterminado del venue">↺ Restablecer a Venue</button>
+                                        <button type="button" id="btn-restablecer-acuerdo-venue" class="btn-app btn-secondary btn-sm" style="display:none;" onclick="restablecerAcuerdoVenue()" title="Volver al acuerdo predeterminado del venue">↺ Restablecer a Venue</button>
                                         <div id="alerta-acuerdo-a-definir" style="display:none; flex-basis:100%; font-size:11.5px; color:var(--bad); background:var(--bad-bg); border:1px solid color-mix(in srgb, var(--bad) 25%, white); border-radius:6px; padding:6px 8px; font-weight:600;">
                                             ⚠️ El venue asignado tiene acuerdo <strong>A definir</strong>. Ingresá el % pactado para liquidar este festival.
                                         </div>
@@ -1925,7 +1935,7 @@
                                                 </td>
                                                 <td><span class="pill-status pill-warning" id="pill-gasto-prod-estado">Pendiente</span></td>
                                                 <td class="r" id="td-accion-cobertura-escuela">
-                                                    <button type="button" id="btn-gasto-prod-pagado" class="btn-app btn-primary" style="padding:3px 10px; font-size:12px;" onclick="alternarPagoCoberturaEscuela()">Marcar pagado</button>
+                                                    <button type="button" id="btn-gasto-prod-pagado" class="btn-app btn-primary btn-sm" onclick="alternarPagoCoberturaEscuela()">Marcar pagado</button>
                                                 </td>
                                             </tr>
                                             <tr id="tr-gasto-servicios-adelantados" style="display:none;">
@@ -2167,7 +2177,7 @@
                             <select id="sel-filtro-festival-deudas" class="form-control" style="font-size:12px; padding:5px 8px; font-weight:700; width:auto; max-width:280px;" onchange="filtrarTablaDeudas()">
                                 <option value="todos">Todos los festivales</option>
                             </select>
-                            <button type="button" class="btn-app btn-secondary" id="btn-toggle-todas-deudas" onclick="toggleTodasLasBandasDeudas()" style="font-size:12px; padding:6px 12px; font-weight:700; white-space:nowrap;">
+                            <button type="button" class="btn-app btn-secondary btn-sm" id="btn-toggle-todas-deudas" onclick="toggleTodasLasBandasDeudas()">
                                 🔽 Desplegar Todo
                             </button>
                         </div>
@@ -2239,7 +2249,7 @@
                                     </h4>
                                     <span style="font-size:11.5px; color:var(--text-muted);">Preventa, General, Promo / Especiales y Boletería en Puerta</span>
                                 </div>
-                                <button type="button" class="btn-app btn-secondary" style="padding:4px 9px; font-size:13px;" onclick="imprimirGraficoIndividual('chartEntradas', 'Entradas Vendidas por Festival')" title="Imprimir Gráfico en PDF">
+                                <button type="button" class="btn-app btn-secondary btn-sm" onclick="imprimirGraficoIndividual('chartEntradas', 'Entradas Vendidas por Festival')" title="Imprimir Gráfico en PDF">
                                     🖨️
                                 </button>
                             </div>
@@ -2260,7 +2270,7 @@
                                             </h4>
                                             <span style="font-size:11.5px; color:var(--text-muted);">Rendimiento neto de la escuela hito a hito</span>
                                         </div>
-                                        <button type="button" class="btn-app btn-secondary" style="padding:4px 9px; font-size:13px;" onclick="imprimirGraficoIndividual('chartGanancias', document.getElementById('titulo-grafico-ganancias').textContent)" title="Imprimir Gráfico en PDF">
+                                        <button type="button" class="btn-app btn-secondary btn-sm" onclick="imprimirGraficoIndividual('chartGanancias', document.getElementById('titulo-grafico-ganancias').textContent)" title="Imprimir Gráfico en PDF">
                                             🖨️
                                         </button>
                                     </div>
@@ -2283,7 +2293,7 @@
                                             </h4>
                                             <span id="subtitulo-detalle-festival" style="font-size:11.5px; color:var(--text-muted);">División 70/30, Gastos y SADAIC</span>
                                         </div>
-                                        <button type="button" class="btn-app btn-secondary" style="padding:4px 9px; font-size:13px;" onclick="imprimirGraficoIndividual('chartSplit', document.getElementById('titulo-detalle-festival').textContent)" title="Imprimir Gráfico en PDF">
+                                        <button type="button" class="btn-app btn-secondary btn-sm" onclick="imprimirGraficoIndividual('chartSplit', document.getElementById('titulo-detalle-festival').textContent)" title="Imprimir Gráfico en PDF">
                                             🖨️
                                         </button>
                                     </div>
@@ -2573,7 +2583,7 @@
                             <span style="font-size:11.5px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
                                 Monto
                             </span>
-                            <button type="button" class="btn-app btn-secondary" style="font-size:10.5px; padding:2px 8px;" onclick="restablecerMontoOficialDeudaModal()" title="Volver a calcular con el precio oficial de entrada del festival">
+                            <button type="button" class="btn-app btn-secondary btn-sm" onclick="restablecerMontoOficialDeudaModal()" title="Volver a calcular con el precio oficial de entrada del festival">
                                 ↺ Valor oficial
                             </button>
                         </div>
@@ -2739,7 +2749,7 @@
                         <label style="font-weight:800; color:var(--accent-blue); margin:0;">
                             📞 Contactos del Venue
                         </label>
-                        <button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="agregarFilaContactoVenue()">
+                        <button type="button" class="btn-app btn-secondary btn-sm" onclick="agregarFilaContactoVenue()">
                             ＋ Agregar Contacto
                         </button>
                     </div>
@@ -2754,10 +2764,16 @@
                     <label style="font-weight:700;">Acuerdo Comercial del Venue</label>
                     <select id="venue-acuerdo-select" class="form-control" onchange="cambiarSelectAcuerdoVenue(this.value)" style="font-weight:600;">
                         <option value="70% Escuela / 30% Venue">70% Escuela / 30% Venue (Estándar)</option>
-                        <option value="100% Escuela">100% Escuela (Alquiler fijo / Sin % para venue)</option>
+                        <option value="100% Escuela">100% Escuela (Sin % para venue)</option>
+                        <option value="alquiler">Alquiler de sala (monto fijo)</option>
                         <option value="A definir">A definir (Requiere acordar por evento)</option>
                         <option value="otro">Otro porcentaje personalizado...</option>
                     </select>
+                    <div id="venue-alquiler-wrap" style="display:none; margin-top:8px;">
+                        <label style="font-size:12px; font-weight:700; color:var(--ink-3);">Monto del alquiler por evento ($)</label>
+                        <input type="number" id="venue-alquiler-monto" class="form-control" min="0" step="1000" placeholder="Ej: 150000" style="font-family:'Geist Mono'; font-weight:700;">
+                        <div style="font-size:11.5px; color:var(--ink-3); margin-top:4px;">La escuela se queda con el 100% de la taquilla y paga este monto al venue el día del festival. Se puede cambiar en cada evento.</div>
+                    </div>
                     <div id="venue-acuerdo-custom-wrap" style="display:none; margin-top:8px;">
                         <input type="text" id="venue-acuerdo-inp" class="form-control" placeholder="Ej: 60% Escuela / 40% Venue">
                     </div>
@@ -2814,7 +2830,7 @@
                         <span style="font-size:12px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
                             📋 Columnas de la Planilla Excel
                         </span>
-                        <button type="button" class="btn-app btn-secondary" style="font-size:11.5px; padding:3px 10px;" onclick="descargarPlantillaExcelVenues()">
+                        <button type="button" class="btn-app btn-secondary btn-sm" onclick="descargarPlantillaExcelVenues()">
                             📄 Descargar Plantilla Modelo
                         </button>
                     </div>
@@ -2893,7 +2909,7 @@
                         <span style="font-size:12px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
                             📋 Columnas de la Planilla Histórica
                         </span>
-                        <button type="button" class="btn-app btn-secondary" style="font-size:11.5px; padding:3px 10px;" onclick="descargarPlantillaExcelHistorico()">
+                        <button type="button" class="btn-app btn-secondary btn-sm" onclick="descargarPlantillaExcelHistorico()">
                             📄 Descargar Plantilla Modelo
                         </button>
                     </div>
@@ -2914,7 +2930,7 @@
                         <strong style="color:var(--ok); font-size:12.5px; display:block;">♻️ ¿Eliminaste festivales históricos por error?</strong>
                         <span style="font-size:11.5px; color:var(--ok);">Podés restaurar de inmediato los 9 festivales originales (2025-2026) con todos sus datos y finanzas intactos sin necesidad de volver a subir el archivo.</span>
                     </div>
-                    <button type="button" class="btn-app" style="background:#16a34a; color:#ffffff; font-weight:700; white-space:nowrap; padding:6px 14px; font-size:12px;" onclick="restaurarFestivalesHistoricosEliminados()">
+                    <button type="button" class="btn-app btn-sm btn-ok" onclick="restaurarFestivalesHistoricosEliminados()">
                         Restaurar 9 Festivales
                     </button>
                 </div>
@@ -2984,7 +3000,7 @@
                         <span style="font-size:12px; font-weight:800; color:var(--accent-red); text-transform:uppercase;">
                             📋 Formato de Columnas de la Planilla
                         </span>
-                        <button type="button" class="btn-app btn-secondary" style="font-size:11.5px; padding:3px 10px;" onclick="descargarPlantillaExcelGastos()">
+                        <button type="button" class="btn-app btn-secondary btn-sm" onclick="descargarPlantillaExcelGastos()">
                             📄 Descargar Plantilla Modelo (.xlsx)
                         </button>
                     </div>
@@ -3050,7 +3066,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
-                <button class="btn-app btn-primary" id="btn-confirmar-import-gastos" style="display:none; background:var(--accent-red); border-color:var(--accent-red);" onclick="ejecutarImportacionMasivaGastos()">
+                <button class="btn-app btn-primary" id="btn-confirmar-import-gastos" style="display:none;" onclick="ejecutarImportacionMasivaGastos()">
                     🚀 Confirmar e Importar Gastos a Caja
                 </button>
             </div>
@@ -3090,7 +3106,7 @@
                         <div id="contenedor-alumnos-ensamble" style="display:flex; flex-direction:column; gap:8px;">
                             <!-- Filas dinámicas de alumnos integrantes -->
                         </div>
-                        <button type="button" class="btn-app btn-secondary" style="font-size:11.5px; margin-top:10px; padding:4px 10px;" onclick="agregarFilaAlumnoEnsambleModal()">
+                        <button type="button" class="btn-app btn-secondary btn-sm" style="margin-top:10px;" onclick="agregarFilaAlumnoEnsambleModal()">
                             ＋ Agregar Alumno Integrante
                         </button>
                     </div>
@@ -3126,7 +3142,7 @@
                         <div id="contenedor-musicos-jam" style="display:flex; flex-direction:column; gap:8px;">
                             <!-- Filas dinámicas de músicos JAM -->
                         </div>
-                        <button type="button" class="btn-app btn-secondary" style="font-size:11.5px; margin-top:10px; padding:4px 10px;" onclick="agregarFilaMusicoJamModal()">
+                        <button type="button" class="btn-app btn-secondary btn-sm" style="margin-top:10px;" onclick="agregarFilaMusicoJamModal()">
                             ＋ Agregar Músico a la JAM
                         </button>
                     </div>
@@ -3192,7 +3208,7 @@
                 </div>
             </div>
             <div class="modal-footer" style="display:flex; justify-content:space-between;">
-                <button type="button" class="btn-app btn-secondary" style="color:var(--accent-red);" onclick="borrarNotaRiderActual()">🗑️ Borrar Nota</button>
+                <button type="button" class="btn-app btn-danger" onclick="borrarNotaRiderActual()">🗑️ Borrar Nota</button>
                 <div style="display:flex; gap:8px;">
                     <button type="button" class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
                     <button type="button" class="btn-app btn-primary" onclick="guardarNotaRiderActual()">Guardar Nota</button>
@@ -3220,7 +3236,7 @@
                         <span style="font-size:12px; font-weight:800; color:var(--accent-teal); text-transform:uppercase;">
                             📋 Formato de Columnas de la Planilla
                         </span>
-                        <button type="button" class="btn-app btn-secondary" style="font-size:11.5px; padding:3px 10px;" onclick="descargarPlantillaExcelChecklist()">
+                        <button type="button" class="btn-app btn-secondary btn-sm" onclick="descargarPlantillaExcelChecklist()">
                             📄 Descargar Plantilla Modelo (.xlsx)
                         </button>
                     </div>
@@ -3557,8 +3573,17 @@
                     ? obtenerEntradasEventoActual()
                     : preciosEntradasPorDefecto));
 
+            // SADAIC no aplica en todos los eventos: si se omite, el canon es 0 en todos los cálculos
+            if (ent.sadaicOmitir === true) {
+                return {
+                    tipo: 'omitido', omitido: true, monto: 0, cantidad: 0, porcentaje: 0, baseEntrada: 'general', precioUnitario: 0,
+                    brutoTaquilla: Number(brutoTaquilla) || 0,
+                    descripcion: 'No aplica en este evento'
+                };
+            }
+
             const tipo = ent.sadaicTipo || 'entradas'; // 'entradas' o 'porcentaje'
-            
+
             if (tipo === 'porcentaje') {
                 const porc = parseFloat(ent.sadaicPorcentaje !== undefined ? ent.sadaicPorcentaje : 3) || 0;
                 let bruto = Number(brutoTaquilla) || 0;
@@ -3704,7 +3729,10 @@
             const sadaicRes = calcularMontoSadaicFestival(festId, brutoTaquilla, ent);
             const montoSadaic = sadaicRes.monto;
             const basePostSadaic = Math.max(0, brutoTaquilla - montoSadaic);
-            const netoEscuelaOnline = Math.round(basePostSadaic * (porcEscuela / 100));
+            // Alquiler de sala: la escuela se queda con todo el saldo y descuenta el monto fijo del venue
+            const esAlquiler = Boolean(acuerdo && acuerdo.esAlquiler);
+            const alquilerSala = esAlquiler ? Math.max(0, Number(acuerdo.alquilerMonto) || 0) : 0;
+            const netoEscuelaOnline = esAlquiler ? Math.round(basePostSadaic) - alquilerSala : Math.round(basePostSadaic * (porcEscuela / 100));
 
             let totVentasEspeciales = 0;
             let cantVentasEspeciales = 0;
@@ -3717,7 +3745,7 @@
             return {
                 cantPreventa: cPrev, cantGeneral: cGen, cantPuerta: cPue,
                 cantTaquilla, brutoTaquilla, usaBrutoHistorico,
-                porcEscuela, porcAsumido, acuerdo,
+                porcEscuela, porcAsumido, acuerdo, esAlquiler, alquilerSala,
                 sadaicRes, montoSadaic, basePostSadaic, netoEscuelaOnline,
                 totVentasEspeciales, cantVentasEspeciales,
                 brutoTotal: brutoTaquilla + totVentasEspeciales,
@@ -4360,6 +4388,7 @@
         function parsearPorcentajeAcuerdoVenue(textoAcuerdo) {
             if (!textoAcuerdo) return null;
             const str = String(textoAcuerdo).trim().toLowerCase();
+            if (str.includes('alquiler')) return 100; // alquiler de sala: la escuela se queda con el 100% y paga el monto fijo
             if (str.includes('definir')) return null;
             if (str.includes('100') || str.includes('100%')) return 100;
             const match = str.match(/(\d+)\s*%/);
@@ -4370,6 +4399,21 @@
             return null;
         }
         window.parsearPorcentajeAcuerdoVenue = parsearPorcentajeAcuerdoVenue;
+
+        // Alquiler de sala: el acuerdo del venue se guarda como texto "Alquiler de sala: $ 150.000"
+        function parsearAlquilerAcuerdoVenue(textoAcuerdo) {
+            const str = String(textoAcuerdo || '').trim();
+            if (!/alquiler/i.test(str)) return null;
+            const digitos = str.replace(/^[^:]*:/, '').replace(/[^0-9]/g, '');
+            const n = parseInt(digitos, 10);
+            return Number.isFinite(n) ? n : 0;
+        }
+        function construirAcuerdoAlquiler(monto) {
+            const n = Math.max(0, Math.round(Number(monto) || 0));
+            return 'Alquiler de sala: $ ' + n.toLocaleString('es-AR');
+        }
+        window.parsearAlquilerAcuerdoVenue = parsearAlquilerAcuerdoVenue;
+        window.construirAcuerdoAlquiler = construirAcuerdoAlquiler;
 
         function obtenerAcuerdoVenuePorNombre(nombreVenue) {
             if (!nombreVenue) return null;
@@ -4394,6 +4438,19 @@
             const porcAuto = parsearPorcentajeAcuerdoVenue(acuerdoTexto); // 70, 100 o null si es "A definir"
 
             const d = (typeof ingresosFestivalesDB !== 'undefined' && fId && ingresosFestivalesDB[fId]) ? ingresosFestivalesDB[fId] : null;
+
+            // Alquiler de sala: monto fijo al venue, sin % (se paga en el momento del festival, no genera deuda)
+            const alquilerAuto = parsearAlquilerAcuerdoVenue(acuerdoTexto);
+            if (alquilerAuto !== null) {
+                const alquilerEsManual = Boolean(d && d.alquilerManual === true && Number.isFinite(Number(d.alquilerMonto)));
+                return {
+                    festivalId: fId, venueNombre, acuerdoTexto,
+                    porcAuto: 100, porcFinal: 100, porcEfectivo: 100,
+                    tipo: 'alquiler', esManual: false,
+                    esAlquiler: true, alquilerAuto, alquilerEsManual,
+                    alquilerMonto: alquilerEsManual ? Math.max(0, Number(d.alquilerMonto)) : alquilerAuto
+                };
+            }
             const esManual = Boolean(d && d.porcEscuelaManual === true);
 
             let porcFinal = 70;
@@ -4435,12 +4492,14 @@
         function cambiarSelectAcuerdoVenue(val) {
             const customWrap = document.getElementById('venue-acuerdo-custom-wrap');
             const inp = document.getElementById('venue-acuerdo-inp');
+            const alqWrap = document.getElementById('venue-alquiler-wrap');
+            if (alqWrap) alqWrap.style.display = (val === 'alquiler') ? 'block' : 'none';
             if (val === 'otro') {
                 if (customWrap) customWrap.style.display = 'block';
                 if (inp) inp.focus();
             } else {
                 if (customWrap) customWrap.style.display = 'none';
-                if (inp) inp.value = val;
+                if (inp && val !== 'alquiler') inp.value = val;
             }
         }
         window.cambiarSelectAcuerdoVenue = cambiarSelectAcuerdoVenue;
@@ -4473,6 +4532,8 @@
             if (selAc) selAc.value = '70% Escuela / 30% Venue';
             const inpAc = document.getElementById('venue-acuerdo-inp');
             if (inpAc) inpAc.value = '70% Escuela / 30% Venue';
+            const alqWrapN = document.getElementById('venue-alquiler-wrap'); if (alqWrapN) alqWrapN.style.display = 'none';
+            const alqMontoN = document.getElementById('venue-alquiler-monto'); if (alqMontoN) alqMontoN.value = '';
             const customWrap = document.getElementById('venue-acuerdo-custom-wrap');
             if (customWrap) customWrap.style.display = 'none';
 
@@ -4498,7 +4559,14 @@
             const inpAc = document.getElementById('venue-acuerdo-inp');
             const customWrap = document.getElementById('venue-acuerdo-custom-wrap');
             const acVal = (v.acuerdo || '70% Escuela / 30% Venue').trim();
-            if (['70% Escuela / 30% Venue', '100% Escuela', 'A definir'].includes(acVal)) {
+            const alqWrapE = document.getElementById('venue-alquiler-wrap');
+            const alqMontoE = parsearAlquilerAcuerdoVenue(acVal);
+            if (alqWrapE) alqWrapE.style.display = (alqMontoE !== null) ? 'block' : 'none';
+            if (alqMontoE !== null) {
+                if (selAc) selAc.value = 'alquiler';
+                const inpM = document.getElementById('venue-alquiler-monto'); if (inpM) inpM.value = alqMontoE;
+                if (customWrap) customWrap.style.display = 'none';
+            } else if (['70% Escuela / 30% Venue', '100% Escuela', 'A definir'].includes(acVal)) {
                 if (selAc) selAc.value = acVal;
                 if (inpAc) inpAc.value = acVal;
                 if (customWrap) customWrap.style.display = 'none';
@@ -4534,7 +4602,9 @@
             const direccion = document.getElementById('venue-direccion-inp').value.trim();
             const selAc = document.getElementById('venue-acuerdo-select');
             let acuerdo = '70% Escuela / 30% Venue';
-            if (selAc && selAc.value === 'otro') {
+            if (selAc && selAc.value === 'alquiler') {
+                acuerdo = construirAcuerdoAlquiler(document.getElementById('venue-alquiler-monto')?.value);
+            } else if (selAc && selAc.value === 'otro') {
                 acuerdo = document.getElementById('venue-acuerdo-inp')?.value.trim() || '70% Escuela / 30% Venue';
             } else if (selAc) {
                 acuerdo = selAc.value;
@@ -4707,12 +4777,14 @@
                         ${contactosHtml}
                     </td>
                     <td style="vertical-align:middle; padding:6px 10px; background:#ffffff; border:1px solid var(--line-2); text-align:center;">
-                        <select class="spreadsheet-inp text-center" style="font-size:12px; font-weight:700; color:var(--accent-blue); padding:4px 6px; width:100%; border:1px solid var(--line-2); border-radius:6px; background:var(--surface-2);" onchange="actualizarCampoVenueInSitu('${v.id}', 'acuerdo', this.value)">
+                        <select class="spreadsheet-inp text-center" style="font-size:12px; font-weight:700; color:var(--accent-blue); padding:4px 6px; width:100%; border:1px solid var(--line-2); border-radius:6px; background:var(--surface-2);" onchange="cambiarAcuerdoVenueTabla('${v.id}', this.value)">
                             <option value="70% Escuela / 30% Venue" ${v.acuerdo === '70% Escuela / 30% Venue' ? 'selected' : ''}>70% Escuela / 30% Venue</option>
                             <option value="100% Escuela" ${v.acuerdo === '100% Escuela' ? 'selected' : ''}>100% Escuela</option>
+                            <option value="__alquiler__" ${parsearAlquilerAcuerdoVenue(v.acuerdo) !== null ? 'selected' : ''}>Alquiler de sala (monto fijo)</option>
                             <option value="A definir" ${v.acuerdo === 'A definir' ? 'selected' : ''}>A definir</option>
-                            ${(!['70% Escuela / 30% Venue', '100% Escuela', 'A definir'].includes(v.acuerdo || '')) ? `<option value="${(v.acuerdo || '').replace(/"/g, '&quot;')}" selected>${v.acuerdo}</option>` : ''}
+                            ${(!['70% Escuela / 30% Venue', '100% Escuela', 'A definir'].includes(v.acuerdo || '') && parsearAlquilerAcuerdoVenue(v.acuerdo) === null) ? `<option value="${(v.acuerdo || '').replace(/"/g, '&quot;')}" selected>${v.acuerdo}</option>` : ''}
                         </select>
+                        ${parsearAlquilerAcuerdoVenue(v.acuerdo) !== null ? `<div style="display:flex; align-items:center; gap:4px; margin-top:6px; justify-content:center; font-size:12px;">$ <input type="number" class="spreadsheet-inp text-center" min="0" step="1000" style="width:100px; font-family:'Geist Mono'; font-weight:700;" value="${parsearAlquilerAcuerdoVenue(v.acuerdo)}" onchange="actualizarCampoVenueInSitu('${v.id}', 'acuerdo', construirAcuerdoAlquiler(this.value))" title="Monto del alquiler por evento"></div>` : ''}
                     </td>
                     <td style="vertical-align:middle; padding:8px; background:#ffffff; border:1px solid var(--line-2); text-align:center;">
                         <div style="display:inline-flex; align-items:center; gap:4px; justify-content:center;">
@@ -4757,9 +4829,28 @@
             actualizarSelectsVenues();
         }
 
+        async function cambiarAcuerdoVenueTabla(venueId, val) {
+            if (val === '__alquiler__') {
+                await actualizarCampoVenueInSitu(venueId, 'acuerdo', construirAcuerdoAlquiler(0));
+                renderizarTablaVenues();
+                return;
+            }
+            await actualizarCampoVenueInSitu(venueId, 'acuerdo', val);
+            renderizarTablaVenues();
+        }
+        window.cambiarAcuerdoVenueTabla = cambiarAcuerdoVenueTabla;
+
         async function actualizarCampoVenueInSitu(venueId, campo, valor) {
             const v = venuesData[venueId];
             if (!v) return;
+            let nombreAnterior = null;
+            if (campo === 'nombre') {
+                valor = String(valor || '').replace(/\s+/g, ' ').trim();
+                nombreAnterior = v.nombre || '';
+                if (!valor) { mostrarToast('El venue necesita un nombre.', 'warning'); renderizarTablaVenues(); return; }
+                const repetido = Object.values(venuesData).some(o => o.id !== venueId && String(o.nombre || '').trim().toLowerCase() === valor.toLowerCase());
+                if (repetido) { mostrarToast('Ya existe un venue llamado "' + valor + '".', 'warning'); renderizarTablaVenues(); return; }
+            }
             v[campo] = valor;
             guardarVenuesLocalCache();
 
@@ -4768,6 +4859,24 @@
                     await window.MandalaApp.venues.guardar(venueId, v);
                 } catch (e) {
                     console.warn("[Mandala Venues] Error actualizando campo venue:", e);
+                }
+            }
+            // Los festivales se enlazan al venue por nombre: al renombrarlo se actualizan para que no queden con el nombre viejo
+            if (nombreAnterior !== null && nombreAnterior && nombreAnterior !== valor) {
+                const afectados = Object.values(infoFestivales || {}).filter(f => f && String(f.venue || '').trim() === nombreAnterior.trim());
+                for (const f of afectados) {
+                    f.venue = valor;
+                    try {
+                        if (window.MandalaApp && window.MandalaApp.festivales) await window.MandalaApp.festivales.actualizarCampos(f.id, { venue: valor });
+                    } catch (e) { console.warn('[Mandala Venues] No se pudo actualizar el venue del festival', f.id, e); }
+                }
+                if (afectados.length) {
+                    mostrarToast('Venue renombrado. Se actualizaron ' + afectados.length + (afectados.length === 1 ? ' festival.' : ' festivales.'), 'success');
+                    document.querySelectorAll('#tbody-eventos-dinamicos tr[data-fest-id]').forEach(tr => {
+                        const f = infoFestivales[tr.getAttribute('data-fest-id')];
+                        if (f && tr.children[2]) tr.children[2].textContent = f.venue;
+                    });
+                    if (eventoActualId && infoFestivales[eventoActualId]) { const el = document.getElementById('det-ev-venue'); if (el && afectados.some(f => f.id === eventoActualId)) el.textContent = valor; }
                 }
             }
             actualizarSelectsVenues();
@@ -5590,7 +5699,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v1.5";
+        const APP_VERSION = "v1.6";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6307,6 +6416,20 @@
 
             const resSadaic = calcularMontoSadaicFestival(eventoActualId);
 
+            const sadaicFilaHtml = resSadaic.omitido ? `
+                <tr style="background:var(--surface-2);">
+                    <td style="font-weight:700; padding:10px 14px; vertical-align:middle; color:var(--ink-3);">🎶 Canon SADAIC</td>
+                    <td style="text-align:right; padding:8px 14px; vertical-align:middle; color:var(--ink-3); font-style:italic;">No aplica en este evento</td>
+                </tr>` : `
+                <tr style="background:#fff1f2;">
+                    <td style="font-weight:700; padding:10px 14px; vertical-align:middle; color:#9f1239;">
+                        🎶 Canon SADAIC <span style="font-weight:600; font-size:11.5px; color:#be123c;">(${esc(resSadaic.descripcion)})</span>
+                    </td>
+                    <td style="text-align:right; padding:8px 14px; vertical-align:middle;">
+                        <span style="font-family:'Geist Mono'; font-weight:800; font-size:13.5px; color:var(--accent-red);" title="${esc(resSadaic.descripcion)}">-${formatearMonedaAr(resSadaic.monto)}</span>
+                    </td>
+                </tr>`;
+
             tbody.innerHTML = items.map(item => `
                 <tr>
                     <td style="font-weight:700; padding:10px 14px; vertical-align:middle;">${esc(item.concepto)}</td>
@@ -6316,16 +6439,7 @@
                         <span class="precio-texto-editable" style="font-family:'Geist Mono'; font-weight:700; font-size:13.5px; color:var(--text-main);">${formatearMonedaAr(item.precio)}</span>
                     </td>
                 </tr>
-            `).join('') + `
-                <tr style="background:#fff1f2;">
-                    <td style="font-weight:700; padding:10px 14px; vertical-align:middle; color:#9f1239;">
-                        🎶 Canon SADAIC <span style="font-weight:600; font-size:11.5px; color:#be123c;">(${esc(resSadaic.descripcion)})</span>
-                    </td>
-                    <td style="text-align:right; padding:8px 14px; vertical-align:middle;">
-                        <span style="font-family:'Geist Mono'; font-weight:800; font-size:13.5px; color:var(--accent-red);" title="${esc(resSadaic.descripcion)}">-${formatearMonedaAr(resSadaic.monto)}</span>
-                    </td>
-                </tr>
-            `;
+            `).join('') + sadaicFilaHtml;
 
             // Sincronizar tarjeta de controles de SADAIC
             const optEnt = document.getElementById('opt-sadaic-tipo-entradas');
@@ -6340,6 +6454,25 @@
             const txtDetEnt = document.getElementById('txt-sadaic-detalle-entradas');
             const txtDetPorc = document.getElementById('txt-sadaic-detalle-porcentaje');
 
+            const omitido = Boolean(resSadaic.omitido);
+            const chkOmitir = document.getElementById('chk-sadaic-omitir');
+            if (chkOmitir) chkOmitir.checked = omitido;
+            [optEnt, optPorc, boxEnt, boxPorc].forEach(el => {
+                if (!el) return;
+                const w = el.closest('label') || el;
+                w.style.opacity = omitido ? '.45' : '';
+                w.style.pointerEvents = omitido ? 'none' : '';
+            });
+            if (omitido) {
+                const tipoCfg = (obtenerEntradasEventoActual().sadaicTipo) || 'entradas';
+                if (optEnt) optEnt.checked = tipoCfg !== 'porcentaje';
+                if (optPorc) optPorc.checked = tipoCfg === 'porcentaje';
+                if (boxEnt) boxEnt.style.display = tipoCfg === 'porcentaje' ? 'none' : 'flex';
+                if (boxPorc) boxPorc.style.display = tipoCfg === 'porcentaje' ? 'flex' : 'none';
+                if (badgeModo) badgeModo.textContent = 'No aplica';
+                if (txtResumen) txtResumen.textContent = '-$ 0';
+                return;
+            }
             const esPorc = resSadaic.tipo === 'porcentaje';
             if (optEnt) optEnt.checked = !esPorc;
             if (optPorc) optPorc.checked = esPorc;
@@ -6360,6 +6493,17 @@
                 txtDetPorc.innerHTML = `Se descuenta automáticamente el <strong>${resSadaic.porcentaje || 3}%</strong> de la recaudación por taquilla (${formatearMonedaAr(resSadaic.monto)} s/ ${formatearMonedaAr(resSadaic.brutoTaquilla || 0)}).`;
             }
         }
+
+        function alternarOmitirSadaicFestival(omitir) {
+            const ent = obtenerEntradasEventoActual();
+            ent.sadaicOmitir = Boolean(omitir);
+            if (typeof autoguardarDetalleFestivalFirestore === 'function') {
+                autoguardarDetalleFestivalFirestore('entradasCongeladas', ent);
+            }
+            renderizarTablaEntradasFestival();
+            if (typeof recalcularIngresosFestival === 'function') recalcularIngresosFestival(true);
+        }
+        window.alternarOmitirSadaicFestival = alternarOmitirSadaicFestival;
 
         function cambiarModoSadaicFestival(nuevoTipo) {
             const ent = obtenerEntradasEventoActual();
@@ -6476,7 +6620,9 @@
             if (typeof obtenerEstadoAcuerdoFestival === 'function') {
                 const estAc = obtenerEstadoAcuerdoFestival(id);
                 if (estAc) {
-                    if (estAc.tipo === 'indefinido') {
+                    if (estAc.esAlquiler) {
+                        acuerdoTextoCabecera = 'Alquiler de sala (' + formatearMonedaAr(estAc.alquilerMonto) + ')' + (estAc.alquilerEsManual ? ' (Manual)' : '');
+                    } else if (estAc.tipo === 'indefinido') {
                         acuerdoTextoCabecera = `<span style="color:var(--bad); font-weight:700;">A definir (se usa ${estAc.porcEfectivo}%)</span>`;
                     } else if (estAc.porcFinal === 100) {
                         acuerdoTextoCabecera = '100% Escuela' + (estAc.esManual ? ' (Manual)' : '');
@@ -9172,7 +9318,7 @@
                                     <span style="font-size:11.5px; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
                                         🔍 Detalle — ${esc(fest.nombre || 'Festival')} (${esc(fest.venue || 'Venue')})
                                     </span>
-                                    <button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 10px;" onclick="abrirDetalleFinanzasFestival('${fId}')">
+                                    <button type="button" class="btn-app btn-secondary btn-sm" onclick="abrirDetalleFinanzasFestival('${fId}')">
                                         Abrir Ficha Completa →
                                     </button>
                                 </div>
@@ -11462,7 +11608,7 @@
                     sinLugar = integ.map(a => typeof a === 'string' ? a : (a && a.nombre) || '').filter(n => n && !usados.has(n.trim().toLowerCase()));
                 }
                 elBandeja.style.display = sinLugar.length ? 'flex' : 'none';
-                elBandeja.innerHTML = sinLugar.length ? ('<span class="rb-tit">⚠️ Sin lugar en el rider:</span>' + sinLugar.map(n => '<span class="rb-mus">' + esc(n) + '</span>').join('') + '<span class="rb-ayuda">elegilos en el selector de la celda que corresponda</span>') : '';
+                elBandeja.innerHTML = sinLugar.length ? ('<span class="rb-tit">⚠️ Sin lugar en el rider:</span>' + sinLugar.map(n => '<span class="rb-mus" draggable="true" ondragstart="riderBandejaDragStart(event, this)" data-nombre="' + esc(n) + '" title="Arrastralo a una celda del rider">' + esc(n) + '<button type="button" class="rb-btn" onclick="riderAsignarSinLugar(' + filtroEfectivo + ', this.parentNode.dataset.nombre)" title="Asignarlo en los temas donde su instrumento tiene la celda libre">Asignar a sus temas</button></span>').join('') + '<span class="rb-ayuda">arrastralos a una celda o usá "Asignar a sus temas"</span>') : '';
             }
 
             bandas.forEach((banda, bIdx) => {
@@ -12201,6 +12347,7 @@
 
         function handleMusicoDragStart(e, elem) {
             e.stopPropagation();
+            bandejaArrastradoNombre = null;
             musicoArrastradoData = {
                 banda: elem.getAttribute('data-banda'),
                 tema: elem.getAttribute('data-tema'),
@@ -12216,9 +12363,50 @@
             e.dataTransfer.dropEffect = 'move';
         }
 
+        // Bandeja "Sin lugar en el rider": arrastrar un integrante a una celda
+        let bandejaArrastradoNombre = null;
+        function riderBandejaDragStart(e, elem) {
+            e.stopPropagation();
+            bandejaArrastradoNombre = elem.getAttribute('data-nombre');
+            musicoArrastradoData = null;
+            e.dataTransfer.setData('text/plain', bandejaArrastradoNombre || '');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        // Asigna al integrante en todos los temas de su banda donde haya una columna de su instrumento con la celda libre
+        function riderAsignarSinLugar(bIdx, nombre) {
+            const banda = (participantesFestivalesDB[eventoActualId] || [])[bIdx];
+            if (!banda || !nombre) return;
+            const integ = (banda.tipo === 'jam' ? banda.musicos : banda.alumnos) || [];
+            const obj = integ.find(a => (typeof a === 'string' ? a : (a && a.nombre) || '').trim().toLowerCase() === nombre.trim().toLowerCase());
+            const instAlu = obj && typeof obj === 'object' ? (Array.isArray(obj.instrumentos) && obj.instrumentos.length > 0 ? obj.instrumentos : (obj.instrumento || '')) : '';
+            const columnas = obtenerColumnasRiderEvento().filter(c => instAlu && instrumentoCoincide(instAlu, c.instrumento || inferirInstrumentoDeColumna(c.nombre)));
+            if (!columnas.length) { mostrarToast('No hay una columna que coincida con el instrumento de ' + nombre + '. Arrastralo a la celda que corresponda.', 'warning'); return; }
+            if (!riderAsignacionesFestivales[eventoActualId]) riderAsignacionesFestivales[eventoActualId] = {};
+            const asign = riderAsignacionesFestivales[eventoActualId];
+            let n = 0;
+            (banda.canciones || ['Tema 1']).forEach(t => {
+                const k = (banda.nombre || '') + '_' + t;
+                if (!asign[k]) asign[k] = {};
+                const col = columnas.find(c => { const v = asign[k][c.nombre]; return !v || v === '-' || String(v).trim() === ''; });
+                if (col) { asign[k][col.nombre] = nombre; n++; }
+            });
+            if (!n) { mostrarToast('No hay celdas libres en la columna de ' + nombre + '.', 'info'); return; }
+            guardarRiderCompletoFirestore();
+            mostrarToast(nombre + ' asignado en ' + n + (n === 1 ? ' tema' : ' temas'), 'success');
+            renderizarRiderTecnicoFestival();
+        }
+
         function handleCellDrop(e, cellElem) {
             e.preventDefault();
             e.stopPropagation();
+            if (bandejaArrastradoNombre) {
+                const nombre = bandejaArrastradoNombre;
+                bandejaArrastradoNombre = null;
+                asignarValorRider(cellElem.getAttribute('data-key'), cellElem.getAttribute('data-col'), nombre);
+                renderizarRiderTecnicoFestival();
+                return;
+            }
             if (!musicoArrastradoData) return;
 
             const targetKey = cellElem.getAttribute('data-key');
@@ -13207,8 +13395,8 @@
                         <td>${htmlEstadoCobro(pago.pagada ? 'pagada' : 'debe')}</td>
                         <td>${htmlDetallePagoCobro(pago, h)}</td>
                         <td class="r">${pago.pagada
-                            ? `<button type="button" class="btn-app btn-secondary" style="font-size:12px; padding:3px 10px;" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
-                            : `<button type="button" class="btn-app btn-primary" style="font-size:12px; padding:3px 10px;" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, true)" title="Registrar el cobro">✔ Cobrar</button>`}</td>
+                            ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
+                            : `<button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, true)" title="Registrar el cobro">✔ Cobrar</button>`}</td>
                     </tr>`;
                 });
 
@@ -13533,7 +13721,7 @@
             if (abierto) {
                 const filas = pg.filas.map(f => {
                     const sn = escJs(f.nombre);
-                    const gear = `<button type="button" class="btn-app btn-secondary" style="font-size:12px; padding:3px 7px;" title="Gestionar: excluir del pago o absorber la cuota" onclick="abrirModalGestionarServicioIntegrante('${sb}', ${sIdx}, '${sn}')">⚙️</button>`;
+                    const gear = `<button type="button" class="btn-app btn-secondary btn-sm" title="Gestionar: excluir del pago o absorber la cuota" onclick="abrirModalGestionarServicioIntegrante('${sb}', ${sIdx}, '${sn}')">⚙️</button>`;
                     if (f.estado === 'excluido') {
                         return `<tr style="color:var(--ink-3);"><td>${esc(f.nombre)}</td><td class="r m-cero">—</td><td><span class="pill-status pill-neutral" style="font-size:11px;">Excluido</span></td><td></td><td class="r">${gear}</td></tr>`;
                     }
@@ -13550,8 +13738,8 @@
                         <input type="date" class="installment-date-inp" value="${esc(pago.fecha || '')}"${pagada ? '' : ' disabled'} onchange="actualizarDetalleCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', 'fecha', this.value)">
                     </span>`;
                     const boton = pagada
-                        ? `<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', false)" title="Marcar como pendiente">Deshacer</button>`
-                        : (f.estado === 'absorbida' ? '' : `<button type="button" class="btn-app btn-primary" style="font-size:11px; padding:3px 8px;" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', true)">✔ Cobrar</button>`);
+                        ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', false)" title="Marcar como pendiente">Deshacer</button>`
+                        : (f.estado === 'absorbida' ? '' : `<button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', true)">✔ Cobrar</button>`);
                     return `<tr><td><strong>${esc(f.nombre)}</strong></td><td class="r sec-mono"><strong>${htmlMonto(resPag.cuota)}</strong></td><td>${estadoHtml}</td><td>${detalle}</td><td class="r" style="white-space:nowrap;">${boton} ${gear}</td></tr>`;
                 }).join('');
                 html += `<table class="sec-tabla" style="margin-top:6px;"><thead><tr><th>Integrante</th><th class="r" style="width:110px;">Cuota</th><th style="width:110px;">Estado</th><th>Detalle del pago</th><th class="r" style="width:150px;">Acción</th></tr></thead><tbody>${filas}</tbody></table>`;
@@ -13592,8 +13780,8 @@
             const cubiertoHtml = salaPropia
                 ? '<div class="srv-campo"><span class="srv-k">Resultado</span><span class="pill-status pill-info" title="Lo que cobran los alumnos es ganancia de la escuela; no se paga a ningún proveedor">🏫 Ingreso de la escuela</span></div>'
                 : `<div class="srv-campo"><span class="srv-k">Proveedor</span>${srv.pagadoProveedor
-                    ? `<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 9px; background:var(--ok-bg); color:var(--ok); border-color:color-mix(in srgb, var(--ok) 25%, white);" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, false)" title="Click para desmarcar">☑ Cubierto</button>`
-                    : `<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 9px;" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, true)" title="Tildalo cuando el proveedor ya cobró este servicio. Si los alumnos todavía no pagaron, la escuela lo adelanta y figura como gasto hasta recuperarlo">☐ Cubierto</button>`}</div>`;
+                    ? `<button type="button" class="btn-app btn-secondary btn-sm" style="background:var(--ok-bg); color:var(--ok); border-color:color-mix(in srgb, var(--ok) 25%, white);" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, false)" title="Click para desmarcar">☑ Cubierto</button>`
+                    : `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, true)" title="Tildalo cuando el proveedor ya cobró este servicio. Si los alumnos todavía no pagaron, la escuela lo adelanta y figura como gasto hasta recuperarlo">☐ Cubierto</button>`}</div>`;
             const cuotaExacta = resPag.pagadores.length > 0 ? total / resPag.pagadores.length : 0;
             const hayExcluidos = resPag.excluidos.length > 0;
             const cuotaHtml = resPag.pagadores.length > 0
@@ -13613,7 +13801,7 @@
                     ${cubiertoHtml}
                     <div class="srv-campo srv-crece"><span class="srv-k">Observación</span><input type="text" class="table-inp" value="${esc(srv.obs || '')}" placeholder="Comentario o detalle..." onchange="actualizarServicioAdicional('${sb}', ${sIdx}, 'obs', this.value)"></div>
                     <div class="srv-campo" title="${esc(cuotaTitulo)}"><span class="srv-k">Cuota</span><span style="padding:6px 0; white-space:nowrap;">${cuotaHtml}</span></div>
-                    <div class="srv-campo"><span class="srv-k">&nbsp;</span><button type="button" class="btn-app" style="color:var(--bad); border-color:color-mix(in srgb, var(--bad) 25%, white); padding:3px 8px;" onclick="eliminarServicioAdicional('${sb}', ${sIdx})" title="Eliminar servicio">✕</button></div>
+                    <div class="srv-campo"><span class="srv-k">&nbsp;</span><button type="button" class="btn-app btn-sm" style="color:var(--bad);" onclick="eliminarServicioAdicional('${sb}', ${sIdx})" title="Eliminar servicio">✕</button></div>
                 </div>
                 ${pagos.html}
             </div>`;
@@ -13711,7 +13899,7 @@
                     <span class="sp"></span>
                     ${subtotalBanda > 0 ? `<span class="sec-chip">Total ${htmlMonto(subtotalBanda)}</span>` : ''}
                     ${pillCobro}
-                    <button type="button" class="btn-app btn-primary" style="padding:3px 10px; font-size:11.5px;" onclick="event.stopPropagation(); agregarServicioAdicionalABanda('${sb}')" title="Agregar servicio adicional a esta banda">＋ Servicio</button>
+                    <button type="button" class="btn-app btn-primary btn-sm" onclick="event.stopPropagation(); agregarServicioAdicionalABanda('${sb}')" title="Agregar servicio adicional a esta banda">＋ Servicio</button>
                 </div>${cuerpo}`;
             });
 
@@ -13898,8 +14086,8 @@
                         const estado = pago.pagada ? 'pagada' : (pago.absorbida ? 'absorbida' : 'debe');
                         const h = (campo) => `actualizarDetalleCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', '${campo}', this.value)`;
                         const acciones = pago.pagada
-                            ? `<button type="button" class="btn-app btn-secondary" style="font-size:12px; padding:3px 10px;" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', false)" title="Marcar como pendiente">Deshacer</button>`
-                            : `<div style="display:inline-flex; gap:4px;"><button type="button" class="btn-app btn-primary" style="font-size:12px; padding:3px 10px;" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', true)" title="Registrar el cobro">✔ Cobrar</button><button type="button" class="btn-app btn-secondary" style="font-size:12px; padding:3px 10px;" title="${pago.absorbida ? 'Volver a dejar la cuota por cobrar' : 'No se va a cobrar: la escuela se hace cargo'}" onclick="absorberDesdeFinanzas('${sb}', ${sIdx}, '${si}', ${pago.absorbida ? 'false' : 'true'})">${pago.absorbida ? 'Deshacer' : 'Absorber'}</button></div>`;
+                            ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', false)" title="Marcar como pendiente">Deshacer</button>`
+                            : `<div style="display:inline-flex; gap:4px;"><button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', true)" title="Registrar el cobro">✔ Cobrar</button><button type="button" class="btn-app btn-secondary btn-sm" title="${pago.absorbida ? 'Volver a dejar la cuota por cobrar' : 'No se va a cobrar: la escuela se hace cargo'}" onclick="absorberDesdeFinanzas('${sb}', ${sIdx}, '${si}', ${pago.absorbida ? 'false' : 'true'})">${pago.absorbida ? 'Deshacer' : 'Absorber'}</button></div>`;
 
                         filas += `<tr>
                             <td><strong>${esc(intgNombre)}</strong></td>
@@ -14038,7 +14226,7 @@
             deudores.forEach(al => {
                 const opt = document.createElement('option');
                 opt.value = al.nombre;
-                opt.textContent = `${al.nombre} (${al.banda || 'Participante'} — ${al.faltantes} ent. pendientes)`;
+                opt.textContent = `${al.nombre} (${al.banda || 'Participante'})`;
                 if (alumnoPre && al.nombre === alumnoPre) opt.selected = true;
                 sel.appendChild(opt);
             });
@@ -14398,8 +14586,8 @@
                     <td><span class="pill-status ${pagado ? 'pill-success' : 'pill-warning'}">${pagado ? 'Pagado' : 'Pendiente'}</span></td>
                     <td class="r" style="white-space:nowrap;">
                         ${pagado
-                            ? `<button type="button" class="btn-app btn-secondary" style="padding:3px 10px; font-size:12px;" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, false)" title="Marcar como pendiente">Deshacer</button>`
-                            : `<button type="button" class="btn-app btn-primary" style="padding:3px 10px; font-size:12px;" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, true)">Marcar pagado</button>`}
+                            ? `<button type="button" class="btn-app btn-secondary btn-sm" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, false)" title="Marcar como pendiente">Deshacer</button>`
+                            : `<button type="button" class="btn-app btn-primary btn-sm" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, true)">Marcar pagado</button>`}
                         <button type="button" class="btn-row-del" onclick="eliminarGastoOperativoFestival(${idx})" title="Eliminar gasto">✕</button>
                     </td>
                 `;
@@ -15023,8 +15211,29 @@
             const btnRestablecer = document.getElementById('btn-restablecer-acuerdo-venue');
             const alertaIndefinido = document.getElementById('alerta-acuerdo-a-definir');
             const badgeAcuerdoSup = document.getElementById('badge-acuerdo-ingresos');
+            const boxPorc = document.getElementById('box-porc-escuela');
+            const boxAlq = document.getElementById('box-alquiler-sala');
+            const rotRegla = document.getElementById('rot-regla-acuerdo');
+            const inpAlq = document.getElementById('inp-ingresos-alquiler');
+            if (boxPorc) boxPorc.style.display = estado.esAlquiler ? 'none' : 'inline-flex';
+            if (boxAlq) boxAlq.style.display = estado.esAlquiler ? 'inline-flex' : 'none';
+            if (rotRegla) rotRegla.textContent = estado.esAlquiler ? 'Alquiler de sala' : '% de la escuela';
 
-            if (estado.tipo === 'indefinido') {
+            if (estado.esAlquiler) {
+                if (inpAlq && document.activeElement !== inpAlq) inpAlq.value = estado.alquilerMonto;
+                if (wrapBadge) {
+                    wrapBadge.innerHTML = `<span class="pill-status pill-info" style="font-size:11px; font-weight:700;">🏷️ Acuerdo Venue: Alquiler de sala (${formatearMonedaAr(estado.alquilerAuto)})${estado.alquilerEsManual ? ' · monto modificado en este evento' : ''}</span>`;
+                }
+                if (badgeAcuerdoSup) {
+                    badgeAcuerdoSup.textContent = `Acuerdo: Alquiler de sala (${formatearMonedaAr(estado.alquilerMonto)})`;
+                    badgeAcuerdoSup.className = 'pill-status pill-neutral';
+                }
+                if (btnRestablecer) {
+                    if (estado.alquilerEsManual) { btnRestablecer.style.display = 'inline-flex'; btnRestablecer.innerHTML = `↺ Restablecer a Venue (${formatearMonedaAr(estado.alquilerAuto)})`; }
+                    else btnRestablecer.style.display = 'none';
+                }
+                if (alertaIndefinido) alertaIndefinido.style.display = 'none';
+            } else if (estado.tipo === 'indefinido') {
                 if (inpEscuela && document.activeElement !== inpEscuela) {
                     inpEscuela.value = '';
                 }
@@ -15116,8 +15325,28 @@
         }
         window.alCambiarPorcentajeEscuelaManual = alCambiarPorcentajeEscuelaManual;
 
+        // Alquiler de sala: cambiar el monto solo en este evento (el del venue queda igual)
+        function alCambiarAlquilerManual(val) {
+            const d = obtenerDatosIngresosEventoActual();
+            const estado = obtenerEstadoAcuerdoFestival(eventoActualId);
+            const num = parseFloat(val);
+            if (isNaN(num) || num < 0) return;
+            if (num === estado.alquilerAuto) { d.alquilerManual = false; delete d.alquilerMonto; }
+            else { d.alquilerManual = true; d.alquilerMonto = Math.round(num); }
+            recalcularIngresosFestival(true);
+            actualizarBadgesAcuerdoUI();
+        }
+        window.alCambiarAlquilerManual = alCambiarAlquilerManual;
+
         function restablecerAcuerdoVenue() {
             const d = obtenerDatosIngresosEventoActual();
+            if (obtenerEstadoAcuerdoFestival(eventoActualId).esAlquiler) {
+                d.alquilerManual = false; delete d.alquilerMonto;
+                mostrarToast('Monto del alquiler restablecido al del venue', 'info');
+                renderizarIngresosFestival();
+                recalcularIngresosFestival(true);
+                return;
+            }
             d.porcEscuelaManual = false;
             const estado = obtenerEstadoAcuerdoFestival(eventoActualId);
             d.porcEscuela = (estado.porcAuto !== null) ? estado.porcAuto : null;
@@ -15183,7 +15412,9 @@
                 // El rótulo del canon dice cómo se calculó
                 const rotSadaic = document.getElementById('rot-calc-sadaic');
                 if (rotSadaic) {
-                    if (sadaicRes.tipo === 'porcentaje') {
+                    if (sadaicRes.omitido) {
+                        rotSadaic.textContent = 'Canon SADAIC (no aplica)';
+                    } else if (sadaicRes.tipo === 'porcentaje') {
                         rotSadaic.textContent = `Canon SADAIC (${sadaicRes.porcentaje}% de la taquilla)`;
                     } else {
                         const nombreBase = (sadaicRes.baseEntrada === 'preventa') ? 'preventa' : 'general';
@@ -15195,12 +15426,14 @@
             const parteVenue = Math.max(0, basePostSadaic - netoEscuelaOnline);
             montoHtml('txt-calc-parte-venue', parteVenue);
             const rotVenue = document.getElementById('rot-calc-parte-venue');
-            if (rotVenue) rotVenue.textContent = esIndefinido ? 'Parte del venue (a definir)' : `Parte del venue (${Math.max(0, 100 - porcEscuela)}%)`;
+            if (rotVenue) rotVenue.textContent = taq.esAlquiler ? 'Alquiler de sala (monto fijo)' : (esIndefinido ? 'Parte del venue (a definir)' : `Parte del venue (${Math.max(0, 100 - porcEscuela)}%)`);
             montoHtml('txt-calc-descuentos-tot', montoSadaic + parteVenue);
             if (txtBase) txtBase.innerHTML = htmlMonto(basePostSadaic);
             if (txtNeto) txtNeto.innerHTML = htmlMonto(netoEscuelaOnline, { resultado: true });
             if (txtSubNeto) {
-                if (esIndefinido) {
+                if (taq.esAlquiler) {
+                    txtSubNeto.textContent = 'Saldo posterior a SADAIC menos el alquiler de sala (se paga el día del festival)';
+                } else if (esIndefinido) {
                     txtSubNeto.innerHTML = `<span style="color:var(--bad); font-weight:700;">⚠️ % no definido: se usa ${porcEscuela}% del saldo posterior a SADAIC (editable)</span>`;
                 } else if (porcEscuela === 100) {
                     txtSubNeto.textContent = `100% del saldo posterior a SADAIC (Sin % para venue)`;
@@ -15253,6 +15486,8 @@
                     montoSadaic,
                     porcEscuela: esIndefinido ? null : porcEscuela,
                     porcEscuelaManual: Boolean(datos.porcEscuelaManual),
+                    alquilerManual: Boolean(datos.alquilerManual),
+                    alquilerMonto: datos.alquilerManual ? Number(datos.alquilerMonto) || 0 : null,
                     ventasEspeciales: datos.ventasEspeciales || [],
                     gastosOperativos: datos.gastosOperativos || [],
                     coberturaEscuelaPagada: Boolean(datos.coberturaEscuelaPagada),
@@ -15867,8 +16102,8 @@
             const monto = Number(e.deudaMonto) || 0;
             const falt = Number(e.faltantes) || 0;
             const ceroGris = '<span class="m-cero">$ 0</span>';
-            const btnPlan = (titulo, textoBtn, m, f) => `<button type="button" class="btn-app btn-secondary" style="padding:3px 8px; font-size:12px;" title="${titulo}" onclick="configurarCobroCuotas('${sid}', '${sn}', ${m}, ${f})">${textoBtn}</button>`;
-            const btnCobrar = (texto, titulo) => `<button type="button" class="btn-app btn-primary" style="padding:3px 9px; font-size:12px;" title="${titulo}" onclick="irACobrosDesdeCierreEntradas('${sid}')">${texto}</button>`;
+            const btnPlan = (titulo, textoBtn, m, f) => `<button type="button" class="btn-app btn-secondary btn-sm" title="${titulo}" onclick="configurarCobroCuotas('${sid}', '${sn}', ${m}, ${f})">${textoBtn}</button>`;
+            const btnCobrar = (texto, titulo) => `<button type="button" class="btn-app btn-primary btn-sm" title="${titulo}" onclick="irACobrosDesdeCierreEntradas('${sid}')">${texto}</button>`;
             const envolver = (html) => html ? `<div class="cierre-acciones">${html}</div>` : '';
             const deudaEditable = `<input type="text" class="spreadsheet-inp inp-deuda-manual-participante" title="Click para editar el monto real a pagar por incumplimiento de este alumno" value="-$ ${monto.toLocaleString('es-AR')}" onfocus="enfocarInputDeudaManualParticipante(this, '${sid}')" onblur="formatearInputDeudaManualParticipante(this, '${sid}')" onchange="actualizarDeudaManualParticipante('${sid}', this.value)">`;
 
@@ -16819,9 +17054,9 @@
                         <td>${htmlDetallePagoCobro(p, h, { obs: true })}</td>
                         <td class="r"><div style="display:inline-flex; align-items:center; gap:4px;">
                             ${p.pagada
-                                ? `<button type="button" class="btn-app btn-secondary" style="font-size:12px; padding:3px 10px;" onclick="cambiarEstadoPagoContratoAlumno('${sid}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
-                                : `<button type="button" class="btn-app btn-primary" style="font-size:12px; padding:3px 10px;" onclick="cambiarEstadoPagoContratoAlumno('${sid}', ${cIdx}, true)" title="Registrar el cobro">✔ Cobrar</button>`}
-                            <button type="button" class="btn-app btn-secondary" title="Modificar plan de cuotas" onclick="configurarCobroCuotas('${sid}', '${sn}', ${deudaMonto}, ${faltantes})" style="padding:3px 8px; font-size:12px;">⚙️</button>
+                                ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoPagoContratoAlumno('${sid}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
+                                : `<button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoPagoContratoAlumno('${sid}', ${cIdx}, true)" title="Registrar el cobro">✔ Cobrar</button>`}
+                            <button type="button" class="btn-app btn-secondary btn-sm" title="Modificar plan de cuotas" onclick="configurarCobroCuotas('${sid}', '${sn}', ${deudaMonto}, ${faltantes})">⚙️</button>
                         </div></td>
                     </tr>`;
                 });
@@ -17528,13 +17763,13 @@
                 if (colapsada) tr.style.display = 'none';
                 const botonAccion = esTraspasoItem
                     ? (item.estadoTraspaso === 'asignado'
-                        ? `<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 9px;" title="Ir al festival donde se cubre" onclick="irAFestivalDesdeDeudas('${item.destinoFestId}', event)">Ver festival</button>`
-                        : `<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 9px;" title="Configurar el traspaso" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">Gestionar</button>`)
-                    : `<button type="button" class="btn-app btn-primary" style="font-size:11px; padding:3px 10px; font-weight:600;" onclick="saldarDeudaIndividual('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}')">${esPago ? 'Pagar' : 'Cobrar'}</button>`;
+                        ? `<button type="button" class="btn-app btn-secondary btn-sm" title="Ir al festival donde se cubre" onclick="irAFestivalDesdeDeudas('${item.destinoFestId}', event)">Ver festival</button>`
+                        : `<button type="button" class="btn-app btn-secondary btn-sm" title="Configurar el traspaso" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">Gestionar</button>`)
+                    : `<button type="button" class="btn-app btn-primary btn-sm" onclick="saldarDeudaIndividual('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}')">${esPago ? 'Pagar' : 'Cobrar'}</button>`;
                 const botonAbsorber = (item.tipo === 'servicio_alumno')
-                    ? `<button type="button" class="btn-app btn-secondary" style="font-size:11px; padding:3px 8px;" title="No se va a cobrar: la escuela se hace cargo de esta cuota" onclick="absorberDesdeDeudas('${item.festId}', '${escJs(item.bandaServicio || item.itemId)}', '${item.idxCuota}')">Absorber</button>` : '';
+                    ? `<button type="button" class="btn-app btn-secondary btn-sm" title="No se va a cobrar: la escuela se hace cargo de esta cuota" onclick="absorberDesdeDeudas('${item.festId}', '${escJs(item.bandaServicio || item.itemId)}', '${item.idxCuota}')">Absorber</button>` : '';
                 const botonCuotas = (!esPago && !esTraspasoItem && item.tipo !== 'servicio_alumno' && item.tipo !== 'banda_cobertura')
-                    ? `<button type="button" class="btn-app btn-secondary" style="font-size:12px; padding:3px 6px;" title="Plan de cuotas" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">⚙️</button>` : '';
+                    ? `<button type="button" class="btn-app btn-secondary btn-sm" title="Plan de cuotas" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">⚙️</button>` : '';
                 tr.innerHTML = `
                     <td class="col-chk-deudas" style="text-align:center;">
                         <input type="checkbox" class="chk-item-deuda"
@@ -17552,7 +17787,7 @@
                     <td class="col-accion-deudas col-accion-cell" style="text-align:center; white-space:nowrap;">
                         <div style="display:inline-flex; align-items:center; gap:4px; justify-content:center;">
                             ${botonAccion}${botonAbsorber}${botonCuotas}
-                            <button type="button" class="btn-app btn-secondary btn-detalle-deuda no-print" data-deuda-id="${idSeguro}" style="font-size:12px; padding:3px 7px;" title="Ver medio de pago, responsable y observaciones" onclick="alternarDetalleDeuda('${idSeguro}')">▾</button>
+                            <button type="button" class="btn-app btn-secondary btn-detalle-deuda no-print btn-sm" data-deuda-id="${idSeguro}" title="Ver medio de pago, responsable y observaciones" onclick="alternarDetalleDeuda('${idSeguro}')">▾</button>
                         </div>
                     </td>`;
                 tbody.appendChild(tr);
@@ -17596,10 +17831,12 @@
                             <span class="pill-status pill-neutral" style="font-size:11px;">${grupo.items.filter(i => !i.soloSeguimiento).length || grupo.items.length} ${grupo.items.filter(i => !i.soloSeguimiento).length ? 'pendientes' : 'en seguimiento'}</span>
                         </div>
                     </td>
-                    <td colspan="2" style="text-align:right; padding:10px 14px; font-size:12px; font-family:'Geist Mono'; font-variant-numeric:tabular-nums;">
-                        <span style="margin-right:12px;">A pagar ${fmt(grupo.totEscuela)}</span>
-                        <span style="margin-right:12px;">A cobrar ${fmt(grupo.totCobros)}</span>
+                    <td colspan="2" style="text-align:right; padding:10px 14px; font-size:12px; font-family:'Geist Mono'; font-variant-numeric:tabular-nums; white-space:normal; overflow-wrap:anywhere;">
+                        <div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:2px 12px;">
+                        <span>A pagar ${fmt(grupo.totEscuela)}</span>
+                        <span>A cobrar ${fmt(grupo.totCobros)}</span>
                         <strong class="${balGrupo >= 0 ? 'm-pos' : 'm-neg'}">Saldo ${balSigno}${Math.abs(balGrupo).toLocaleString('es-AR')}</strong>
+                        </div>
                     </td>`;
                 tbody.appendChild(trHeader);
 

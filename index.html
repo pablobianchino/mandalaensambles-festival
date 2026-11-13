@@ -12,14 +12,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v1.7">
-    <script src="src/ui/iconos.js?v=v1.7"></script>
+    <link rel="stylesheet" href="styles.css?v=v1.8">
+    <script src="src/ui/iconos.js?v=v1.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v1.7" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v1.8" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1770,9 +1770,10 @@
                                         <span id="box-porc-escuela" style="display:inline-flex; align-items:center; gap:6px;">
                                             <input type="number" id="inp-ingresos-porc-escuela" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:80px; padding:3px 6px;" value="70" min="0" max="100" oninput="alCambiarPorcentajeEscuelaManual(this.value)"> % Escuela
                                         </span>
-                                        <span id="box-alquiler-sala" style="display:none; align-items:center; gap:6px;">
+                                        <span id="box-alquiler-sala" style="display:none; align-items:center; gap:6px; flex-wrap:wrap;">
                                             Importe <strong id="txt-ingresos-alquiler" style="font-family:'Geist Mono'; font-weight:800;" title="Valor del venue al armar el evento. Queda congelado: si el venue lo cambia después, este evento no se modifica">$ 0</strong> <span title="Congelado: si el venue cambia su valor, este evento no se modifica">🔒</span>
                                             &nbsp; Seña ya pagada $ <input type="text" inputmode="numeric" autocomplete="off" id="inp-ingresos-sena" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:110px; padding:3px 6px; text-align:right;" value="0" oninput="formatearMontoInput(this); alCambiarSenaVenue(montoDesdeInput(this.value))" title="Seña entregada al venue para reservar. Se descuenta de lo que se paga el día del festival (no cambia el ingreso neto: el monto fijo es el mismo)">
+                                            &nbsp; Entradas que cobró el venue en efectivo <input type="number" id="inp-ingresos-efvenue-cant" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:62px; padding:3px 6px; text-align:center;" value="0" min="0" step="1" oninput="alCambiarEfectivoVenue()" title="Entradas de puerta que el venue cobró y se quedó como parte del pago. Tienen que estar incluidas en la cantidad vendida en puerta."> × $ <input type="text" inputmode="numeric" autocomplete="off" id="inp-ingresos-efvenue-valor" class="form-control" style="font-family:'Geist Mono'; font-weight:800; width:100px; padding:3px 6px; text-align:right;" placeholder="precio puerta" oninput="formatearMontoInput(this); alCambiarEfectivoVenue()" title="Valor de cada entrada. Si lo dejás vacío se usa el precio de puerta del evento.">
                                         </span>
                                         <span id="wrap-badge-acuerdo-venue"><span class="pill-status pill-info" style="font-size:11px;">🏷️ Acuerdo Venue: 70% Escuela (Automático)</span></span>
                                         <button type="button" id="btn-restablecer-acuerdo-venue" class="btn-app btn-secondary btn-sm" style="display:none;" onclick="restablecerAcuerdoVenue()" title="Volver al acuerdo predeterminado del venue">↺ Restablecer a Venue</button>
@@ -1792,7 +1793,8 @@
                                             <div class="fin-r"><em id="rot-calc-parte-venue">Parte del venue</em><strong id="txt-calc-parte-venue">$ 0</strong></div>
                                             <div class="fin-r fin-tot"><em>Total descuentos</em><strong id="txt-calc-descuentos-tot">$ 0</strong></div>
                                             <div class="fin-r" id="fila-sena-venue" style="display:none; color:var(--ink-3);"><em>Seña ya pagada al venue</em><strong id="txt-calc-sena-venue">$ 0</strong></div>
-                                            <div class="fin-r" id="fila-saldo-venue" style="display:none;"><em>A pagar al venue el día del festival</em><strong id="txt-calc-saldo-venue">$ 0</strong></div>
+                                            <div class="fin-r" id="fila-efectivo-venue" style="display:none; color:var(--ink-3);"><em id="rot-efectivo-venue">Entradas que cobró el venue en efectivo</em><strong id="txt-calc-efectivo-venue">$ 0</strong></div>
+                                            <div class="fin-r" id="fila-saldo-venue" style="display:none;"><em id="rot-saldo-venue">A pagar al venue el día del festival</em><strong id="txt-calc-saldo-venue">$ 0</strong></div>
                                         </div>
                                         <div class="fin-g fin-g-res"><h4>Resultado</h4>
                                             <div class="fin-r fin-tot" style="border-top:0; margin-top:0;"><em>Ingreso neto de la escuela</em><strong id="txt-calc-neto-escuela">$ 0</strong></div>
@@ -2326,7 +2328,7 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3 id="modal-crear-evento-titulo">🎪 Crear Nuevo Evento</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="modal-evento-origen-id" value="">
@@ -2382,7 +2384,7 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3 id="modal-productora-titulo">🎬 Nueva Productora</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -2423,7 +2425,7 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3>✏️ Editar Datos del Festival</h3>
-                <button class="btn-close-modal" onclick="cerrarModalConAviso('form-edit-evento')">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModalConAviso('form-edit-evento')" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <form id="form-edit-evento" onsubmit="guardarEdicionFicha(event)">
                 <div class="modal-body">
@@ -2485,7 +2487,7 @@
         <div class="modal-box" style="width:480px;">
             <div class="modal-header">
                 <h3>📜 Configurar Contrato del Festival</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -2513,7 +2515,7 @@
         <div class="modal-box" style="width:400px;">
             <div class="modal-header">
                 <h3>🔒 Cambiar Contraseña</h3>
-                <button class="btn-close-modal" id="pass-btn-cerrar" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" id="pass-btn-cerrar" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <div id="pass-aviso-forzado" style="display:none; padding:10px 12px; background:#fef3c7; border:1px solid color-mix(in srgb, var(--warn) 30%, white); border-radius:8px; color:var(--warn); font-size:12.5px; font-weight:600; margin-bottom:12px; line-height:1.4;">Por seguridad, tenés que cambiar tu contraseña inicial antes de continuar.</div>
@@ -2543,7 +2545,7 @@
         <div class="modal-box" style="width:480px;">
             <div class="modal-header">
                 <h3 id="modal-deuda-titulo">⚙️ Entradas pendientes</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="modal-deuda-participante-id">
@@ -2655,7 +2657,7 @@
         <div class="modal-box" style="width:460px;">
             <div class="modal-header">
                 <h3>🛠️ Gestionar pago del servicio</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="gsrv-banda"><input type="hidden" id="gsrv-idx"><input type="hidden" id="gsrv-nombre"><input type="hidden" id="gsrv-pagada">
@@ -2692,7 +2694,7 @@
         <div class="modal-box" style="width:480px;">
             <div class="modal-header">
                 <h3>👤 Agregar Participante al Festival</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -2734,7 +2736,7 @@
         <div class="modal-box" style="width:520px;">
             <div class="modal-header">
                 <h3 id="modal-venue-titulo">📍 Nuevo Venue</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="venue-edit-id">
@@ -2824,7 +2826,7 @@
                         Importá múltiples salas desde una planilla Excel respetando las columnas especificadas.
                     </span>
                 </div>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <!-- Banner de Formato Requerido -->
@@ -2903,7 +2905,7 @@
                         Importá festivales pasados (2025-2026) para alimentar las estadísticas y comparativas anuales.
                     </span>
                 </div>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <!-- Banner de Formato Requerido -->
@@ -2994,7 +2996,7 @@
                         Importá múltiples gastos para el año 2025 o 2026 desde un archivo Excel directamente a la Caja.
                     </span>
                 </div>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <!-- Banner de Formato Requerido y Plantilla -->
@@ -3081,7 +3083,7 @@
         <div class="modal-box" style="width:580px; max-height:90vh; overflow-y:auto;">
             <div class="modal-header">
                 <h3>👥 Incorporar Artistas al Festival</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -3163,7 +3165,7 @@
         <div class="modal-box" style="width:460px;">
             <div class="modal-header">
                 <h3>🎸 Nueva Columna en Rider Técnico</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -3196,7 +3198,7 @@
         <div class="modal-box" style="width:440px;">
             <div class="modal-header">
                 <h3 id="modal-nota-rider-titulo">📝 Nota Técnica</h3>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="modal-nota-tipo">
@@ -3230,7 +3232,7 @@
                         Importá múltiples ítems de equipamiento e instrumentos desde un archivo Excel directamente al Checklist.
                     </span>
                 </div>
-                <button class="btn-close-modal" onclick="cerrarModales()">&times;</button>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
                 <!-- Banner formato y descarga modelo -->
@@ -3738,7 +3740,11 @@
             const netoEscuelaOnline = esAlquiler ? Math.round(basePostSadaic) - alquilerSala : Math.round(basePostSadaic * (porcEscuela / 100));
             // Seña ya entregada al venue: no cambia el ingreso neto (el alquiler es el mismo), solo lo que resta pagar el día del festival
             const senaVenue = esAlquiler ? Math.min(alquilerSala, Math.max(0, Number(fin.senaVenue) || 0)) : 0;
-            const saldoVenue = esAlquiler ? alquilerSala - senaVenue : 0;
+            // Entradas de puerta que el venue cobró en efectivo y se quedó: reducen lo que se le paga (siguen siendo ventas del evento)
+            const efectivoVenueCant = esAlquiler ? Math.max(0, parseInt(fin.efectivoVenueCant, 10) || 0) : 0;
+            const efectivoVenueValor = esAlquiler ? ((Number(fin.efectivoVenueValor) > 0) ? Number(fin.efectivoVenueValor) : pPue) : 0;
+            const efectivoVenue = efectivoVenueCant * efectivoVenueValor;
+            const saldoVenue = esAlquiler ? alquilerSala - senaVenue - efectivoVenue : 0;
 
             let totVentasEspeciales = 0;
             let cantVentasEspeciales = 0;
@@ -3751,7 +3757,7 @@
             return {
                 cantPreventa: cPrev, cantGeneral: cGen, cantPuerta: cPue,
                 cantTaquilla, brutoTaquilla, usaBrutoHistorico,
-                porcEscuela, porcAsumido, acuerdo, esAlquiler, alquilerSala, senaVenue, saldoVenue,
+                porcEscuela, porcAsumido, acuerdo, esAlquiler, alquilerSala, senaVenue, saldoVenue, efectivoVenueCant, efectivoVenueValor, efectivoVenue,
                 sadaicRes, montoSadaic, basePostSadaic, netoEscuelaOnline,
                 totVentasEspeciales, cantVentasEspeciales,
                 brutoTotal: brutoTaquilla + totVentasEspeciales,
@@ -5732,7 +5738,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v1.7";
+        const APP_VERSION = "v1.8";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -15252,6 +15258,12 @@
                 if (txtAlq) txtAlq.textContent = formatearMonedaAr(estado.alquilerMonto);
                 const inpSena = document.getElementById('inp-ingresos-sena');
                 if (inpSena && document.activeElement !== inpSena) { const sv = obtenerDatosIngresosEventoActual().senaVenue || 0; inpSena.value = sv ? sv.toLocaleString('es-AR') : ''; }
+                const dEf = obtenerDatosIngresosEventoActual();
+                const inpEfC = document.getElementById('inp-ingresos-efvenue-cant');
+                const inpEfV = document.getElementById('inp-ingresos-efvenue-valor');
+                if (inpEfC && document.activeElement !== inpEfC) inpEfC.value = dEf.efectivoVenueCant || 0;
+                if (inpEfV && document.activeElement !== inpEfV) inpEfV.value = dEf.efectivoVenueValor ? Number(dEf.efectivoVenueValor).toLocaleString('es-AR') : '';
+                if (inpEfV) inpEfV.placeholder = 'puerta ' + formatearMonedaAr(Number((obtenerEntradasEventoActual() || {}).puerta) || 0);
                 if (wrapBadge) {
                     wrapBadge.innerHTML = `<span class="pill-status pill-info" style="font-size:11px; font-weight:700;">🏷️ Acuerdo Venue: ${NOMBRE_PAGO_FIJO} (${formatearMonedaAr(estado.alquilerMonto)})</span>` + (estado.alquilerDifiere ? ` <span class="pill-status pill-warning" style="font-size:11px; font-weight:700;" title="Este evento conserva el valor con el que se armó">El venue hoy tiene ${formatearMonedaAr(estado.alquilerAuto)}</span>` : '');
                 }
@@ -15365,6 +15377,16 @@
         }
         window.alCambiarSenaVenue = alCambiarSenaVenue;
 
+        // Entradas que el venue cobró en efectivo (cantidad y valor unitario; vacío = precio de puerta)
+        function alCambiarEfectivoVenue() {
+            const d = obtenerDatosIngresosEventoActual();
+            d.efectivoVenueCant = Math.max(0, parseInt(document.getElementById('inp-ingresos-efvenue-cant')?.value, 10) || 0);
+            const v = montoDesdeInput(document.getElementById('inp-ingresos-efvenue-valor')?.value);
+            d.efectivoVenueValor = v > 0 ? v : null;
+            recalcularIngresosFestival(true);
+        }
+        window.alCambiarEfectivoVenue = alCambiarEfectivoVenue;
+
         function restablecerAcuerdoVenue() {
             const d = obtenerDatosIngresosEventoActual();
             if (obtenerEstadoAcuerdoFestival(eventoActualId).esAlquiler) {
@@ -15467,11 +15489,21 @@
             // Seña al venue (solo con alquiler de sala): se descuenta de lo que se paga el día del festival
             const filaSena = document.getElementById('fila-sena-venue');
             const filaSaldoV = document.getElementById('fila-saldo-venue');
+            const filaEfV = document.getElementById('fila-efectivo-venue');
+            const hayDescuentosVenue = taq.esAlquiler && (taq.senaVenue > 0 || taq.efectivoVenue > 0);
             if (filaSena) filaSena.style.display = (taq.esAlquiler && taq.senaVenue > 0) ? '' : 'none';
-            if (filaSaldoV) filaSaldoV.style.display = (taq.esAlquiler && taq.senaVenue > 0) ? '' : 'none';
-            if (taq.esAlquiler && taq.senaVenue > 0) {
-                montoHtml('txt-calc-sena-venue', taq.senaVenue);
-                montoHtml('txt-calc-saldo-venue', taq.saldoVenue);
+            if (filaEfV) filaEfV.style.display = (taq.esAlquiler && taq.efectivoVenue > 0) ? '' : 'none';
+            if (filaSaldoV) filaSaldoV.style.display = hayDescuentosVenue ? '' : 'none';
+            if (taq.esAlquiler && taq.senaVenue > 0) montoHtml('txt-calc-sena-venue', taq.senaVenue);
+            if (taq.esAlquiler && taq.efectivoVenue > 0) {
+                montoHtml('txt-calc-efectivo-venue', taq.efectivoVenue);
+                const rotEf = document.getElementById('rot-efectivo-venue');
+                if (rotEf) rotEf.textContent = 'Entradas que cobró el venue en efectivo (' + taq.efectivoVenueCant + ' × ' + formatearMonedaAr(taq.efectivoVenueValor) + ')';
+            }
+            if (hayDescuentosVenue) {
+                const rotSaldo = document.getElementById('rot-saldo-venue');
+                if (rotSaldo) rotSaldo.textContent = taq.saldoVenue < 0 ? 'A favor de la escuela (el venue retuvo de más)' : 'A pagar al venue el día del festival';
+                montoHtml('txt-calc-saldo-venue', Math.abs(taq.saldoVenue));
             }
             if (txtBase) txtBase.innerHTML = htmlMonto(basePostSadaic);
             if (txtNeto) txtNeto.innerHTML = htmlMonto(netoEscuelaOnline, { resultado: true });
@@ -15532,6 +15564,8 @@
                     porcEscuela: esIndefinido ? null : porcEscuela,
                     porcEscuelaManual: Boolean(datos.porcEscuelaManual),
                     senaVenue: Math.max(0, Number(datos.senaVenue) || 0),
+                    efectivoVenueCant: Math.max(0, parseInt(datos.efectivoVenueCant, 10) || 0),
+                    efectivoVenueValor: Number(datos.efectivoVenueValor) > 0 ? Number(datos.efectivoVenueValor) : null,
                     alquilerCongelado: (datos.alquilerCongelado !== undefined && datos.alquilerCongelado !== null) ? Number(datos.alquilerCongelado) : null,
                     ventasEspeciales: datos.ventasEspeciales || [],
                     gastosOperativos: datos.gastosOperativos || [],

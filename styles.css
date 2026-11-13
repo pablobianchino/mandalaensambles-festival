@@ -2453,6 +2453,53 @@ tr.drag-over {
 .modal-footer > .btn-danger { margin-right: auto; }
 @media (max-width: 600px) { .modal-footer { flex-wrap: wrap; } .modal-footer .btn-app { flex: 1 1 auto; } }
 
+/* =======================================================================
+   CONTROLES CHICOS — definición de la suite (cruz de cierre, solo ícono, botón mini)
+   ======================================================================= */
+button .ico-linea, a .ico-linea, button .ico-e, button .ico-e-w, a .ico-e { pointer-events: none; }
+
+.ds-icon-btn { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 30px; height: 30px; padding: 0; border-radius: var(--r-sm); border: 1px solid transparent; background: transparent; color: var(--ink-3); cursor: pointer; line-height: 1; transition: background .15s, color .15s; }
+.ds-icon-btn .ico-linea { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ds-icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+.ds-icon-btn:focus-visible { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-100); }
+.ds-icon-btn.sm { width: 26px; height: 26px; }
+.ds-icon-btn.sm .ico-linea { width: 14px; height: 14px; }
+.ds-icon-btn.ds-cerrar { width: 32px; height: 32px; }
+.ds-icon-btn.peligro:hover { background: var(--bad-bg); color: var(--bad); }
+.ds-icon-btn.borde { border-color: var(--line-2); background: var(--surface); }
+.ds-mini { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line-2); color: var(--ink-2); font: 700 12px var(--font); cursor: pointer; transition: background .15s, border-color .15s, color .15s; }
+.ds-mini .ico-linea { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ds-mini.agregar { color: var(--teal); }
+.ds-mini:hover { background: var(--teal-50); border-color: var(--teal-100); color: var(--teal); }
+.ds-mini.activo { background: var(--teal-50); border-color: var(--teal-100); color: var(--teal-700); }
+
+/* Cruz de cierre de ventanas (ícono de línea de 16 px) */
+.btn-close-modal { width: 32px; height: 32px; padding: 0; border: 1px solid transparent; background: transparent; border-radius: var(--r-sm); color: var(--ink-3); display: inline-grid; place-items: center; cursor: pointer; line-height: 1; }
+.btn-close-modal .ico-linea { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-close-modal:hover { background: var(--surface-2); color: var(--ink); }
+
+/* Quitar fila / columna / aviso: ícono de línea dibujado por CSS (el carácter ✕ queda oculto), 26 px, peligro al pasar el mouse */
+.btn-row-del, .mandala-toast-close { position: relative; width: 26px; height: 26px; padding: 0; font-size: 0 !important; color: var(--ink-3); border-radius: var(--r-sm); border: 1px solid transparent; background: transparent; cursor: pointer; display: inline-grid; place-items: center; }
+.btn-row-del::before, .mandala-toast-close::before { content: ''; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--ico-quitar) center / contain no-repeat; mask: var(--ico-quitar) center / contain no-repeat; }
+.btn-row-del { --ico-quitar: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6'/></svg>"); }
+.mandala-toast-close { --ico-quitar: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 6l12 12M18 6L6 18'/></svg>"); }
+.btn-row-del:hover { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+.mandala-toast-close:hover { background: var(--surface-2); color: var(--ink); }
+.btn-del-col { position: relative; font-size: 0 !important; width: 16px; height: 16px; padding: 0; color: var(--ink-3); border-radius: var(--r-sm); }
+.btn-del-col::before { content: ''; display: block; margin: auto; width: 11px; height: 11px; background: currentColor; -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'><path d='M6 6l12 12M18 6L6 18'/></svg>") center / contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'><path d='M6 6l12 12M18 6L6 18'/></svg>") center / contain no-repeat; }
+.btn-del-col:hover { background: var(--bad-bg); color: var(--bad); }
+
+/* Mini botones con texto (+ Canción, + Banda…) */
+.btn-table-pill { height: 26px; padding: 0 9px; background: var(--surface); border: 1px solid var(--line-2); color: var(--teal); gap: 5px; }
+.btn-table-pill:hover { background: var(--teal-50); border-color: var(--teal-100); color: var(--teal); }
+
+/* Rider: controles apretados de la grilla (mantienen su tamaño compacto, con el mismo aspecto: gris suave, hover claro, sin zoom) */
+#tabla-rider-interactiva .btn-col-nota, #tabla-rider-interactiva .btn-tema-nota, #tabla-rider-interactiva .btn-cell-copy, #tabla-rider-interactiva .btn-cell-paste { opacity: 1; color: var(--ink-3); }
+#tabla-rider-interactiva .btn-col-nota:hover, #tabla-rider-interactiva .btn-tema-nota:hover, #tabla-rider-interactiva .btn-cell-copy:hover, #tabla-rider-interactiva .btn-cell-paste:hover { background: var(--surface-2); color: var(--ink); transform: none; }
+#tabla-rider-interactiva .btn-col-nota.has-note, #tabla-rider-interactiva .btn-tema-nota.has-note { color: var(--warn); filter: none; }
+#tabla-rider-interactiva .btn-cell-paste { color: var(--ink-3); }
+#tabla-rider-interactiva .btn-cell-copy:focus-visible, #tabla-rider-interactiva .btn-cell-paste:focus-visible, #tabla-rider-interactiva .btn-col-nota:focus-visible, #tabla-rider-interactiva .btn-tema-nota:focus-visible, #tabla-rider-interactiva .btn-del-col:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--teal-100); }
+
 /* TABLAS DE LISTA: una sola piel (referencia: Eventos) para Eventos, Venues, Sesionistas, Finanzas y Deudas */
 #tabla-eventos-filas, #tabla-venues-lista, #tabla-sesionistas-lista, #tabla-finanzas-resumen-filas, #tabla-deudas-consolidada { border: 0 !important; background: transparent !important; }
 #tabla-eventos-filas th, #tabla-venues-lista th, #tabla-sesionistas-lista th, #tabla-finanzas-resumen-filas th, #tabla-deudas-consolidada th { background: var(--surface-2) !important; border: 0 !important; box-shadow: inset 0 -1px 0 var(--line) !important; color: var(--ink-3) !important; padding: 10px 14px !important; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }

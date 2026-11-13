@@ -147,7 +147,7 @@
         if (!s.omitido) calc.push(['SADAIC (' + txt(s.descripcion || '') + ')', '- ' + ars(taq.montoSadaic)]);
         if (taq.esAlquiler) calc.push([nombrePF + ' acordado', '- ' + ars(taq.alquilerSala)]);
         else calc.push(['Parte del venue (' + Math.max(0, 100 - taq.porcEscuela) + '% de ' + ars(taq.basePostSadaic) + ')', '- ' + ars(taq.basePostSadaic - taq.netoEscuelaOnline)]);
-        var hayAlquilerConSena = taq.esAlquiler && taq.senaVenue > 0;
+        var hayAlquilerConSena = taq.esAlquiler && (taq.senaVenue > 0 || taq.efectivoVenue > 0);
         calc.push(['Ventas especiales (100% de la escuela)', '+ ' + ars(taq.totVentasEspeciales)]);
         doc.autoTable(Object.assign({}, estiloTabla, {
             startY: y,
@@ -165,17 +165,23 @@
             titulo('Pago al venue (' + nombrePF.toLowerCase() + ')');
             doc.autoTable(Object.assign({}, estiloTabla, {
                 startY: y,
-                body: [
-                    [nombrePF + ' acordado', ars(taq.alquilerSala)],
-                    ['Seña ya pagada para reservar', '- ' + ars(taq.senaVenue)]
-                ],
-                foot: [['Saldo pagado al venue el dia del festival', ars(taq.saldoVenue)]],
+body: (function () {
+                    var f = [[nombrePF + ' acordado', ars(taq.alquilerSala)]];
+                    if (taq.senaVenue > 0) f.push(['Seña ya pagada para reservar', '- ' + ars(taq.senaVenue)]);
+                    if (taq.efectivoVenue > 0) f.push(['Entradas cobradas en efectivo por el venue (' + taq.efectivoVenueCant + ' x ' + ars(taq.efectivoVenueValor) + ')', '- ' + ars(taq.efectivoVenue)]);
+                    return f;
+                })(),
+                foot: [[taq.saldoVenue < 0 ? 'A favor de la escuela (el venue retuvo de mas)' : 'Saldo pagado al venue el dia del festival', ars(Math.abs(taq.saldoVenue))]],
                 columnStyles: { 1: { halign: 'right' } },
                 didParseCell: function (d) { if (d.section === 'foot' && d.column.index === 1) d.cell.styles.halign = 'right'; if (d.section === 'body' && d.column.index === 1 && /^- /.test(String(d.cell.raw))) d.cell.styles.textColor = ROJO; }
             }));
             y = doc.lastAutoTable.finalY + 6;
         }
-        doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor.apply(doc, INK3);
+doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor.apply(doc, INK3);
+        if (taq.esAlquiler && taq.efectivoVenue > 0) {
+            doc.text('Las ' + taq.efectivoVenueCant + ' entradas cobradas por el venue en efectivo estan incluidas en las ventas de puerta; se descuentan del pago al venue.', M, y);
+            y += 4.5;
+        }
         doc.text('Este reporte muestra solo ingresos. No incluye gastos del evento ni la cobertura audiovisual.', M, y);
 
         // Pie con numeración

@@ -155,8 +155,22 @@
         });
     }
 
+    // Controles de solo ícono: siempre con title y aria-label (la definición de controles chicos lo exige)
+    var TITULOS = { '.btn-row-del': 'Quitar', '.btn-close-modal': 'Cerrar', '.mandala-toast-close': 'Cerrar', '.btn-icon-dots': 'Opciones', '.btn-del-col': 'Quitar columna' };
+    function completarTitulos(raiz) {
+        if (!raiz || !raiz.querySelectorAll) return;
+        Object.keys(TITULOS).forEach(function (sel) {
+            var lista = raiz.querySelectorAll(sel + ':not([title])');
+            for (var i = 0; i < lista.length; i++) lista[i].setAttribute('title', TITULOS[sel]);
+            if (raiz.matches && raiz.matches(sel) && !raiz.getAttribute('title')) raiz.setAttribute('title', TITULOS[sel]);
+            var sinAria = raiz.querySelectorAll(sel + ':not([aria-label])');
+            for (var j = 0; j < sinAria.length; j++) sinAria[j].setAttribute('aria-label', sinAria[j].getAttribute('title') || TITULOS[sel]);
+        });
+    }
+
     function procesar(raiz) {
         if (!raiz) return;
+        if (raiz.nodeType === 1) completarTitulos(raiz);
         if (raiz.nodeType === 3) { procesarTexto(raiz); return; }
         if (raiz.nodeType !== 1 || SALTAR[raiz.nodeName]) return;
         var w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {

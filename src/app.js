@@ -28,10 +28,10 @@ import { obtenerVenuesFirestore, guardarVenueFirestore, guardarLoteVenues, elimi
 import { obtenerSesionistasFirestore, guardarSesionistaFirestore, eliminarSesionistaFirestore } from "./services/sesionistasService.js";
 import { obtenerUsuariosSistemaFirestore, obtenerUsuarioPorEmail, consultarAccesoUsuario, marcarPasswordModificada } from "./services/usuariosService.js";
 import { obtenerGastosCajaFirestore, guardarGastosCajaFirestore, obtenerIngresosManualesCajaFirestore, guardarIngresosManualesCajaFirestore, escucharCajaEnTiempoReal, migrarCajaAFormato2, revertirCajaAFormato1, obtenerFormatoCaja, usarColeccionCaja } from "./services/cajaService.js";
-import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerProductorasFirestore, guardarProductorasFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore, obtenerChecklistProduccionPlantillaFirestore, guardarChecklistProduccionPlantillaFirestore } from "./services/configuracionService.js";
+import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerProductorasFirestore, guardarProductorasFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore, obtenerChecklistProduccionPlantillaFirestore, guardarChecklistProduccionPlantillaFirestore, obtenerCategoriasEquipamientoFirestore, guardarCategoriasEquipamientoFirestore } from "./services/configuracionService.js";
 import { obtenerInstrumentosFirestore, escucharInstrumentosEnTiempoReal, getEmojiParaInstrumento, obtenerInstrumentosActualesSync } from "./services/instrumentosService.js";
 
-import { obtenerSonidoEvento, guardarRiderTecnicoEvento } from "./services/sonidoService.js";
+import { obtenerSonidoEvento, guardarRiderTecnicoEvento, guardarRecEvento } from "./services/sonidoService.js";
 
 import { idVenueEstable, idHistoricoEstable } from "./utils/ids.js";
 
@@ -87,7 +87,8 @@ window.MandalaApp = {
     },
     sonido: {
         obtener: obtenerSonidoEvento,
-        guardarTecnico: guardarRiderTecnicoEvento
+        guardarTecnico: guardarRiderTecnicoEvento,
+        guardarRec: guardarRecEvento
     },
     sesionistas: {
         obtener: obtenerSesionistasFirestore,
@@ -114,7 +115,9 @@ window.MandalaApp = {
         obtenerPreciosEntradas: obtenerPreciosEntradasFirestore,
         guardarPreciosEntradas: guardarPreciosEntradasFirestore,
         obtenerChecklistProduccion: obtenerChecklistProduccionPlantillaFirestore,
-        guardarChecklistProduccion: guardarChecklistProduccionPlantillaFirestore
+        guardarChecklistProduccion: guardarChecklistProduccionPlantillaFirestore,
+        obtenerCategoriasEquipamiento: obtenerCategoriasEquipamientoFirestore,
+        guardarCategoriasEquipamiento: guardarCategoriasEquipamientoFirestore
     }
 };
 
@@ -303,6 +306,16 @@ async function sincronizarDatosTrasLogin() {
             }
         } catch (e) {
             console.warn("[Mandala Festivales] Error al cargar la plantilla del checklist de producción:", e);
+        }
+
+        // Categorías del checklist de equipamiento
+        try {
+            const resCat = await obtenerCategoriasEquipamientoFirestore();
+            if (typeof window.poblarCategoriasEquipamiento === 'function') {
+                window.poblarCategoriasEquipamiento(resCat);
+            }
+        } catch (e) {
+            console.warn("[Mandala Festivales] Error al cargar las categorías del checklist de equipamiento:", e);
         }
     } catch (err) {
         console.warn("[Mandala Festivales] Error durante sincronización tras login:", err);

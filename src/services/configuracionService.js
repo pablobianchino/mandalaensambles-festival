@@ -11,6 +11,7 @@ const DOC_PRODUCTORA = "tarifas_maestras";
 const DOC_ENTRADAS = "entradas_defecto";
 const DOC_LISTADO = "productoras_listado";
 const DOC_CHECKLIST_PRODUCCION = "checklist_produccion_plantilla";
+const DOC_CATEGORIAS_EQUIPAMIENTO = "checklist_equipamiento_categorias";
 
 /**
  * Obtener las tarifas vigentes maestras de la productora audiovisual
@@ -102,6 +103,37 @@ export async function guardarChecklistProduccionPlantillaFirestore(items) {
     } catch (err) {
         console.error("[Mandala Festivales] Error al guardar la plantilla del checklist de producción:", err);
         notificarErrorPersistencia("la plantilla del checklist de producción", err);
+        return false;
+    }
+}
+
+/**
+ * Categorías del checklist de equipamiento (Instrumentos, Equipos, Caños…).
+ * Devuelve { ok: true, existe, categorias } o { ok: false } si la lectura falló: así la UI no
+ * confunde "no hay categorías guardadas" con "no se pudieron leer" y no pisa las reales con las iniciales.
+ */
+export async function obtenerCategoriasEquipamientoFirestore() {
+    try {
+        const snap = await getDoc(doc(db, COLLECTIONS.PRODUCTORA_CONFIG, DOC_CATEGORIAS_EQUIPAMIENTO));
+        if (!snap.exists()) return { ok: true, existe: false, categorias: [] };
+        const data = snap.data() || {};
+        return { ok: true, existe: true, categorias: Array.isArray(data.categorias) ? data.categorias : [] };
+    } catch (err) {
+        console.warn("[Mandala Festivales] Error al obtener las categorías del checklist de equipamiento:", err);
+        return { ok: false };
+    }
+}
+
+export async function guardarCategoriasEquipamientoFirestore(categorias) {
+    try {
+        await setDoc(doc(db, COLLECTIONS.PRODUCTORA_CONFIG, DOC_CATEGORIAS_EQUIPAMIENTO), {
+            categorias,
+            actualizadoEn: new Date().toISOString()
+        });
+        return true;
+    } catch (err) {
+        console.error("[Mandala Festivales] Error al guardar las categorías del checklist de equipamiento:", err);
+        notificarErrorPersistencia("las categorías del checklist de equipamiento", err);
         return false;
     }
 }

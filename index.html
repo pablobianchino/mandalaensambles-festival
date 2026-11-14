@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.2">
-    <script src="src/ui/iconos.js?v=v2.2"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.4">
+    <script src="src/ui/iconos.js?v=v2.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.2" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.4" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -545,6 +545,9 @@
                             <button class="segmented-tab-btn" id="btn-subtab-tecnico" onclick="switchRiderSubTab('tecnico')">
                                 Rider técnico
                             </button>
+                            <button class="segmented-tab-btn" id="btn-subtab-rec" onclick="switchRiderSubTab('rec')">
+                                REC
+                            </button>
                             <button class="segmented-tab-btn" id="btn-subtab-checklist" onclick="switchRiderSubTab('checklist')">
                                 Checklist de equipamiento
                             </button>
@@ -655,6 +658,49 @@
                             </div>
                         </div>
 
+                        <!-- Sub-pestaña Sonido: REC (grabación del show: uno o más equipos, todo a mano) -->
+                        <div id="rider-subtab-rec" style="display:none;">
+                            <div class="content-card" id="card-rider-rec">
+                                <div class="print-rider-header print-only">
+                                    <div class="print-rider-header-inner">
+                                        <h2 id="print-title-rec" class="print-rider-title">Grabación (REC)</h2>
+                                        <span class="print-rider-brand">Mandala Ensambles</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-header-flex no-print">
+                                    <div>
+                                        <h3 class="card-title">
+                                            <span class="screen-title">REC</span>
+                                        </h3>
+                                        <span style="font-size:12px; color:var(--text-muted);" class="subtitulo-descriptivo-app">
+                                            Grabación del show: un cuadro por equipo de grabación, con los canales que entran en cada uno. Todo se carga a mano.
+                                        </span>
+                                    </div>
+                                    <div class="sec-chips">
+                                        <span class="sec-chip" id="chip-rec-equipos">0 equipos</span>
+                                        <div class="rider-modo-switch" role="group" aria-label="Modo del REC">
+                                            <button type="button" id="btn-rec-modo-vista" class="rider-modo-btn" onclick="setRecModo('vista')" title="Ver la planilla limpia, como se imprime">👁 Vista</button>
+                                            <button type="button" id="btn-rec-modo-edicion" class="rider-modo-btn active" onclick="setRecModo('edicion')" title="Editar equipos y canales">✏️ Edición</button>
+                                        </div>
+                                        <button type="button" class="btn-app btn-secondary" id="btn-rec-fullscreen" onclick="toggleRecPantallaCompleta()" title="Agrandar la planilla a pantalla completa (Esc para salir)" aria-label="Pantalla completa">
+                                            <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pantalla completa
+                                        </button>
+                                        <button class="btn-app btn-secondary" onclick="imprimirRec()" title="Imprimir el REC (vertical u horizontal según el ancho)" aria-label="Imprimir REC">
+                                            🖨️
+                                        </button>
+                                        <button class="btn-app btn-primary" id="btn-rec-add-equipo" onclick="agregarEquipoRec()" title="Agregar un equipo de grabación">
+                                            ＋ Equipo de grabación
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="rec-contenido">
+                                    <!-- Se renderiza vía renderizarRec() -->
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Sub-pestaña Rider: Checklist (Planilla Editable In-Situ) -->
                         <div id="rider-subtab-checklist" style="display:none;">
                             <div class="content-card">
@@ -691,66 +737,41 @@
                                     </div>
                                 </div>
 
+                                <div id="checklist-chips" class="chk-chips no-print"></div>
+
                                 <div class="table-responsive">
                                     <table class="spreadsheet-table" id="tabla-checklist-interactiva">
                                         <thead>
                                             <tr>
-                                                <th class="col-drag-header" style="width:36px;">⠿</th>
-                                                <th style="width:36%; text-align:left;">Ítem / Instrumento</th>
-                                                <th style="width:14%; text-align:left;">Origen</th>
-                                                <th style="width:10%; text-align:center;">
+                                                <th class="no-print" style="width:46px; text-align:center;" title="Usar en este evento: lo destildado baja a Sin usar y no se imprime">Usar</th>
+                                                <th class="col-drag-header" style="width:32px;">⠿</th>
+                                                <th style="width:30%; text-align:left;">Ítem / Instrumento</th>
+                                                <th class="no-print" style="width:15%; text-align:left;">Categoría</th>
+                                                <th style="width:12%; text-align:left;">Origen</th>
+                                                <th style="width:9%; text-align:center;">
                                                     <label style="display:inline-flex; align-items:center; justify-content:center; gap:5px; cursor:pointer; margin:0;" title="Tildar o destildar todos en Preparado">
                                                         <input type="checkbox" id="chk-col-checklist-0" class="no-print" style="cursor:pointer;" onchange="toggleColumnaChecklist(0, this.checked)">
                                                         <span>Preparado</span>
                                                     </label>
                                                 </th>
-                                                <th style="width:12%; text-align:center;">
+                                                <th style="width:11%; text-align:center;">
                                                     <label style="display:inline-flex; align-items:center; justify-content:center; gap:5px; cursor:pointer; margin:0;" title="Tildar o destildar todos en Listo para Salir">
                                                         <input type="checkbox" id="chk-col-checklist-1" class="no-print" style="cursor:pointer;" onchange="toggleColumnaChecklist(1, this.checked)">
                                                         <span>Listo para Salir</span>
                                                     </label>
                                                 </th>
-                                                <th style="width:10%; text-align:center;">
+                                                <th style="width:9%; text-align:center;">
                                                     <label style="display:inline-flex; align-items:center; justify-content:center; gap:5px; cursor:pointer; margin:0;" title="Tildar o destildar todos en De Regreso">
                                                         <input type="checkbox" id="chk-col-checklist-2" class="no-print" style="cursor:pointer;" onchange="toggleColumnaChecklist(2, this.checked)">
                                                         <span>De Regreso</span>
                                                     </label>
                                                 </th>
-                                                <th style="width:18%; text-align:left;">Notas</th>
+                                                <th style="text-align:left;">Notas</th>
                                                 <th class="col-accion-header" style="width:40px; text-align:center;" title="Acciones">⚙️</th>
                                             </tr>
                                         </thead>
                                         <tbody id="tbody-checklist-filas">
-                                            <tr draggable="true" class="draggable-row">
-                                                <td class="drag-handle">⠿</td>
-                                                <td><input type="text" class="spreadsheet-inp text-left" value="BAJO SX JAZZ BASS" onchange="guardarChecklistAutomatico()"></td>
-                                                <td><input type="text" class="spreadsheet-inp text-left" value="MANDALA HOUSE" onchange="guardarChecklistAutomatico()"></td>
-                                                <td style="text-align:center;"><input type="checkbox" checked style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                                                <td style="text-align:center;"><input type="checkbox" checked style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                                                <td style="text-align:center;"><input type="checkbox" checked style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                                                <td><input type="text" class="spreadsheet-inp text-left" value="Funda negra con correa" onchange="guardarChecklistAutomatico()"></td>
-                                                <td class="col-accion-cell" style="text-align:center;"><button class="btn-row-del" onclick="eliminarFilaChecklist(this)">✕</button></td>
-                                            </tr>
-                                            <tr draggable="true" class="draggable-row">
-                                                <td class="drag-handle">⠿</td>
-                                                <td><input type="text" class="spreadsheet-inp text-left" value="GRABADOR ZOOM H4 PRO" onchange="guardarChecklistAutomatico()"></td>
-                                                <td><input type="text" class="spreadsheet-inp text-left" value="GUIDO" onchange="guardarChecklistAutomatico()"></td>
-                                                <td style="text-align:center;"><input type="checkbox" checked style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                                                <td style="text-align:center;"><input type="checkbox" checked style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                                                <td style="text-align:center;"><input type="checkbox" checked style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                                                <td><input type="text" class="spreadsheet-inp text-left" value="Llevar 4 pilas AA recargables" onchange="guardarChecklistAutomatico()"></td>
-                                                <td class="col-accion-cell" style="text-align:center;"><button class="btn-row-del" onclick="eliminarFilaChecklist(this)">✕</button></td>
-                                            </tr>
-                                            <tr draggable="true" class="draggable-row">
-                                                <td class="drag-handle">⠿</td>
-                                                <td><input type="text" class="spreadsheet-inp text-left" value="SET MICRÓFONOS SHURE SM58 (X4)" onchange="guardarChecklistAutomatico()"></td>
-                                                <td><input type="text" class="spreadsheet-inp text-left" value="MANDALA HOUSE" onchange="guardarChecklistAutomatico()"></td>
-                                                <td style="text-align:center;"><input type="checkbox" checked style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                                                <td style="text-align:center;"><input type="checkbox" checked style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                                                <td style="text-align:center;"><input type="checkbox" style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                                                <td><input type="text" class="spreadsheet-inp text-left" value="En valija rígida gris" onchange="guardarChecklistAutomatico()"></td>
-                                                <td class="col-accion-cell" style="text-align:center;"><button class="btn-row-del" onclick="eliminarFilaChecklist(this)">✕</button></td>
-                                            </tr>
+                                            <!-- Se renderiza vía renderizarChecklistFestival() -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -1141,6 +1162,9 @@
                         <button class="segmented-tab-btn" id="btn-tab-cfg-checklist" onclick="cambiarTabConfiguracion('checklist')">
                             Checklist de producción
                         </button>
+                        <button class="segmented-tab-btn" id="btn-tab-cfg-equipamiento" onclick="cambiarTabConfiguracion('equipamiento')">
+                            Checklist de equipamiento
+                        </button>
                         <button class="segmented-tab-btn" id="btn-tab-cfg-vinculo" onclick="cambiarTabConfiguracion('vinculo')">
                             Vínculo con Admisión
                         </button>
@@ -1273,6 +1297,39 @@
                     </div>
 
                     <!-- PESTAÑA: VÍNCULO DE INTEGRANTES CON ADMISIÓN (migración) -->
+                    <!-- PESTAÑA: CATEGORÍAS DEL CHECKLIST DE EQUIPAMIENTO -->
+                    <div id="tab-cfg-equipamiento" class="tab-cfg-content" style="display:none;">
+                        <div class="content-card">
+                            <div class="card-header-flex">
+                                <div>
+                                    <h3 class="card-title">Categorías del checklist de equipamiento</h3>
+                                    <span style="font-size:12px; color:var(--text-muted);">
+                                        Agrupan los ítems del checklist de cada evento y sirven de filtro. Los cambios se guardan solos. Arrastrá el ⠿ para cambiar el orden.
+                                    </span>
+                                </div>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <button class="btn-app btn-primary" onclick="agregarCategoriaEquipamientoCfg()">＋ Categoría</button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="spreadsheet-table" id="tabla-categorias-equipamiento">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-drag-header" style="width:36px;">⠿</th>
+                                            <th class="text-left">Categoría</th>
+                                            <th style="width:180px; text-align:left;">En uso</th>
+                                            <th style="width:50px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-categorias-equipamiento"></tbody>
+                                </table>
+                            </div>
+                            <div id="vacio-categorias-equipamiento" style="display:none; padding:18px; text-align:center; color:var(--text-muted); font-size:13px;">
+                                No hay categorías. Los ítems del checklist se muestran todos juntos, sin agrupar.
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="tab-cfg-vinculo" class="tab-cfg-content" style="display:none;">
                         <div class="content-card">
                             <div class="card-header-flex">
@@ -3582,6 +3639,11 @@
                 const cardTecnico = document.getElementById('card-rider-tecnico');
                 if (cardTecnico && cardTecnico.classList.contains('rider-fullscreen-active')) {
                     toggleTecnicoPantallaCompleta();
+                    return;
+                }
+                const cardRec = document.getElementById('card-rider-rec');
+                if (cardRec && cardRec.classList.contains('rider-fullscreen-active')) {
+                    toggleRecPantallaCompleta();
                     return;
                 }
                 const confModal = document.getElementById('modal-mandala-confirm');
@@ -5906,7 +5968,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.2";
+        const APP_VERSION = "v2.4";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6202,6 +6264,7 @@
                 cargarUsuariosSistemaEnTabla();
             }
             if (tabId === 'checklist') renderizarPlantillaChecklistProduccion();
+            if (tabId === 'equipamiento') renderizarCategoriasEquipamientoCfg();
             if (tabId === 'vinculo') analizarVinculoAdmision();
         }
 
@@ -6386,6 +6449,8 @@
             if (elTitleRider) elTitleRider.textContent = `Rider general para ${festNombre}`;
             const elTitleTecnico = document.getElementById('print-title-tecnico');
             if (elTitleTecnico) elTitleTecnico.textContent = `Rider técnico para ${festNombre}`;
+            const elTitleRec = document.getElementById('print-title-rec');
+            if (elTitleRec) elTitleRec.textContent = `Grabación (REC) para ${festNombre}`;
             const elTitleChecklist = document.getElementById('print-title-checklist');
             if (elTitleChecklist) elTitleChecklist.textContent = `Checklist de Equipamiento para ${festNombre}`;
 
@@ -8293,8 +8358,11 @@
         window.addEventListener('beforeprint', () => {
             const subtabChecklist = document.getElementById('rider-subtab-checklist');
             const subtabTecnico = document.getElementById('rider-subtab-tecnico');
+            const subtabRec = document.getElementById('rider-subtab-rec');
             if (subtabTecnico && subtabTecnico.style.display !== 'none' && typeof orientacionRiderCanales === 'function') {
                 establecerOrientacionImpresion(orientacionRiderCanales());
+            } else if (subtabRec && subtabRec.style.display !== 'none' && typeof orientacionRec === 'function') {
+                establecerOrientacionImpresion(orientacionRec());
             } else if (subtabChecklist && subtabChecklist.style.display !== 'none') {
                 establecerOrientacionImpresion('portrait');
             } else {
@@ -8303,7 +8371,7 @@
         });
 
         function switchRiderSubTab(subTabId) {
-            ['bandas', 'tecnico', 'checklist'].forEach(id => {
+            ['bandas', 'tecnico', 'rec', 'checklist'].forEach(id => {
                 const panel = document.getElementById('rider-subtab-' + id);
                 if (panel) panel.style.display = (subTabId === id) ? 'block' : 'none';
                 const btn = document.getElementById('btn-subtab-' + id);
@@ -8312,6 +8380,10 @@
 
             if (subTabId === 'tecnico') {
                 if (typeof abrirRiderTecnicoCanales === 'function') abrirRiderTecnicoCanales();
+                return;
+            }
+            if (subTabId === 'rec') {
+                if (typeof abrirRecEvento === 'function') abrirRecEvento();
                 return;
             }
             establecerOrientacionImpresion(subTabId === 'checklist' ? 'portrait' : 'landscape');
@@ -8476,6 +8548,8 @@
             if (elTitleRider) elTitleRider.textContent = `Rider general para ${nombre}`;
             const elTitleTecnico = document.getElementById('print-title-tecnico');
             if (elTitleTecnico) elTitleTecnico.textContent = `Rider técnico para ${nombre}`;
+            const elTitleRec = document.getElementById('print-title-rec');
+            if (elTitleRec) elTitleRec.textContent = `Grabación (REC) para ${nombre}`;
             const elTitleChecklist = document.getElementById('print-title-checklist');
             if (elTitleChecklist) elTitleChecklist.textContent = `Checklist de Equipamiento para ${nombre}`;
 
@@ -9039,6 +9113,8 @@
                 const chkLimpio = chkOrigen.map(it => ({
                     item: it.item || '',
                     origen: it.origen || 'MANDALA HOUSE',
+                    categoriaId: it.categoriaId || '',
+                    usar: it.usar !== false,
                     notas: it.notas || '',
                     preparado: false,
                     listo: false,
@@ -12247,49 +12323,38 @@
             }, extra || {});
         }
 
-        // Canales sugeridos para una columna del Rider general (la batería se abre en 4 y las teclas en 2)
-        function canalesSugeridosDeColumna(col, ctx) {
+        // Canal sugerido para una columna del Rider general: uno por columna, con el mismo nombre.
+        // Mic o DI sugerido: bajo DI PRE, guitarras y voces 58, teclas y línea DI. Batería y el resto quedan vacíos para completar.
+        function canalesSugeridosDeColumna(col) {
             const nombre = String(col.nombre || '').trim().toUpperCase();
             const n = normTecnico(nombre);
             const ni = normTecnico(col.instrumento);
             const tiene = (...claves) => claves.some(k => n.includes(k) || ni.includes(k));
-            const base = { origenColId: col.id, origenNombre: nombre };
-            const mk = (sub, canal, micDi, phantom, pie) => canalBaseTecnico({ ...base, sub, canal, canalAuto: canal, micDi, phantom, pie });
-
-            if (tiene('BATER', 'DRUM')) return [
-                mk(0, 'BOMBO', 'KIT (52)', false, 'PIE'),
-                mk(1, 'TACHO', 'KIT (57)', false, 'CLAMP'),
-                mk(2, 'OH L', 'C02', true, 'PIE'),
-                mk(3, 'OH R', 'C02', true, 'PIE')
-            ];
-            if (tiene('BAJO', 'BASS')) return [mk(0, nombre, 'DI PRE', false, '—')];
-            if (tiene('ACUST', 'GTR AC')) return [mk(0, nombre, 'DI PRE', false, '—')];
-            if (tiene('GTR', 'GUIT')) return [mk(0, nombre, '57', false, 'PIE')];
-            if (tiene('TECL', 'PIAN', 'SYNTH', 'SINT', 'KEY')) return [mk(0, nombre + ' L', 'DI', false, '—'), mk(1, nombre + ' R', 'DI', false, '—')];
-            if (tiene('MIC', 'VOZ', 'VOCAL', 'CORO', 'CANT')) {
-                ctx.voz++;
-                const m = nombre.match(/(\d+)/);
-                return [mk(0, 'VX ' + (m ? m[1] : ctx.voz), '58', false, 'PIE')];
-            }
-            if (tiene('CAJON', 'PERCU')) return [mk(0, nombre, '58', false, 'PIE')];
-            if (tiene('LINEA', 'LINE')) return [mk(0, nombre, 'DI', false, '—')];
-            return [mk(0, nombre, '', false, '')];
+            let micDi = '';
+            if (tiene('BATER', 'DRUM')) micDi = '';
+            else if (tiene('BAJO', 'BASS')) micDi = 'DI PRE';
+            else if (tiene('ACUST')) micDi = 'DI PRE';
+            else if (tiene('GTR', 'GUIT')) micDi = '58';
+            else if (tiene('TECL', 'PIAN', 'SYNTH', 'SINT', 'KEY')) micDi = 'DI';
+            else if (tiene('MIC', 'VOZ', 'VOCAL', 'CORO', 'CANT')) micDi = '58';
+            else if (tiene('CAJON', 'PERCU')) micDi = '58';
+            else if (tiene('LINEA', 'LINE')) micDi = 'DI';
+            return [canalBaseTecnico({ origenColId: col.id, origenNombre: nombre, sub: 0, canal: nombre, canalAuto: nombre, micDi })];
         }
 
         function crearTecnicoDesdeRider(columnas) {
-            const ctx = { voz: 0 };
             const canales = [];
-            columnas.forEach(col => canales.push(...canalesSugeridosDeColumna(col, ctx)));
-            return { consola: '', canales, cajasDi: '', repuestos: { ...TECNICO_REPUESTOS_DEFECTO }, notaEquipamiento: '' };
+            columnas.forEach(col => canales.push(...canalesSugeridosDeColumna(col)));
+            return { version: 2, consola: '', canales, cajasDi: '', notaEquipamiento: '' };
         }
 
         function normalizarTecnico(t) {
             if (!t || !Array.isArray(t.canales)) return null;
             return {
+                version: 2,
                 consola: String(t.consola || ''),
                 canales: t.canales.filter(c => c && typeof c === 'object').map(c => canalBaseTecnico({ ...c, id: c.id || nuevoIdCanalTecnico() })),
                 cajasDi: (t.cajasDi === undefined || t.cajasDi === null) ? '' : String(t.cajasDi),
-                repuestos: { ...TECNICO_REPUESTOS_DEFECTO, ...(t.repuestos || {}) },
                 notaEquipamiento: String(t.notaEquipamiento || '')
             };
         }
@@ -12298,7 +12363,6 @@
         function sincronizarTecnicoConRider(tec, columnas) {
             let cambios = false;
             const idsCols = new Set(columnas.map(c => c.id));
-            const ctx = { voz: 0 };
             columnas.forEach(col => {
                 const nombre = String(col.nombre || '').trim().toUpperCase();
                 let propios = tec.canales.filter(ch => ch.origenColId === col.id);
@@ -12307,7 +12371,7 @@
                     propios = tec.canales.filter(ch => ch.origenColId && !idsCols.has(ch.origenColId) && ch.origenNombre === nombre);
                     propios.forEach(ch => { ch.origenColId = col.id; });
                 }
-                const sugeridos = canalesSugeridosDeColumna(col, ctx);
+                const sugeridos = canalesSugeridosDeColumna(col);
                 if (!propios.length) {
                     sugeridos.forEach(ch => { ch.aviso = 'nuevo'; tec.canales.push(ch); });
                     cambios = true;
@@ -12365,7 +12429,8 @@
                 if (!svc || typeof svc.obtener !== 'function') throw new Error('Servicio de sonido no disponible');
                 const res = await svc.obtener(festId);
                 if (_timersGuardadoTecnico[festId]) return;
-                const tec = res && res.datos && res.datos.sonido ? res.datos.sonido.tecnico : null;
+                // El Rider técnico vive en sonido.riderTecnico. Lo que se guardó antes en sonido.tecnico (v2.2, otro formato) queda intacto en la base y no se usa.
+                const tec = res && res.datos && res.datos.sonido ? res.datos.sonido.riderTecnico : null;
                 sonidoTecnicoDB[festId] = normalizarTecnico(tec);
                 sonidoTecnicoEstado[festId] = 'listo';
             } catch (e) {
@@ -12402,6 +12467,12 @@
             return 'mic';
         }
 
+        // Canal que sale solo de una columna del Rider general: no se borra (se apaga con ✓ o se quita la columna del rider general).
+        // Si su columna ya no existe ("fuera del rider") deja de ser automático y se puede borrar.
+        function esCanalAutomaticoTecnico(c) {
+            return !!c.origenColId && !c.descartado && c.aviso !== 'quitado';
+        }
+
         function canalesVisiblesTecnico(tec) {
             return tec.canales.filter(c => !c.descartado);
         }
@@ -12421,6 +12492,20 @@
                 pie: pie + numTecnico(r.pie),
                 clamp: clamp + numTecnico(r.clamp),
                 xlr: mic + di + numTecnico(r.xlr),
+                cajasDi: String(tec.cajasDi || '').trim()
+            };
+        }
+
+        // Totales del Rider técnico: PIE / MIC (un pie por micrófono), CABLE XLR (micrófonos + DI) y CAJA DI (a mano)
+        function calcularTotalesRiderTecnico(tec) {
+            const hab = tec.canales.filter(c => c.habilitado);
+            const mic = hab.filter(c => tipoEntradaTecnico(c.micDi) === 'mic').length;
+            const di = hab.filter(c => tipoEntradaTecnico(c.micDi) === 'di').length;
+            return {
+                canales: hab.length,
+                apagados: canalesVisiblesTecnico(tec).length - hab.length,
+                pieMic: mic,
+                xlr: mic + di,
                 cajasDi: String(tec.cajasDi || '').trim()
             };
         }
@@ -12472,46 +12557,37 @@
 
         function htmlHojaTecnico(tec) {
             const nums = numerarCanalesTecnico(tec);
-            const t = calcularTotalesTecnico(tec);
+            const t = calcularTotalesRiderTecnico(tec);
             const hab = tec.canales.filter(c => c.habilitado);
-            const r = tec.repuestos || {};
-            const rep = (v) => numTecnico(v) ? ` <span class="tecnico-hoja-rep">(+${numTecnico(v)})</span>` : '';
             const filas = hab.length ? hab.map(c => `
                 <tr>
+                    <td class="${c.rec ? '' : 'tecnico-hoja-no'}">${c.rec ? 'SI' : 'NO'}</td>
                     <td>${esc(nums[c.id])}</td>
                     <td class="izq">${esc(c.canal)}</td>
                     <td>${esc(c.micDi)}</td>
-                    <td>${c.phantom ? 'SI' : ''}</td>
-                    <td>${esc(c.pie)}</td>
-                    <td>${c.rec ? '●' : ''}</td>
+                    <td>${c.phantom ? 'SI' : 'NO'}</td>
                     <td class="izq">${esc(c.notas)}</td>
-                </tr>`).join('') : `<tr><td colspan="7" class="izq">No hay canales habilitados.</td></tr>`;
+                </tr>`).join('') : `<tr><td colspan="6" class="izq">No hay canales habilitados.</td></tr>`;
             return `
                 ${tec.consola.trim() ? `<p class="tecnico-hoja-linea"><b>CONSOLA:</b> ${esc(tec.consola.trim())}</p>` : ''}
                 <table class="tecnico-hoja-tabla" id="tabla-tecnico-hoja">
-                    <thead><tr><th>IN</th><th class="izq">CANAL</th><th>MIC O DI</th><th>48V</th><th>PIE</th><th>REC</th><th class="izq">NOTAS</th></tr></thead>
+                    <thead><tr><th>REC</th><th>IN</th><th class="izq">CANAL</th><th>MIC O DI</th><th>48V</th><th class="izq">NOTAS</th></tr></thead>
                     <tbody>${filas}</tbody>
                 </table>
                 <table class="tecnico-hoja-tabla tecnico-hoja-totales">
-                    <thead><tr><th>MIC</th><th>PIE</th><th>CLAMP</th><th>CABLE XLR</th><th>CAJA DI</th></tr></thead>
-                    <tbody><tr><td>${t.mic}</td><td>${t.pie}${rep(r.pie)}</td><td>${t.clamp}${rep(r.clamp)}</td><td>${t.xlr}${rep(r.xlr)}</td><td>${esc(t.cajasDi)}</td></tr></tbody>
+                    <thead><tr><th>PIE / MIC</th><th>CABLE XLR</th><th>CAJA DI</th></tr></thead>
+                    <tbody><tr><td>${t.pieMic}</td><td>${t.xlr}</td><td>${esc(t.cajasDi)}</td></tr></tbody>
                 </table>
                 ${tec.notaEquipamiento.trim() ? `<p class="tecnico-hoja-linea"><b>NOTA:</b> ${esc(tec.notaEquipamiento.trim())}</p>` : ''}`;
         }
 
         function htmlTotalesTecnico(tec) {
-            const t = calcularTotalesTecnico(tec);
-            const r = tec.repuestos || {};
-            const inpRep = (k) => `<input type="number" min="0" class="tecnico-inp-num" value="${numTecnico(r[k])}" onchange="editarRepuestoTecnico('${k}', this.value)" title="Repuestos que se suman al total">`;
+            const t = calcularTotalesRiderTecnico(tec);
             return `
                 <div class="tecnico-totales-h">Totales <span>(canales habilitados)</span></div>
-                <div class="tecnico-tot-fila"><span>MIC</span><b>${t.mic}</b></div>
-                <div class="tecnico-tot-fila"><span>PIE <small>(+${numTecnico(r.pie)} repuesto)</small></span><b>${t.pie}</b></div>
-                <div class="tecnico-tot-fila"><span>CLAMP <small>(+${numTecnico(r.clamp)})</small></span><b>${t.clamp}</b></div>
-                <div class="tecnico-tot-fila"><span>CABLE XLR <small>(+${numTecnico(r.xlr)})</small></span><b>${t.xlr}</b></div>
-                <div class="tecnico-tot-fila"><span>CAJA DI <small>(a mano)</small></span><input type="text" class="tecnico-inp-num tecnico-inp-cajadi" value="${esc(tec.cajasDi)}" onchange="editarCampoTecnico('cajasDi', this.value)" placeholder="0" title="Cantidad de cajas DI (la carga el sonidista)"></div>
-                <div class="tecnico-totales-sub">Repuestos</div>
-                <div class="tecnico-repuestos">PIE + ${inpRep('pie')} CLAMP + ${inpRep('clamp')} XLR + ${inpRep('xlr')}</div>`;
+                <div class="tecnico-tot-fila"><span>PIE / MIC</span><b>${t.pieMic}</b></div>
+                <div class="tecnico-tot-fila"><span>CABLE XLR</span><b>${t.xlr}</b></div>
+                <div class="tecnico-tot-fila"><span>CAJA DI <small>(a mano)</small></span><input type="text" class="tecnico-inp-num tecnico-inp-cajadi" value="${esc(tec.cajasDi)}" onchange="editarCampoTecnico('cajasDi', this.value)" placeholder="0" title="Cantidad de cajas DI (la carga el sonidista)"></div>`;
         }
 
         function htmlFilaTecnico(c, idx, total, nums) {
@@ -12519,21 +12595,18 @@
             const pill = c.aviso === 'nuevo'
                 ? '<span class="pill-status pill-info tecnico-aviso-pill" title="Se agregó porque el rider general tiene esta columna">nuevo</span>'
                 : (c.aviso === 'quitado' ? '<span class="pill-status pill-neutral tecnico-aviso-pill" title="Su columna ya no está en el rider general">fuera del rider</span>' : '');
-            const opcionesPie = ['', ...TECNICO_OPCIONES_PIE];
-            if (c.pie && !opcionesPie.includes(c.pie)) opcionesPie.push(c.pie);
             return `
                 <tr class="${c.habilitado ? '' : 'tecnico-apagado'}" data-canal-id="${esc(c.id)}" ondragstart="tecnicoDragStart(event, '${id}')" ondragover="tecnicoDragOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="tecnicoDrop(event, '${id}')" ondragend="tecnicoDragEnd(event)">
                     <td class="drag-handle tecnico-handle" title="Arrastrar para mover el canal" onmousedown="this.parentNode.draggable = true" onmouseup="this.parentNode.draggable = false">⠿</td>
                     <td class="tecnico-c"><input type="checkbox" ${c.habilitado ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'habilitado', this.checked)" title="${c.habilitado ? 'Apagar este canal (queda sombreado y no se imprime)' : 'Volver a usar este canal'}"></td>
+                    <td class="tecnico-c"><input type="checkbox" ${c.rec ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'rec', this.checked)" title="${c.rec ? 'Se graba este canal (REC: SI)' : 'No se graba este canal (REC: NO)'}"></td>
                     <td class="tecnico-c"><input type="text" class="spreadsheet-inp tecnico-inp-in" value="${esc(c.inManual)}" placeholder="${c.habilitado ? esc(nums[c.id]) : '—'}" onchange="editarCanalTecnico('${id}', 'inManual', this.value)" title="Número de entrada. Vacío = correlativo automático"></td>
                     <td><div class="tecnico-canal-wrap"><input type="text" class="spreadsheet-inp text-left tecnico-inp-canal" value="${esc(c.canal)}" placeholder="Canal" onchange="editarCanalTecnico('${id}', 'canal', this.value)">${pill}</div></td>
                     <td><input type="text" class="spreadsheet-inp text-left" list="dl-tecnico-mic" value="${esc(c.micDi)}" placeholder="—" onchange="editarCanalTecnico('${id}', 'micDi', this.value)"></td>
                     <td class="tecnico-c"><input type="checkbox" ${c.phantom ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'phantom', this.checked)" title="Phantom 48V"></td>
-                    <td><select class="spreadsheet-inp tecnico-sel" onchange="editarCanalTecnico('${id}', 'pie', this.value)">${opcionesPie.map(o => `<option value="${esc(o)}" ${o === c.pie ? 'selected' : ''}>${o ? esc(o) : '·'}</option>`).join('')}</select></td>
-                    <td class="tecnico-c"><input type="checkbox" ${c.rec ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'rec', this.checked)" title="Se graba este canal"></td>
                     <td><input type="text" class="spreadsheet-inp text-left" value="${esc(c.notas)}" placeholder="Notas" onchange="editarCanalTecnico('${id}', 'notas', this.value)"></td>
                     <td class="tecnico-c tecnico-acciones">
-                        <button type="button" class="btn-row-del" onclick="quitarCanalTecnico('${id}')" title="Quitar canal" aria-label="Quitar canal"></button>
+                        ${esCanalAutomaticoTecnico(c) ? '' : `<button type="button" class="btn-row-del" onclick="quitarCanalTecnico('${id}')" title="Quitar canal" aria-label="Quitar canal"></button>`}
                     </td>
                 </tr>`;
         }
@@ -12584,17 +12657,16 @@
                                 <thead><tr>
                                     <th class="tecnico-c col-drag-header" style="width:32px;" title="Arrastrá la fila para mover el canal">⠿</th>
                                     <th class="tecnico-c" title="Habilitado: apagá los canales que no se usan" style="width:40px;">✓</th>
-                                    <th class="tecnico-c" style="width:46px;">IN</th>
-                                    <th style="width:22%; text-align:left;">Canal</th>
-                                    <th style="width:104px; text-align:left;">Mic o DI</th>
-                                    <th class="tecnico-c" style="width:48px;">48V</th>
-                                    <th style="width:86px; text-align:left;">Pie</th>
-                                    <th class="tecnico-c" style="width:48px;">REC</th>
+                                    <th class="tecnico-c" title="REC: se graba este canal (SI) o no (NO)" style="width:52px;">REC</th>
+                                    <th class="tecnico-c" style="width:54px;">IN</th>
+                                    <th style="width:26%; text-align:left;">Canal</th>
+                                    <th style="width:120px; text-align:left;">Mic o DI</th>
+                                    <th class="tecnico-c" style="width:52px;">48V</th>
                                     <th style="text-align:left;">Notas</th>
                                     <th class="tecnico-c" style="width:40px;" title="Acciones"></th>
                                 </tr></thead>
                                 <tbody>
-                                    ${visibles.length ? visibles.map((c, i) => htmlFilaTecnico(c, i, visibles.length, nums)).join('') : `<tr><td colspan="10" class="tecnico-vacio">No hay canales. El rider general no tiene columnas: agregá canales con ＋ Canal.</td></tr>`}
+                                    ${visibles.length ? visibles.map((c, i) => htmlFilaTecnico(c, i, visibles.length, nums)).join('') : `<tr><td colspan="9" class="tecnico-vacio">No hay canales. El rider general no tiene columnas: agregá canales con ＋ Canal.</td></tr>`}
                                 </tbody>
                             </table>
                         </div>
@@ -12650,15 +12722,6 @@
             refrescarResumenTecnico();
         }
         window.editarCampoTecnico = editarCampoTecnico;
-
-        function editarRepuestoTecnico(k, valor) {
-            const tec = sonidoTecnicoDB[eventoActualId];
-            if (!tec) return;
-            tec.repuestos = { ...TECNICO_REPUESTOS_DEFECTO, ...(tec.repuestos || {}), [k]: numTecnico(valor) };
-            guardarTecnicoEvento();
-            refrescarResumenTecnico();
-        }
-        window.editarRepuestoTecnico = editarRepuestoTecnico;
 
         function agregarCanalTecnico() {
             const tec = sonidoTecnicoDB[eventoActualId];
@@ -12721,24 +12784,19 @@
             const tec = sonidoTecnicoDB[eventoActualId];
             const c = tec && tec.canales.find(x => x.id === id);
             if (!c) return;
-            const deRider = !!c.origenColId && c.aviso !== 'quitado';
+            if (esCanalAutomaticoTecnico(c)) {
+                mostrarToast('Los canales que salen del rider general no se borran: apagalo con la casilla ✓ o quitá la columna del Rider general.', 'info');
+                return;
+            }
             const conf = await mostrarModalConfirmacion({
                 titulo: 'Quitar canal',
-                mensaje: `¿Quitar el canal <strong>"${esc(c.canal || 'sin nombre')}"</strong> del rider técnico?` +
-                    (deRider ? '<br><br>Sale del rider general: si solo no se usa en este evento, conviene <strong>apagarlo</strong> con la casilla de la izquierda. Si lo quitás, vuelve a aparecer solo si la columna se agrega de nuevo.' : ''),
+                mensaje: `¿Quitar el canal <strong>"${esc(c.canal || 'sin nombre')}"</strong> del rider técnico?`,
                 icono: '🗑️',
                 textoConfirmar: 'Quitar',
                 esPeligroso: true
             });
             if (!conf) return;
-            if (deRider) {
-                // Se oculta en vez de borrarlo: si no, la sincronización con el rider general lo volvería a crear
-                c.habilitado = false;
-                c.descartado = true;
-                c.aviso = '';
-            } else {
-                tec.canales = tec.canales.filter(x => x.id !== id);
-            }
+            tec.canales = tec.canales.filter(x => x.id !== id);
             guardarTecnicoEvento();
             renderizarRiderTecnicoCanales();
         }
@@ -12754,18 +12812,20 @@
         window.descartarAvisosTecnico = descartarAvisosTecnico;
 
         // Orientación automática: vertical si la hoja entra en A4 vertical, si no horizontal
-        function orientacionRiderCanales() {
-            const hoja = document.getElementById('tecnico-hoja');
-            const tabla = hoja && hoja.querySelector('#tabla-tecnico-hoja');
-            if (!tabla) return 'portrait';
+        // Mide la tabla más ancha de la hoja (la del Rider técnico o las del REC)
+        function orientacionDeHoja(hojaId) {
+            const hoja = document.getElementById(hojaId);
+            const tablas = hoja ? [...hoja.querySelectorAll('table.tecnico-hoja-tabla')] : [];
+            if (!tablas.length) return 'portrait';
             const prev = hoja.getAttribute('style') || '';
             const oculto = hoja.offsetParent === null;
             if (oculto) hoja.setAttribute('style', 'display:block !important; position:absolute; left:-10000px; top:0; visibility:hidden; width:auto;');
-            const ancho = tabla.scrollWidth;
+            const ancho = Math.max(...tablas.map(t => t.scrollWidth));
             if (oculto) hoja.setAttribute('style', prev);
             const ANCHO_A4_VERTICAL_PX = 718; // 210 mm - márgenes (≈190 mm) a 96 dpi
             return ancho > ANCHO_A4_VERTICAL_PX ? 'landscape' : 'portrait';
         }
+        function orientacionRiderCanales() { return orientacionDeHoja('tecnico-hoja'); }
         window.orientacionRiderCanales = orientacionRiderCanales;
 
         function imprimirRiderCanales() {
@@ -12775,6 +12835,465 @@
             setTimeout(() => window.print(), 60);
         }
         window.imprimirRiderCanales = imprimirRiderCanales;
+
+        // =========================================================
+        // SONIDO › REC (grabación del show)
+        // - festivales_sonido/{eventoId}.sonido.rec = { equipos: [{ id, nombre, destino, canales, cajasDi, repuestos }], nota }
+        // - Todo a mano (no se trae nada del Rider técnico). Los totales usan el mismo cálculo que el Rider técnico.
+        // =========================================================
+        const sonidoRecDB = {};
+        const sonidoRecEstado = {};   // festId -> 'cargando' | 'listo' | 'error'
+        const _timersGuardadoRec = {};
+        let recModo = 'edicion';
+        try { if (localStorage.getItem('mandala_rec_modo') === 'vista') recModo = 'vista'; } catch (e) { /* sin storage: queda en edición */ }
+
+        function canalRecBase(extra) {
+            return Object.assign({ id: nuevoIdCanalTecnico(), habilitado: true, inManual: '', canal: '', micDi: '', phantom: false, pie: '', notas: '' }, extra || {});
+        }
+        function equipoRecBase(extra) {
+            return Object.assign({ id: nuevoIdCanalTecnico(), nombre: '', destino: '', canales: [], cajasDi: '', repuestos: { ...TECNICO_REPUESTOS_DEFECTO } }, extra || {});
+        }
+        function normalizarRec(r) {
+            const equipos = (r && Array.isArray(r.equipos) ? r.equipos : []).filter(e => e && typeof e === 'object').map(e => equipoRecBase({
+                id: e.id || nuevoIdCanalTecnico(),
+                nombre: String(e.nombre || ''),
+                destino: String(e.destino || ''),
+                canales: (Array.isArray(e.canales) ? e.canales : []).filter(c => c && typeof c === 'object').map(c => canalRecBase({ ...c, id: c.id || nuevoIdCanalTecnico() })),
+                cajasDi: (e.cajasDi === undefined || e.cajasDi === null) ? '' : String(e.cajasDi),
+                repuestos: { ...TECNICO_REPUESTOS_DEFECTO, ...(e.repuestos || {}) }
+            }));
+            return { equipos, nota: String((r && r.nota) || ''), importadoTecnicoViejo: !!(r && r.importadoTecnicoViejo) };
+        }
+
+        // El Rider técnico de la v2.2 (sonido.tecnico) tenía el formato de REC. Se vuelca una sola vez al REC como un equipo más
+        // (queda marcado en rec.importadoTecnicoViejo) y lo viejo se deja intacto en la base. Devuelve true si importó algo.
+        function volcarTecnicoViejoEnRec(rec, viejo) {
+            if (!viejo || !Array.isArray(viejo.canales) || rec.importadoTecnicoViejo) return false;
+            const canales = viejo.canales.filter(c => c && typeof c === 'object' && !c.descartado);
+            if (!canales.length) return false;
+            const nums = numerarCanalesTecnico({ canales });
+            rec.equipos.push(equipoRecBase({
+                nombre: 'Rider técnico anterior',
+                destino: '',
+                canales: canales.map(c => canalRecBase({
+                    id: nuevoIdCanalTecnico(),
+                    // Los que no se grababan quedan apagados: se conservan los datos pero no se imprimen
+                    habilitado: c.habilitado !== false && c.rec !== false,
+                    inManual: String(nums[c.id] || c.inManual || ''),
+                    canal: String(c.canal || ''),
+                    micDi: String(c.micDi || ''),
+                    phantom: !!c.phantom,
+                    pie: String(c.pie || ''),
+                    notas: String(c.notas || '')
+                })),
+                cajasDi: (viejo.cajasDi === undefined || viejo.cajasDi === null) ? '' : String(viejo.cajasDi),
+                repuestos: { ...TECNICO_REPUESTOS_DEFECTO, ...(viejo.repuestos || {}) }
+            }));
+            const extra = [];
+            if (String(viejo.consola || '').trim()) extra.push(`CONSOLA: ${String(viejo.consola).trim()}`);
+            if (String(viejo.notaEquipamiento || '').trim()) extra.push(String(viejo.notaEquipamiento).trim());
+            if (extra.length) rec.nota = [rec.nota.trim(), ...extra].filter(Boolean).join(' · ');
+            rec.importadoTecnicoViejo = true;
+            return true;
+        }
+
+        function obtenerRecEvento() {
+            const festId = eventoActualId;
+            return (festId && sonidoRecEstado[festId] === 'listo') ? sonidoRecDB[festId] : null;
+        }
+
+        async function abrirRecEvento() {
+            const festId = eventoActualId;
+            if (!festId) return;
+            establecerOrientacionImpresion('portrait');
+            if (sonidoRecEstado[festId] !== 'listo') sonidoRecEstado[festId] = 'cargando';
+            renderizarRec();
+            if (_timersGuardadoRec[festId]) return; // hay cambios sin guardar: no se pisan con lo de la base
+            const svc = window.MandalaApp && window.MandalaApp.sonido;
+            try {
+                if (!svc || typeof svc.obtener !== 'function') throw new Error('Servicio de sonido no disponible');
+                const res = await svc.obtener(festId);
+                if (_timersGuardadoRec[festId]) return;
+                const sonido = (res && res.datos && res.datos.sonido) || {};
+                const rec = normalizarRec(sonido.rec);
+                const importado = volcarTecnicoViejoEnRec(rec, sonido.tecnico);
+                sonidoRecDB[festId] = rec;
+                sonidoRecEstado[festId] = 'listo';
+                if (importado && festId === eventoActualId) {
+                    guardarRecEventoActual();
+                    mostrarToast('Se volcaron al REC los canales del rider técnico anterior (equipo "Rider técnico anterior").', 'info');
+                }
+            } catch (e) {
+                console.warn('[Mandala Festivales] No se pudo leer el REC:', e);
+                if (sonidoRecEstado[festId] !== 'listo') sonidoRecEstado[festId] = 'error';
+            }
+            if (festId === eventoActualId) renderizarRec();
+        }
+        window.abrirRecEvento = abrirRecEvento;
+
+        function guardarRecEventoActual() {
+            const festId = eventoActualId;
+            if (!festId || !sonidoRecDB[festId]) return;
+            clearTimeout(_timersGuardadoRec[festId]);
+            _timersGuardadoRec[festId] = setTimeout(async () => {
+                const svc = window.MandalaApp && window.MandalaApp.sonido;
+                const rec = sonidoRecDB[festId];
+                let ok = false;
+                if (svc && typeof svc.guardarRec === 'function' && rec) {
+                    const email = (window.MandalaApp.auth && window.MandalaApp.auth.instance && window.MandalaApp.auth.instance.currentUser && window.MandalaApp.auth.instance.currentUser.email) || '';
+                    ok = await svc.guardarRec(festId, JSON.parse(JSON.stringify(rec)), email);
+                }
+                delete _timersGuardadoRec[festId];
+                if (ok) console.log('[Mandala Festivales] REC guardado:', festId);
+            }, 650);
+        }
+
+        function aplicarRecModoEnPantalla() {
+            const card = document.getElementById('card-rider-rec');
+            if (card) card.classList.toggle('tecnico-modo-vista', recModo === 'vista');
+            const bV = document.getElementById('btn-rec-modo-vista');
+            const bE = document.getElementById('btn-rec-modo-edicion');
+            if (bV) bV.classList.toggle('active', recModo === 'vista');
+            if (bE) bE.classList.toggle('active', recModo === 'edicion');
+            const bAdd = document.getElementById('btn-rec-add-equipo');
+            if (bAdd) bAdd.style.display = recModo === 'vista' ? 'none' : '';
+        }
+        function setRecModo(modo) {
+            recModo = (modo === 'vista') ? 'vista' : 'edicion';
+            try { localStorage.setItem('mandala_rec_modo', recModo); } catch (e) { /* ignorar */ }
+            renderizarRec();
+        }
+        window.setRecModo = setRecModo;
+
+        function toggleRecPantallaCompleta() {
+            const card = document.getElementById('card-rider-rec');
+            const btn = document.getElementById('btn-rec-fullscreen');
+            if (!card) return;
+            const activo = card.classList.toggle('rider-fullscreen-active');
+            if (btn) {
+                btn.innerHTML = activo
+                    ? '<svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg> Salir (Esc)'
+                    : '<svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pantalla completa';
+                btn.title = activo ? 'Salir de pantalla completa (Esc)' : 'Agrandar la planilla a pantalla completa (Esc para salir)';
+            }
+            document.body.style.overflow = activo ? 'hidden' : '';
+        }
+        window.toggleRecPantallaCompleta = toggleRecPantallaCompleta;
+
+        function nombreEquipoRec(eq, idx) {
+            return (eq.nombre || '').trim() || `EQUIPO ${idx + 1}`;
+        }
+
+        function htmlHojaRec(rec) {
+            const rep = (v) => numTecnico(v) ? ` <span class="tecnico-hoja-rep">(+${numTecnico(v)})</span>` : '';
+            const bloques = rec.equipos.map((eq, idx) => {
+                const t = calcularTotalesTecnico(eq);
+                const r = eq.repuestos || {};
+                const hab = eq.canales.filter(c => c.habilitado);
+                const filas = hab.length ? hab.map(c => `
+                    <tr>
+                        <td>${esc(c.inManual)}</td>
+                        <td class="izq">${esc(c.canal)}</td>
+                        <td>${esc(c.micDi)}</td>
+                        <td>${c.phantom ? 'SI' : ''}</td>
+                        <td>${esc(c.pie)}</td>
+                        <td class="izq">${esc(c.notas)}</td>
+                    </tr>`).join('') : `<tr><td colspan="6" class="izq">No hay canales habilitados.</td></tr>`;
+                return `
+                    <div class="rec-hoja-equipo">
+                        <p class="tecnico-hoja-linea"><b>${esc(nombreEquipoRec(eq, idx).toUpperCase())}</b>${eq.destino.trim() ? ` — ${esc(eq.destino.trim())}` : ''}</p>
+                        <table class="tecnico-hoja-tabla">
+                            <thead><tr><th>IN</th><th class="izq">CANAL</th><th>MIC O DI</th><th>48V</th><th>PIE</th><th class="izq">NOTAS</th></tr></thead>
+                            <tbody>${filas}</tbody>
+                        </table>
+                        <table class="tecnico-hoja-tabla tecnico-hoja-totales">
+                            <thead><tr><th>MIC</th><th>PIE</th><th>CLAMP</th><th>CABLE XLR</th><th>CAJA DI</th></tr></thead>
+                            <tbody><tr><td>${t.mic}</td><td>${t.pie}${rep(r.pie)}</td><td>${t.clamp}${rep(r.clamp)}</td><td>${t.xlr}${rep(r.xlr)}</td><td>${esc(t.cajasDi)}</td></tr></tbody>
+                        </table>
+                    </div>`;
+            }).join('');
+            return (bloques || `<p class="tecnico-hoja-linea">No hay equipos de grabación cargados.</p>`) +
+                (rec.nota.trim() ? `<p class="tecnico-hoja-linea"><b>NOTA:</b> ${esc(rec.nota.trim())}</p>` : '');
+        }
+
+        function htmlTotalesRec(eq) {
+            const t = calcularTotalesTecnico(eq);
+            const r = eq.repuestos || {};
+            const e = escJs(eq.id);
+            const inpRep = (k) => `<input type="number" min="0" class="tecnico-inp-num" value="${numTecnico(r[k])}" onchange="editarRepuestoRec('${e}', '${k}', this.value)" title="Repuestos que se suman al total">`;
+            return `
+                <div class="tecnico-totales-h">Totales <span>(canales habilitados)</span></div>
+                <div class="tecnico-tot-fila"><span>MIC</span><b>${t.mic}</b></div>
+                <div class="tecnico-tot-fila"><span>PIE <small>(+${numTecnico(r.pie)})</small></span><b>${t.pie}</b></div>
+                <div class="tecnico-tot-fila"><span>CLAMP <small>(+${numTecnico(r.clamp)})</small></span><b>${t.clamp}</b></div>
+                <div class="tecnico-tot-fila"><span>CABLE XLR <small>(+${numTecnico(r.xlr)})</small></span><b>${t.xlr}</b></div>
+                <div class="tecnico-tot-fila"><span>CAJA DI <small>(a mano)</small></span><input type="text" class="tecnico-inp-num tecnico-inp-cajadi" value="${esc(eq.cajasDi)}" onchange="editarEquipoRec('${e}', 'cajasDi', this.value)" placeholder="0" title="Cantidad de cajas DI"></div>
+                <div class="tecnico-totales-sub">Repuestos</div>
+                <div class="tecnico-repuestos">PIE + ${inpRep('pie')} CLAMP + ${inpRep('clamp')} XLR + ${inpRep('xlr')}</div>`;
+        }
+
+        function htmlFilaRec(eqId, c) {
+            const e = escJs(eqId);
+            const id = escJs(c.id);
+            const opcionesPie = ['', ...TECNICO_OPCIONES_PIE];
+            if (c.pie && !opcionesPie.includes(c.pie)) opcionesPie.push(c.pie);
+            return `
+                <tr class="${c.habilitado ? '' : 'tecnico-apagado'}" ondragstart="recDragStart(event, '${e}', '${id}')" ondragover="recDragOver(event, '${e}')" ondragleave="this.classList.remove('drag-over')" ondrop="recDrop(event, '${e}', '${id}')" ondragend="recDragEnd(event)">
+                    <td class="drag-handle tecnico-handle" title="Arrastrar para mover el canal" onmousedown="this.parentNode.draggable = true" onmouseup="this.parentNode.draggable = false">⠿</td>
+                    <td class="tecnico-c"><input type="checkbox" ${c.habilitado ? 'checked' : ''} onchange="editarCanalRec('${e}', '${id}', 'habilitado', this.checked)" title="${c.habilitado ? 'Apagar este canal (queda sombreado y no se imprime)' : 'Volver a usar este canal'}"></td>
+                    <td class="tecnico-c"><input type="text" class="spreadsheet-inp tecnico-inp-in" value="${esc(c.inManual)}" placeholder="IN" onchange="editarCanalRec('${e}', '${id}', 'inManual', this.value)" title="Entrada del equipo de grabación (texto libre, ej.: 3 (LÍNEA))"></td>
+                    <td><input type="text" class="spreadsheet-inp text-left tecnico-inp-canal" value="${esc(c.canal)}" placeholder="Canal" onchange="editarCanalRec('${e}', '${id}', 'canal', this.value)"></td>
+                    <td><input type="text" class="spreadsheet-inp text-left" list="dl-rec-mic" value="${esc(c.micDi)}" placeholder="—" onchange="editarCanalRec('${e}', '${id}', 'micDi', this.value)"></td>
+                    <td class="tecnico-c"><input type="checkbox" ${c.phantom ? 'checked' : ''} onchange="editarCanalRec('${e}', '${id}', 'phantom', this.checked)" title="Phantom 48V"></td>
+                    <td><select class="spreadsheet-inp tecnico-sel" onchange="editarCanalRec('${e}', '${id}', 'pie', this.value)">${opcionesPie.map(o => `<option value="${esc(o)}" ${o === c.pie ? 'selected' : ''}>${o ? esc(o) : '·'}</option>`).join('')}</select></td>
+                    <td><input type="text" class="spreadsheet-inp text-left" value="${esc(c.notas)}" placeholder="Notas" onchange="editarCanalRec('${e}', '${id}', 'notas', this.value)"></td>
+                    <td class="tecnico-c tecnico-acciones"><button type="button" class="btn-row-del" onclick="quitarCanalRec('${e}', '${id}')" title="Quitar canal" aria-label="Quitar canal"></button></td>
+                </tr>`;
+        }
+
+        function htmlEquipoRec(eq, idx) {
+            const e = escJs(eq.id);
+            return `
+                <div class="rec-card" data-equipo-id="${esc(eq.id)}">
+                    <div class="rec-card-h">
+                        <input type="text" class="rec-inp-nombre" value="${esc(eq.nombre)}" placeholder="Equipo de grabación (ej.: Zoom H4)" onchange="editarEquipoRec('${e}', 'nombre', this.value)">
+                        <input type="text" class="rec-inp-destino" value="${esc(eq.destino)}" placeholder="Destino o ubicación (ej.: al escenario)" onchange="editarEquipoRec('${e}', 'destino', this.value)" title="Destino o ubicación">
+                        <span style="flex:1;"></span>
+                        <button type="button" class="btn-app btn-secondary btn-sm" onclick="quitarEquipoRec('${e}')">Quitar equipo</button>
+                    </div>
+                    <div class="tecnico-layout">
+                        <div class="table-responsive tecnico-tabla-wrap">
+                            <table class="spreadsheet-table tecnico-tabla">
+                                <thead><tr>
+                                    <th class="tecnico-c col-drag-header" style="width:32px;" title="Arrastrá la fila para mover el canal">⠿</th>
+                                    <th class="tecnico-c" title="Habilitado: apagá los canales que no se usan" style="width:40px;">✓</th>
+                                    <th class="tecnico-c" style="width:76px;">IN</th>
+                                    <th style="width:22%; text-align:left;">Canal</th>
+                                    <th style="width:104px; text-align:left;">Mic o DI</th>
+                                    <th class="tecnico-c" style="width:48px;">48V</th>
+                                    <th style="width:86px; text-align:left;">Pie</th>
+                                    <th style="text-align:left;">Notas</th>
+                                    <th class="tecnico-c" style="width:40px;"></th>
+                                </tr></thead>
+                                <tbody>
+                                    ${eq.canales.length ? eq.canales.map(c => htmlFilaRec(eq.id, c)).join('') : `<tr><td colspan="9" class="tecnico-vacio">Este equipo todavía no tiene canales.</td></tr>`}
+                                    <tr><td colspan="9" class="rec-fila-add"><button type="button" class="btn-app btn-secondary btn-sm" onclick="agregarCanalRec('${e}')">＋ Canal</button></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <aside class="tecnico-lateral">
+                            <div class="tecnico-totales" id="rec-tot-${esc(eq.id)}">${htmlTotalesRec(eq)}</div>
+                        </aside>
+                    </div>
+                </div>`;
+        }
+
+        function renderizarRec() {
+            const cont = document.getElementById('rec-contenido');
+            if (!cont) return;
+            aplicarRecModoEnPantalla();
+            const chip = document.getElementById('chip-rec-equipos');
+            const estado = sonidoRecEstado[eventoActualId];
+            if (estado === 'error') {
+                if (chip) chip.textContent = '—';
+                cont.innerHTML = `<div class="tecnico-estado tecnico-estado-error">No se pudo leer la grabación (REC) de este evento. Revisá la conexión y volvé a abrir la pestaña. <button type="button" class="btn-app btn-secondary" onclick="abrirRecEvento()">Reintentar</button></div>`;
+                return;
+            }
+            const rec = obtenerRecEvento();
+            if (!rec) {
+                if (chip) chip.textContent = '…';
+                cont.innerHTML = `<div class="tecnico-estado">Cargando la grabación (REC)…</div>`;
+                return;
+            }
+            if (chip) chip.textContent = `${rec.equipos.length} ${rec.equipos.length === 1 ? 'equipo' : 'equipos'}`;
+            const edicion = `
+                <div class="rec-edicion no-print">
+                    ${rec.equipos.length ? rec.equipos.map((eq, i) => htmlEquipoRec(eq, i)).join('') : `<div class="tecnico-estado">Todavía no hay equipos de grabación. Agregá el primero con <b>＋ Equipo de grabación</b>.</div>`}
+                    <div class="tecnico-nota rec-nota">
+                        <label for="inp-rec-nota">Nota de grabación</label>
+                        <textarea id="inp-rec-nota" rows="2" placeholder="Ej.: El H4 va al escenario; la PC queda en la cabina." onchange="editarNotaRec(this.value)">${esc(rec.nota)}</textarea>
+                    </div>
+                    <datalist id="dl-rec-mic">${TECNICO_OPCIONES_MIC.map(o => `<option value="${esc(o)}"></option>`).join('')}</datalist>
+                </div>`;
+            const hoja = `<div class="tecnico-hoja ${recModo === 'vista' ? '' : 'print-only'}" id="rec-hoja">${htmlHojaRec(rec)}</div>`;
+            cont.innerHTML = (recModo === 'vista' ? '' : edicion) + hoja;
+        }
+        window.renderizarRec = renderizarRec;
+
+        // Refresca totales y hoja sin rearmar las tablas (no se pierde el foco al tabular)
+        function refrescarResumenRec() {
+            const rec = obtenerRecEvento();
+            if (!rec) return;
+            rec.equipos.forEach(eq => {
+                const tot = document.getElementById('rec-tot-' + eq.id);
+                if (tot) tot.innerHTML = htmlTotalesRec(eq);
+            });
+            const hoja = document.getElementById('rec-hoja');
+            if (hoja) hoja.innerHTML = htmlHojaRec(rec);
+        }
+
+        function buscarEquipoRec(eqId) {
+            const rec = obtenerRecEvento();
+            return rec ? rec.equipos.find(x => x.id === eqId) : null;
+        }
+
+        function editarCanalRec(eqId, id, campo, valor) {
+            const eq = buscarEquipoRec(eqId);
+            const c = eq && eq.canales.find(x => x.id === id);
+            if (!c) return;
+            if (campo === 'canal' || campo === 'micDi' || campo === 'notas' || campo === 'inManual') valor = String(valor || '').trim();
+            if (campo === 'canal' || campo === 'micDi') valor = valor.toUpperCase();
+            c[campo] = valor;
+            guardarRecEventoActual();
+            if (campo === 'habilitado') renderizarRec();
+            else refrescarResumenRec();
+        }
+        window.editarCanalRec = editarCanalRec;
+
+        function editarEquipoRec(eqId, campo, valor) {
+            const eq = buscarEquipoRec(eqId);
+            if (!eq) return;
+            eq[campo] = String(valor || '').trim();
+            guardarRecEventoActual();
+            refrescarResumenRec();
+        }
+        window.editarEquipoRec = editarEquipoRec;
+
+        function editarRepuestoRec(eqId, k, valor) {
+            const eq = buscarEquipoRec(eqId);
+            if (!eq) return;
+            eq.repuestos = { ...TECNICO_REPUESTOS_DEFECTO, ...(eq.repuestos || {}), [k]: numTecnico(valor) };
+            guardarRecEventoActual();
+            refrescarResumenRec();
+        }
+        window.editarRepuestoRec = editarRepuestoRec;
+
+        function editarNotaRec(valor) {
+            const rec = obtenerRecEvento();
+            if (!rec) return;
+            rec.nota = String(valor || '').trim();
+            guardarRecEventoActual();
+            refrescarResumenRec();
+        }
+        window.editarNotaRec = editarNotaRec;
+
+        function agregarEquipoRec() {
+            const rec = obtenerRecEvento();
+            if (!rec) { mostrarToast('Esperá a que termine de cargar la grabación (REC).', 'info'); return; }
+            const eq = equipoRecBase({ canales: [canalRecBase()] });
+            rec.equipos.push(eq);
+            guardarRecEventoActual();
+            renderizarRec();
+            setTimeout(() => {
+                const card = document.querySelector(`.rec-card[data-equipo-id="${eq.id}"]`);
+                const inp = card && card.querySelector('.rec-inp-nombre');
+                if (inp) { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus(); }
+            }, 30);
+        }
+        window.agregarEquipoRec = agregarEquipoRec;
+
+        async function quitarEquipoRec(eqId) {
+            const rec = obtenerRecEvento();
+            const idx = rec ? rec.equipos.findIndex(x => x.id === eqId) : -1;
+            if (idx < 0) return;
+            const eq = rec.equipos[idx];
+            const conf = await mostrarModalConfirmacion({
+                titulo: 'Quitar equipo de grabación',
+                mensaje: `¿Quitar <strong>"${esc(nombreEquipoRec(eq, idx))}"</strong> con sus ${eq.canales.length} ${eq.canales.length === 1 ? 'canal' : 'canales'}? No se puede deshacer.`,
+                icono: '🗑️',
+                textoConfirmar: 'Quitar equipo',
+                esPeligroso: true
+            });
+            if (!conf) return;
+            rec.equipos = rec.equipos.filter(x => x.id !== eqId);
+            guardarRecEventoActual();
+            renderizarRec();
+        }
+        window.quitarEquipoRec = quitarEquipoRec;
+
+        function agregarCanalRec(eqId) {
+            const eq = buscarEquipoRec(eqId);
+            if (!eq) return;
+            eq.canales.push(canalRecBase());
+            guardarRecEventoActual();
+            renderizarRec();
+            setTimeout(() => {
+                const card = document.querySelector(`.rec-card[data-equipo-id="${eqId}"]`);
+                const inps = card ? card.querySelectorAll('.tecnico-inp-canal') : [];
+                const ult = inps[inps.length - 1];
+                if (ult) ult.focus();
+            }, 30);
+        }
+        window.agregarCanalRec = agregarCanalRec;
+
+        async function quitarCanalRec(eqId, id) {
+            const eq = buscarEquipoRec(eqId);
+            const c = eq && eq.canales.find(x => x.id === id);
+            if (!c) return;
+            const conf = await mostrarModalConfirmacion({
+                titulo: 'Quitar canal',
+                mensaje: `¿Quitar el canal <strong>"${esc(c.canal || 'sin nombre')}"</strong> de este equipo?`,
+                icono: '🗑️',
+                textoConfirmar: 'Quitar',
+                esPeligroso: true
+            });
+            if (!conf) return;
+            eq.canales = eq.canales.filter(x => x.id !== id);
+            guardarRecEventoActual();
+            renderizarRec();
+        }
+        window.quitarCanalRec = quitarCanalRec;
+
+        // Reordenar canales arrastrando desde ⠿ (solo dentro del mismo equipo)
+        let recCanalArrastrado = null; // { eqId, id }
+        function recDragStart(e, eqId, id) {
+            recCanalArrastrado = { eqId, id };
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', id); } catch (err) { /* algunos navegadores lo exigen */ }
+            e.currentTarget.classList.add('dragging');
+        }
+        function recDragOver(e, eqId) {
+            if (!recCanalArrastrado || recCanalArrastrado.eqId !== eqId) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            document.querySelectorAll('#rec-contenido tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+            e.currentTarget.classList.add('drag-over');
+        }
+        function recDragEnd(e) {
+            recCanalArrastrado = null;
+            if (e && e.currentTarget) { e.currentTarget.classList.remove('dragging'); e.currentTarget.draggable = false; }
+            document.querySelectorAll('#rec-contenido tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+        }
+        function recDrop(e, eqId, idDestino) {
+            e.preventDefault();
+            e.stopPropagation();
+            const origen = recCanalArrastrado;
+            recDragEnd(e);
+            const eq = buscarEquipoRec(eqId);
+            if (!eq || !origen || origen.eqId !== eqId || origen.id === idDestino) return;
+            const iOrigen = eq.canales.findIndex(x => x.id === origen.id);
+            const iDestino = eq.canales.findIndex(x => x.id === idDestino);
+            if (iOrigen < 0 || iDestino < 0) return;
+            const [canal] = eq.canales.splice(iOrigen, 1);
+            eq.canales.splice(iDestino, 0, canal);
+            guardarRecEventoActual();
+            renderizarRec();
+        }
+        window.recDragStart = recDragStart;
+        window.recDragOver = recDragOver;
+        window.recDragEnd = recDragEnd;
+        window.recDrop = recDrop;
+
+        function orientacionRec() { return orientacionDeHoja('rec-hoja'); }
+        window.orientacionRec = orientacionRec;
+
+        function imprimirRec() {
+            if (!obtenerRecEvento()) { mostrarToast('Esperá a que termine de cargar la grabación (REC).', 'info'); return; }
+            refrescarResumenRec();
+            establecerOrientacionImpresion(orientacionRec());
+            setTimeout(() => window.print(), 60);
+        }
+        window.imprimirRec = imprimirRec;
 
         // =========================================================
         // GESTIÓN DE NOTAS TÉCNICAS (COLUMNAS Y CANCIONES)
@@ -13396,59 +13915,473 @@
             mostrarToast(`¡${_checklistCacheImportacion.length} ítems importados con éxito al Checklist!`, 'success');
         }
 
-        function obtenerChecklistActualDeTabla() {
-            const tbody = document.getElementById('tbody-checklist-filas');
-            if (!tbody) return [];
-            const filas = tbody.querySelectorAll('tr');
-            const resultado = [];
-            filas.forEach(tr => {
-                const inps = tr.querySelectorAll('input[type="text"]');
-                const chks = tr.querySelectorAll('input[type="checkbox"]');
-                const item = inps[0]?.value.trim() || '';
-                const origen = inps[1]?.value.trim() || 'MANDALA HOUSE';
-                const notas = inps[2]?.value.trim() || '';
-                const preparado = chks[0]?.checked || false;
-                const listo = chks[1]?.checked || false;
-                const regreso = chks[2]?.checked || false;
-                if (item) {
-                    resultado.push({ item, origen, preparado, listo, regreso, notas });
-                }
+        // =======================================================================
+        // CHECKLIST DE EQUIPAMIENTO (v2.4): categorías, casilla Usar y chips de filtro
+        // - Cada evento guarda su lista en el campo `checklist`: [{ id, item, origen, categoriaId, usar, preparado, listo, regreso, notas }]
+        // - Las categorías son únicas para todos los eventos (productora_config › checklist_equipamiento_categorias).
+        //   Si se borra una categoría, los ítems que la tenían pasan a "Sin categoría" (no se reescriben los eventos).
+        // - `usar: false` = el ítem queda visible en el grupo "Sin usar" pero no se imprime ni se cuenta.
+        // =======================================================================
+        let categoriasEquipamiento = [];
+        let categoriasEquipamientoEstado = 'pendiente'; // 'pendiente' | 'ok' | 'error'
+        const CATEGORIAS_EQUIPAMIENTO_INICIALES = ['Instrumentos', 'Equipos', 'Caños', 'Microfonería y conexión', 'Accesorios', 'Papeles'];
+        const CHK_SIN_USAR = '__sinusar';
+        const CHK_SIN_CAT = '__sincat';
+        const CHK_COLUMNAS = 10;
+        let checklistFiltro = new Set();
+        let checklistSinUsarPlegado = null; // null = automático (plegado si hay más de 10)
+
+        function slugCategoriaEquipamiento(nombre) {
+            return normTecnico(nombre).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        }
+        function categoriasEquipamientoIniciales() {
+            return CATEGORIAS_EQUIPAMIENTO_INICIALES.map((n, i) => ({ id: 'cat-' + slugCategoriaEquipamiento(n), nombre: n, orden: i }));
+        }
+
+        // Recibe { ok, existe, categorias } del servicio. Si la lectura falló no se permite editar: se mostrarían las iniciales y se pisarían las reales.
+        function poblarCategoriasEquipamiento(res) {
+            if (!res || !res.ok) {
+                categoriasEquipamientoEstado = 'error';
+                if (!categoriasEquipamiento.length) categoriasEquipamiento = categoriasEquipamientoIniciales();
+            } else {
+                categoriasEquipamiento = res.existe
+                    ? res.categorias.filter(c => c && c.id && c.nombre).map(c => ({ id: String(c.id), nombre: String(c.nombre), orden: Number(c.orden) || 0 })).sort((a, b) => a.orden - b.orden)
+                    : categoriasEquipamientoIniciales();
+                categoriasEquipamientoEstado = 'ok';
+            }
+            renderizarCategoriasEquipamientoCfg();
+            if (eventoActualId) renderizarChecklistFestival();
+        }
+        window.poblarCategoriasEquipamiento = poblarCategoriasEquipamiento;
+
+        async function guardarCategoriasEquipamiento() {
+            if (categoriasEquipamientoEstado !== 'ok') {
+                mostrarToast('No se pudieron cargar las categorías. Recargá la página antes de editarlas.', 'error');
+                return false;
+            }
+            categoriasEquipamiento.forEach((c, i) => { c.orden = i; });
+            const svc = window.MandalaApp && window.MandalaApp.configuracion;
+            if (!svc || typeof svc.guardarCategoriasEquipamiento !== 'function') return false;
+            return await svc.guardarCategoriasEquipamiento(categoriasEquipamiento.map(c => ({ id: c.id, nombre: c.nombre, orden: c.orden })));
+        }
+
+        function contarUsoCategoriaEquipamiento(catId) {
+            let items = 0, eventos = 0;
+            Object.values(checklistFestivalesDB).forEach(arr => {
+                if (!Array.isArray(arr)) return;
+                const n = arr.filter(it => it && it.categoriaId === catId).length;
+                if (n) { items += n; eventos++; }
             });
-            return resultado;
+            return { items, eventos };
+        }
+
+        // Crea la categoría (o devuelve la existente con ese nombre). Devuelve null si no se pudo guardar.
+        async function crearCategoriaEquipamiento(nombre) {
+            nombre = String(nombre || '').trim();
+            if (!nombre) return null;
+            if (categoriasEquipamientoEstado !== 'ok') {
+                mostrarToast('No se pudieron cargar las categorías. Recargá la página antes de editarlas.', 'error');
+                return null;
+            }
+            const existente = categoriasEquipamiento.find(c => normTecnico(c.nombre) === normTecnico(nombre));
+            if (existente) return existente;
+            const cat = { id: 'cat-' + (slugCategoriaEquipamiento(nombre) || 'nueva') + '-' + Math.random().toString(36).slice(2, 6), nombre, orden: categoriasEquipamiento.length };
+            categoriasEquipamiento.push(cat);
+            const ok = await guardarCategoriasEquipamiento();
+            if (!ok) { categoriasEquipamiento = categoriasEquipamiento.filter(c => c.id !== cat.id); return null; }
+            renderizarCategoriasEquipamientoCfg();
+            return cat;
+        }
+
+        // ---------- Configuración General › Checklist de equipamiento ----------
+        function renderizarCategoriasEquipamientoCfg() {
+            const tbody = document.getElementById('tbody-categorias-equipamiento');
+            if (!tbody) return;
+            const vacio = document.getElementById('vacio-categorias-equipamiento');
+            if (vacio) vacio.style.display = categoriasEquipamiento.length ? 'none' : 'block';
+            tbody.innerHTML = categoriasEquipamiento.map(c => {
+                const uso = contarUsoCategoriaEquipamiento(c.id);
+                const id = escJs(c.id);
+                return `
+                    <tr data-cat-id="${esc(c.id)}" ondragstart="catDragStart(event, '${id}')" ondragover="catDragOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="catDrop(event, '${id}')" ondragend="catDragEnd(event)">
+                        <td class="drag-handle" title="Arrastrar para cambiar el orden" onmousedown="this.parentNode.draggable = true" onmouseup="this.parentNode.draggable = false">⠿</td>
+                        <td><input type="text" class="spreadsheet-inp text-left" value="${esc(c.nombre)}" placeholder="Nombre de la categoría" onchange="renombrarCategoriaEquipamientoCfg('${id}', this.value)"></td>
+                        <td style="color:var(--text-muted); font-size:12.5px;">${uso.items ? `${uso.items} ${uso.items === 1 ? 'ítem' : 'ítems'} en ${uso.eventos} ${uso.eventos === 1 ? 'evento' : 'eventos'}` : 'Sin uso'}</td>
+                        <td style="text-align:center;"><button type="button" class="btn-row-del" onclick="eliminarCategoriaEquipamientoCfg('${id}')" title="Eliminar categoría" aria-label="Eliminar categoría"></button></td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function agregarCategoriaEquipamientoCfg() {
+            const nombre = await mostrarModalPrompt({ titulo: 'Nueva categoría', placeholder: 'Ej.: Pedales', textoConfirmar: 'Crear', icono: '➕' });
+            if (!nombre) return;
+            const cat = await crearCategoriaEquipamiento(nombre);
+            if (cat) { renderizarCategoriasEquipamientoCfg(); if (eventoActualId) renderizarChecklistFestival(); }
+        }
+        window.agregarCategoriaEquipamientoCfg = agregarCategoriaEquipamientoCfg;
+
+        async function renombrarCategoriaEquipamientoCfg(id, valor) {
+            const cat = categoriasEquipamiento.find(c => c.id === id);
+            if (!cat) return;
+            valor = String(valor || '').trim();
+            const repetida = categoriasEquipamiento.some(c => c.id !== id && normTecnico(c.nombre) === normTecnico(valor));
+            if (!valor || repetida) {
+                mostrarToast(!valor ? 'La categoría necesita un nombre.' : 'Ya existe una categoría con ese nombre.', 'warning');
+                renderizarCategoriasEquipamientoCfg();
+                return;
+            }
+            const anterior = cat.nombre;
+            cat.nombre = valor;
+            const ok = await guardarCategoriasEquipamiento();
+            if (!ok) cat.nombre = anterior;
+            renderizarCategoriasEquipamientoCfg();
+            if (eventoActualId) renderizarChecklistFestival();
+        }
+        window.renombrarCategoriaEquipamientoCfg = renombrarCategoriaEquipamientoCfg;
+
+        async function eliminarCategoriaEquipamientoCfg(id) {
+            const cat = categoriasEquipamiento.find(c => c.id === id);
+            if (!cat) return;
+            const uso = contarUsoCategoriaEquipamiento(id);
+            const conf = await mostrarModalConfirmacion({
+                titulo: 'Eliminar categoría',
+                mensaje: uso.items
+                    ? `<strong>"${esc(cat.nombre)}"</strong> tiene ${uso.items} ${uso.items === 1 ? 'ítem' : 'ítems'} en ${uso.eventos} ${uso.eventos === 1 ? 'evento' : 'eventos'}. Pasan a <strong>Sin categoría</strong>; los ítems no se borran.`
+                    : `¿Eliminar la categoría <strong>"${esc(cat.nombre)}"</strong>? No tiene ítems.`,
+                icono: '🗑️',
+                textoConfirmar: 'Eliminar categoría',
+                esPeligroso: true
+            });
+            if (!conf) return;
+            const copia = categoriasEquipamiento.slice();
+            categoriasEquipamiento = categoriasEquipamiento.filter(c => c.id !== id);
+            checklistFiltro.delete(id);
+            const ok = await guardarCategoriasEquipamiento();
+            if (!ok) categoriasEquipamiento = copia;
+            renderizarCategoriasEquipamientoCfg();
+            if (eventoActualId) renderizarChecklistFestival();
+        }
+        window.eliminarCategoriaEquipamientoCfg = eliminarCategoriaEquipamientoCfg;
+
+        let categoriaArrastrada = null;
+        function catDragStart(e, id) {
+            categoriaArrastrada = id;
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', id); } catch (err) { /* algunos navegadores lo exigen */ }
+            e.currentTarget.classList.add('dragging');
+        }
+        function catDragOver(e) {
+            if (!categoriaArrastrada) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            document.querySelectorAll('#tbody-categorias-equipamiento tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+            e.currentTarget.classList.add('drag-over');
+        }
+        function catDragEnd(e) {
+            categoriaArrastrada = null;
+            if (e && e.currentTarget) { e.currentTarget.classList.remove('dragging'); e.currentTarget.draggable = false; }
+            document.querySelectorAll('#tbody-categorias-equipamiento tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+        }
+        async function catDrop(e, idDestino) {
+            e.preventDefault();
+            e.stopPropagation();
+            const idOrigen = categoriaArrastrada;
+            catDragEnd(e);
+            if (!idOrigen || idOrigen === idDestino) return;
+            const copia = categoriasEquipamiento.slice();
+            const iO = categoriasEquipamiento.findIndex(c => c.id === idOrigen);
+            const iD = categoriasEquipamiento.findIndex(c => c.id === idDestino);
+            if (iO < 0 || iD < 0) return;
+            const [cat] = categoriasEquipamiento.splice(iO, 1);
+            categoriasEquipamiento.splice(iD, 0, cat);
+            renderizarCategoriasEquipamientoCfg();
+            const ok = await guardarCategoriasEquipamiento();
+            if (!ok) { categoriasEquipamiento = copia; renderizarCategoriasEquipamientoCfg(); }
+            if (eventoActualId) renderizarChecklistFestival();
+        }
+        window.catDragStart = catDragStart;
+        window.catDragOver = catDragOver;
+        window.catDragEnd = catDragEnd;
+        window.catDrop = catDrop;
+
+        // ---------- Checklist del evento ----------
+        function nuevoIdItemChecklist() {
+            return 'ck-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        }
+
+        // Lista del evento actual, con id, usar y categoriaId completos (los eventos viejos no los tienen)
+        function itemsChecklistEvento() {
+            const evId = eventoActualId;
+            if (!evId) return [];
+            if (!Array.isArray(checklistFestivalesDB[evId])) checklistFestivalesDB[evId] = [];
+            const lista = checklistFestivalesDB[evId];
+            lista.forEach(it => {
+                if (!it.id) it.id = nuevoIdItemChecklist();
+                if (it.usar === undefined) it.usar = true;
+                if (it.categoriaId === undefined || it.categoriaId === null) it.categoriaId = '';
+            });
+            return lista;
+        }
+
+        function claveGrupoItemChecklist(it) {
+            if (it.usar === false) return CHK_SIN_USAR;
+            return categoriasEquipamiento.some(c => c.id === it.categoriaId) ? it.categoriaId : CHK_SIN_CAT;
+        }
+
+        function gruposChecklist(lista) {
+            const grupos = categoriasEquipamiento.map(c => ({ key: c.id, nombre: c.nombre, items: lista.filter(it => claveGrupoItemChecklist(it) === c.id) }));
+            grupos.push({ key: CHK_SIN_CAT, nombre: 'Sin categoría', items: lista.filter(it => claveGrupoItemChecklist(it) === CHK_SIN_CAT) });
+            grupos.push({ key: CHK_SIN_USAR, nombre: 'Sin usar en este evento', items: lista.filter(it => claveGrupoItemChecklist(it) === CHK_SIN_USAR), sinUsar: true });
+            return grupos;
+        }
+
+        function grupoVisibleChecklist(g) {
+            return g.items.length > 0 && (checklistFiltro.size === 0 || checklistFiltro.has(g.key));
+        }
+
+        function itemsVisiblesChecklist() {
+            return gruposChecklist(itemsChecklistEvento()).filter(g => !g.sinUsar && grupoVisibleChecklist(g)).flatMap(g => g.items);
+        }
+
+        function sinUsarPlegadoChecklist(n) {
+            return checklistSinUsarPlegado === null ? n > 10 : checklistSinUsarPlegado;
+        }
+        function toggleSinUsarChecklist() {
+            const n = itemsChecklistEvento().filter(it => it.usar === false).length;
+            checklistSinUsarPlegado = !sinUsarPlegadoChecklist(n);
+            renderizarChecklistFestival();
+        }
+        window.toggleSinUsarChecklist = toggleSinUsarChecklist;
+
+        function toggleFiltroChecklist(key) {
+            if (key === 'todas') checklistFiltro.clear();
+            else if (checklistFiltro.has(key)) checklistFiltro.delete(key);
+            else checklistFiltro.add(key);
+            if (key === CHK_SIN_USAR && checklistFiltro.has(key) && checklistSinUsarPlegado !== false) checklistSinUsarPlegado = false;
+            renderizarChecklistFestival();
+        }
+        window.toggleFiltroChecklist = toggleFiltroChecklist;
+
+        function renderizarChipsChecklist(grupos) {
+            const box = document.getElementById('checklist-chips');
+            if (!box) return;
+            const usados = grupos.filter(g => !g.sinUsar).reduce((s, g) => s + g.items.length, 0);
+            const total = usados + grupos.filter(g => g.sinUsar).reduce((s, g) => s + g.items.length, 0);
+            if (!total) { box.innerHTML = ''; return; }
+            const chip = (key, texto, n, extra = '') => `<button type="button" class="chk-chip ${(key === 'todas' ? checklistFiltro.size === 0 : checklistFiltro.has(key)) ? 'on' : ''} ${extra}" onclick="toggleFiltroChecklist('${escJs(key)}')">${esc(texto)} <small>${n}</small></button>`;
+            box.innerHTML = chip('todas', 'Todas', usados) + grupos.filter(g => g.items.length).map(g => chip(g.key, g.sinUsar ? 'Sin usar' : g.nombre, g.items.length, g.sinUsar ? 'chk-chip-sinusar' : '')).join('');
+        }
+
+        function htmlFilaChecklist(it) {
+            const id = escJs(it.id);
+            const usar = it.usar !== false;
+            const dis = usar ? '' : 'disabled';
+            const notaVal = (it.notas && it.notas !== 'Notas...' && it.notas !== 'Notas..') ? it.notas : '';
+            const catSel = categoriasEquipamiento.some(c => c.id === it.categoriaId) ? it.categoriaId : '';
+            return `
+                <tr data-chk-id="${esc(it.id)}" class="chk-fila ${usar ? '' : 'chk-sinusar no-print'}" ondragstart="chkDragStart(event, '${id}')" ondragover="chkDragOver(event, '${id}')" ondragleave="this.classList.remove('drag-over')" ondrop="chkDrop(event, '${id}')" ondragend="chkDragEnd(event)">
+                    <td class="no-print" style="text-align:center;"><input type="checkbox" ${usar ? 'checked' : ''} style="transform:scale(1.15); cursor:pointer;" title="${usar ? 'Se usa en este evento. Destildá para pasarlo a Sin usar' : 'No se usa en este evento. Tildá para volver a usarlo'}" onchange="editarItemChecklist('${id}', 'usar', this.checked)"></td>
+                    <td class="drag-handle" title="Arrastrar para mover (dentro del mismo grupo)" onmousedown="this.parentNode.draggable = true" onmouseup="this.parentNode.draggable = false">⠿</td>
+                    <td><input type="text" class="spreadsheet-inp text-left" value="${esc(it.item)}" placeholder="Nuevo ítem..." onchange="editarItemChecklist('${id}', 'item', this.value)"></td>
+                    <td class="no-print"><select class="spreadsheet-inp chk-cat-sel" onchange="onCambioCategoriaItem('${id}', this.value)">
+                        <option value="" ${catSel === '' ? 'selected' : ''}>Sin categoría</option>
+                        ${categoriasEquipamiento.map(c => `<option value="${esc(c.id)}" ${c.id === catSel ? 'selected' : ''}>${esc(c.nombre)}</option>`).join('')}
+                        <option value="__nueva__">＋ Nueva categoría…</option>
+                    </select></td>
+                    <td><input type="text" class="spreadsheet-inp text-left" value="${esc(it.origen || 'MANDALA HOUSE')}" placeholder="Origen..." onchange="editarItemChecklist('${id}', 'origen', this.value)"></td>
+                    <td style="text-align:center;"><input type="checkbox" ${it.preparado ? 'checked' : ''} ${dis} style="transform:scale(1.2);" onchange="editarItemChecklist('${id}', 'preparado', this.checked)"></td>
+                    <td style="text-align:center;"><input type="checkbox" ${it.listo ? 'checked' : ''} ${dis} style="transform:scale(1.2);" onchange="editarItemChecklist('${id}', 'listo', this.checked)"></td>
+                    <td style="text-align:center;"><input type="checkbox" ${it.regreso ? 'checked' : ''} ${dis} style="transform:scale(1.2);" onchange="editarItemChecklist('${id}', 'regreso', this.checked)"></td>
+                    <td>
+                        <input type="text" class="spreadsheet-inp text-left checklist-nota-inp" value="${esc(notaVal)}" placeholder="" oninput="if(this.nextElementSibling) this.nextElementSibling.textContent = this.value;" onchange="editarItemChecklist('${id}', 'notas', this.value)">
+                        <span class="print-checklist-note">${esc(notaVal)}</span>
+                    </td>
+                    <td class="col-accion-cell" style="text-align:center;"><button type="button" class="btn-row-del" onclick="eliminarItemChecklist('${id}')" title="Eliminar ítem" aria-label="Eliminar ítem"></button></td>
+                </tr>`;
+        }
+
+        function renderizarChecklistFestival(items) {
+            const tbody = document.getElementById('tbody-checklist-filas');
+            if (!tbody) return;
+            if (Array.isArray(items) && eventoActualId && !Array.isArray(checklistFestivalesDB[eventoActualId])) checklistFestivalesDB[eventoActualId] = items;
+
+            // Actualizar título de impresión con el nombre del festival actual
+            const festNombre = (typeof infoFestivales !== 'undefined' && infoFestivales[eventoActualId]?.nombre) || 'Festival';
+            const elTitleChecklist = document.getElementById('print-title-checklist');
+            if (elTitleChecklist) elTitleChecklist.textContent = `Checklist de Equipamiento para ${festNombre}`;
+
+            const lista = itemsChecklistEvento();
+            const grupos = gruposChecklist(lista);
+            // Un filtro que ya no tiene ítems (se movieron o se borraron) se descarta solo
+            [...checklistFiltro].forEach(k => { const g = grupos.find(x => x.key === k); if (!g || !g.items.length) checklistFiltro.delete(k); });
+            renderizarChipsChecklist(grupos);
+
+            const filas = [];
+            const mostrarEncabezados = categoriasEquipamiento.length > 0;
+            grupos.filter(grupoVisibleChecklist).forEach(g => {
+                if (g.sinUsar) {
+                    const plegado = sinUsarPlegadoChecklist(g.items.length);
+                    filas.push(`<tr class="chk-grupo chk-grupo-sinusar no-print" onclick="toggleSinUsarChecklist()" title="${plegado ? 'Mostrar' : 'Ocultar'} los ítems sin usar"><td colspan="${CHK_COLUMNAS}">${plegado ? '▸' : '▾'} Sin usar en este evento · ${g.items.length} <span class="chk-grupo-hint">— siguen en la lista pero no se imprimen. Tildá Usar para sumarlos de nuevo.</span></td></tr>`);
+                    if (!plegado) g.items.forEach(it => filas.push(htmlFilaChecklist(it)));
+                    return;
+                }
+                if (mostrarEncabezados) filas.push(`<tr class="chk-grupo"><td colspan="${CHK_COLUMNAS}">${esc(g.nombre)} · ${g.items.length}</td></tr>`);
+                g.items.forEach(it => filas.push(htmlFilaChecklist(it)));
+            });
+            tbody.innerHTML = filas.length ? filas.join('') : `<tr><td colspan="${CHK_COLUMNAS}" class="tecnico-vacio">${lista.length ? 'Ningún ítem coincide con el filtro.' : 'El checklist está vacío. Agregá ítems con ＋ Ítem.'}</td></tr>`;
+            sincronizarHeadersChecklist();
         }
 
         function guardarChecklistAutomatico() {
-            const items = obtenerChecklistActualDeTabla();
-            if (eventoActualId) {
-                checklistFestivalesDB[eventoActualId] = items;
-                if (typeof autoguardarDetalleFestivalFirestore === 'function') {
-                    autoguardarDetalleFestivalFirestore('checklist', items);
-                }
+            const lista = itemsChecklistEvento();
+            if (eventoActualId && typeof autoguardarDetalleFestivalFirestore === 'function') {
+                // Los ítems sin nombre (recién agregados y vacíos) no se guardan
+                const items = lista.filter(it => String(it.item || '').trim()).map(it => ({
+                    id: it.id, item: it.item, origen: it.origen || 'MANDALA HOUSE', categoriaId: it.categoriaId || '', usar: it.usar !== false,
+                    preparado: !!it.preparado, listo: !!it.listo, regreso: !!it.regreso, notas: it.notas || ''
+                }));
+                autoguardarDetalleFestivalFirestore('checklist', items);
             }
             sincronizarHeadersChecklist();
         }
 
-        function toggleColumnaChecklist(colIdx, checked) {
-            const tbody = document.getElementById('tbody-checklist-filas');
-            if (!tbody) return;
-            const filas = tbody.querySelectorAll('tr');
-            filas.forEach(tr => {
-                const chks = tr.querySelectorAll('input[type="checkbox"]');
-                if (chks[colIdx]) {
-                    chks[colIdx].checked = Boolean(checked);
-                }
-            });
+        function editarItemChecklist(id, campo, valor) {
+            const it = itemsChecklistEvento().find(x => x.id === id);
+            if (!it) return;
+            if (campo === 'item') it.item = String(valor || '').trim();
+            else if (campo === 'origen') it.origen = String(valor || '').trim() || 'MANDALA HOUSE';
+            else if (campo === 'notas') it.notas = String(valor || '').trim();
+            else if (campo === 'categoriaId') it.categoriaId = String(valor || '');
+            else it[campo] = Boolean(valor);
             guardarChecklistAutomatico();
+            if (campo === 'usar') {
+                if (!it.usar) mostrarToast(`"${it.item || 'Ítem'}" pasó a Sin usar`, 'info');
+                renderizarChecklistFestival();
+            } else if (campo === 'categoriaId') {
+                renderizarChecklistFestival();
+            }
+        }
+        window.editarItemChecklist = editarItemChecklist;
+
+        async function onCambioCategoriaItem(id, valor) {
+            if (valor === '__nueva__') {
+                const nombre = await mostrarModalPrompt({ titulo: 'Nueva categoría', placeholder: 'Ej.: Pedales', textoConfirmar: 'Crear', icono: '➕' });
+                const cat = nombre ? await crearCategoriaEquipamiento(nombre) : null;
+                if (!cat) { renderizarChecklistFestival(); return; }
+                valor = cat.id;
+            }
+            editarItemChecklist(id, 'categoriaId', valor);
+        }
+        window.onCambioCategoriaItem = onCambioCategoriaItem;
+
+        function toggleColumnaChecklist(colIdx, checked) {
+            const campo = ['preparado', 'listo', 'regreso'][colIdx];
+            if (!campo) return;
+            // Solo los ítems que se usan y se ven con el filtro actual
+            itemsVisiblesChecklist().forEach(it => { it[campo] = Boolean(checked); });
+            guardarChecklistAutomatico();
+            renderizarChecklistFestival();
             const nombresCols = ['Preparado', 'Listo para Salir', 'De Regreso'];
             mostrarToast(`${nombresCols[colIdx] || 'Columna'}: ${checked ? 'todos tildados' : 'todos destildados'}`, 'info');
         }
+        window.toggleColumnaChecklist = toggleColumnaChecklist;
+
+        function sincronizarHeadersChecklist() {
+            const visibles = itemsVisiblesChecklist();
+            ['preparado', 'listo', 'regreso'].forEach((campo, colIdx) => {
+                const chkHeader = document.getElementById(`chk-col-checklist-${colIdx}`);
+                if (!chkHeader) return;
+                const marcados = visibles.filter(it => it[campo]).length;
+                chkHeader.checked = visibles.length > 0 && marcados === visibles.length;
+                chkHeader.indeterminate = marcados > 0 && marcados < visibles.length;
+            });
+        }
+        window.sincronizarHeadersChecklist = sincronizarHeadersChecklist;
+
+        function agregarFilaChecklist() {
+            if (!eventoActualId) return;
+            const lista = itemsChecklistEvento();
+            // Si el filtro es una sola categoría, el ítem nuevo entra en esa; si no, se limpia el filtro para que se vea
+            let categoriaId = '';
+            if (checklistFiltro.size === 1 && categoriasEquipamiento.some(c => c.id === [...checklistFiltro][0])) categoriaId = [...checklistFiltro][0];
+            else checklistFiltro.clear();
+            const nuevo = { id: nuevoIdItemChecklist(), item: '', origen: 'MANDALA HOUSE', categoriaId, usar: true, preparado: false, listo: false, regreso: false, notas: '' };
+            lista.push(nuevo);
+            renderizarChecklistFestival();
+            setTimeout(() => {
+                const tr = document.querySelector(`#tbody-checklist-filas tr[data-chk-id="${nuevo.id}"]`);
+                const inp = tr && tr.querySelector('input[type="text"]');
+                if (inp) { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus(); }
+            }, 30);
+        }
+
+        async function eliminarItemChecklist(id) {
+            const lista = itemsChecklistEvento();
+            const it = lista.find(x => x.id === id);
+            if (!it) return;
+            const conf = await mostrarModalConfirmacion({
+                titulo: 'Eliminar Ítem del Checklist',
+                mensaje: `¿Deseás eliminar <strong>"${esc(it.item || 'este ítem')}"</strong> del checklist de equipamiento?${it.usar === false ? '' : '<br><br>Si solo no lo usás en este evento, conviene destildar <strong>Usar</strong>: queda en la lista sin imprimirse.'}`,
+                icono: '🗑️',
+                textoConfirmar: 'Eliminar',
+                esPeligroso: true
+            });
+            if (!conf) return;
+            checklistFestivalesDB[eventoActualId] = lista.filter(x => x.id !== id);
+            guardarChecklistAutomatico();
+            renderizarChecklistFestival();
+            mostrarToast('Ítem eliminado del checklist', 'info');
+        }
+
+        // Reordenar arrastrando desde ⠿, solo dentro del mismo grupo (para cambiar de categoría, usar el desplegable)
+        let chkItemArrastrado = null;
+        function chkDragStart(e, id) {
+            chkItemArrastrado = id;
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', id); } catch (err) { /* algunos navegadores lo exigen */ }
+            e.currentTarget.classList.add('dragging');
+        }
+        function chkDragOver(e, idDestino) {
+            if (!chkItemArrastrado) return;
+            const lista = itemsChecklistEvento();
+            const o = lista.find(x => x.id === chkItemArrastrado);
+            const d = lista.find(x => x.id === idDestino);
+            if (!o || !d || claveGrupoItemChecklist(o) !== claveGrupoItemChecklist(d)) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            document.querySelectorAll('#tbody-checklist-filas tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+            e.currentTarget.classList.add('drag-over');
+        }
+        function chkDragEnd(e) {
+            chkItemArrastrado = null;
+            if (e && e.currentTarget) { e.currentTarget.classList.remove('dragging'); e.currentTarget.draggable = false; }
+            document.querySelectorAll('#tbody-checklist-filas tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+        }
+        function chkDrop(e, idDestino) {
+            e.preventDefault();
+            e.stopPropagation();
+            const idOrigen = chkItemArrastrado;
+            chkDragEnd(e);
+            const lista = itemsChecklistEvento();
+            const iO = lista.findIndex(x => x.id === idOrigen);
+            const iD = lista.findIndex(x => x.id === idDestino);
+            if (iO < 0 || iD < 0 || iO === iD || claveGrupoItemChecklist(lista[iO]) !== claveGrupoItemChecklist(lista[iD])) return;
+            const [it] = lista.splice(iO, 1);
+            lista.splice(iD, 0, it);
+            guardarChecklistAutomatico();
+            renderizarChecklistFestival();
+        }
+        window.chkDragStart = chkDragStart;
+        window.chkDragOver = chkDragOver;
+        window.chkDragEnd = chkDragEnd;
+        window.chkDrop = chkDrop;
 
         // =======================================================================
         // PROPAGACIÓN DE CHECKLIST DE EQUIPAMIENTO ENTRE EVENTOS 2026
         // =======================================================================
         function propagarChecklistVol5AOtrosEventos2026(festivalesList) {
             if (!Array.isArray(festivalesList) || festivalesList.length === 0) return;
-            
+
             // 1. Identificar evento VOL 5 2026
             const festVol5 = festivalesList.find(f => {
                 if (!f) return false;
@@ -13461,10 +14394,12 @@
             const chkVol5 = checklistFestivalesDB[festVol5.id] || festVol5.checklist;
             if (!Array.isArray(chkVol5) || chkVol5.length === 0) return;
 
-            // Template limpio con checks en falso
+            // Template limpio con checks en falso (conserva categoría y si se usa)
             const chkPlantillaLimpia = chkVol5.map(it => ({
                 item: it.item || '',
                 origen: it.origen || 'MANDALA HOUSE',
+                categoriaId: it.categoriaId || '',
+                usar: it.usar !== false,
                 notas: it.notas || '',
                 preparado: false,
                 listo: false,
@@ -13496,111 +14431,6 @@
             });
         }
         window.propagarChecklistVol5AOtrosEventos2026 = propagarChecklistVol5AOtrosEventos2026;
-        window.toggleColumnaChecklist = toggleColumnaChecklist;
-
-        function sincronizarHeadersChecklist() {
-            const tbody = document.getElementById('tbody-checklist-filas');
-            if (!tbody) return;
-            const filas = Array.from(tbody.querySelectorAll('tr'));
-            [0, 1, 2].forEach(colIdx => {
-                const chkHeader = document.getElementById(`chk-col-checklist-${colIdx}`);
-                if (!chkHeader) return;
-                if (filas.length === 0) {
-                    chkHeader.checked = false;
-                    chkHeader.indeterminate = false;
-                    return;
-                }
-                let marcados = 0;
-                filas.forEach(tr => {
-                    const chks = tr.querySelectorAll('input[type="checkbox"]');
-                    if (chks[colIdx]?.checked) marcados++;
-                });
-                chkHeader.checked = (marcados === filas.length);
-                chkHeader.indeterminate = (marcados > 0 && marcados < filas.length);
-            });
-        }
-        window.sincronizarHeadersChecklist = sincronizarHeadersChecklist;
-
-        function renderizarChecklistFestival(items) {
-            const tbody = document.getElementById('tbody-checklist-filas');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            // Actualizar título de impresión con el nombre del festival actual
-            const festNombre = (typeof infoFestivales !== 'undefined' && infoFestivales[eventoActualId]?.nombre) || 'Festival';
-            const elTitleChecklist = document.getElementById('print-title-checklist');
-            if (elTitleChecklist) elTitleChecklist.textContent = `Checklist de Equipamiento para ${festNombre}`;
-
-            if (!items || items.length === 0) {
-                items = [
-                    { item: 'BAJO SX JAZZ BASS', origen: 'MANDALA HOUSE', preparado: true, listo: true, regreso: true, notas: 'Funda acolchada negra' },
-                    { item: 'GRABADOR ZOOM H4 PRO', origen: 'GUIDO', preparado: true, listo: true, regreso: true, notas: 'Llevar 4 pilas AA recargables' },
-                    { item: 'SET MICRÓFONOS SHURE SM58 (X4)', origen: 'MANDALA HOUSE', preparado: true, listo: true, regreso: false, notas: 'En valija rígida gris' }
-                ];
-            }
-
-            items.forEach(it => {
-                const tr = document.createElement('tr');
-                tr.draggable = true;
-                tr.className = 'draggable-row';
-                const notaVal = (it.notas && it.notas !== 'Notas...' && it.notas !== 'Notas..') ? it.notas : '';
-                tr.innerHTML = `
-                    <td class="drag-handle">⠿</td>
-                    <td><input type="text" class="spreadsheet-inp text-left" value="${it.item || ''}" placeholder="Nuevo ítem..." onchange="guardarChecklistAutomatico()"></td>
-                    <td><input type="text" class="spreadsheet-inp text-left" value="${it.origen || 'MANDALA HOUSE'}" placeholder="Origen..." onchange="guardarChecklistAutomatico()"></td>
-                    <td style="text-align:center;"><input type="checkbox" ${it.preparado ? 'checked' : ''} style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                    <td style="text-align:center;"><input type="checkbox" ${it.listo ? 'checked' : ''} style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                    <td style="text-align:center;"><input type="checkbox" ${it.regreso ? 'checked' : ''} style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                    <td>
-                        <input type="text" class="spreadsheet-inp text-left checklist-nota-inp" value="${notaVal}" placeholder="" oninput="if(this.nextElementSibling) this.nextElementSibling.textContent = this.value;" onchange="guardarChecklistAutomatico()">
-                        <span class="print-checklist-note">${notaVal}</span>
-                    </td>
-                    <td class="col-accion-cell" style="text-align:center;"><button class="btn-row-del" onclick="eliminarFilaChecklist(this)">✕</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            inicializarDragAndDrop();
-            sincronizarHeadersChecklist();
-        }
-
-        function agregarFilaChecklist() {
-            const tbody = document.getElementById('tbody-checklist-filas');
-            const tr = document.createElement('tr');
-            tr.draggable = true;
-            tr.className = 'draggable-row';
-            tr.innerHTML = `
-                <td class="drag-handle">⠿</td>
-                <td><input type="text" class="spreadsheet-inp text-left" placeholder="Nuevo ítem / instrumento" onchange="guardarChecklistAutomatico()"></td>
-                <td><input type="text" class="spreadsheet-inp text-left" value="MANDALA HOUSE" onchange="guardarChecklistAutomatico()"></td>
-                <td style="text-align:center;"><input type="checkbox" style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                <td style="text-align:center;"><input type="checkbox" style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                <td style="text-align:center;"><input type="checkbox" style="transform:scale(1.2);" onchange="guardarChecklistAutomatico()"></td>
-                <td>
-                    <input type="text" class="spreadsheet-inp text-left checklist-nota-inp" placeholder="" oninput="if(this.nextElementSibling) this.nextElementSibling.textContent = this.value;" onchange="guardarChecklistAutomatico()">
-                    <span class="print-checklist-note"></span>
-                </td>
-                <td class="col-accion-cell" style="text-align:center;"><button class="btn-row-del" onclick="eliminarFilaChecklist(this)">✕</button></td>
-            `;
-            tbody.appendChild(tr);
-            inicializarDragAndDrop();
-            guardarChecklistAutomatico();
-        }
-
-        async function eliminarFilaChecklist(btn) {
-            const conf = await mostrarModalConfirmacion({
-                titulo: 'Eliminar Ítem del Checklist',
-                mensaje: '¿Deseás eliminar este ítem del checklist de equipamiento?',
-                icono: '🗑️',
-                textoConfirmar: 'Eliminar',
-                esPeligroso: true
-            });
-            if (conf) {
-                btn.closest('tr').remove();
-                guardarChecklistAutomatico();
-                mostrarToast('Ítem eliminado del checklist', 'info');
-            }
-        }
 
         // =========================================================
         // DRAG AND DROP CON EL MOUSE (REORDENAR FILAS)

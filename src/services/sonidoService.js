@@ -26,13 +26,33 @@ export async function obtenerSonidoEvento(eventoId) {
 }
 
 /**
+ * Guarda el REC (grabación del show) de un evento (reemplaza sonido.rec completo).
+ * Con merge no toca sonido.tecnico ni el resto del documento.
+ */
+export async function guardarRecEvento(eventoId, rec, usuarioEmail = '') {
+    try {
+        await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, eventoId), {
+            eventoId,
+            sonido: { rec },
+            actualizadoEn: new Date().toISOString(),
+            actualizadoPor: usuarioEmail || ''
+        }, { merge: true });
+        return true;
+    } catch (err) {
+        console.error(`[Mandala Festivales] Error al guardar el REC de ${eventoId}:`, err);
+        notificarErrorPersistencia("la grabación (REC)", err);
+        return false;
+    }
+}
+
+/**
  * Guarda el Rider técnico de un evento (reemplaza sonido.tecnico completo).
  */
 export async function guardarRiderTecnicoEvento(eventoId, tecnico, usuarioEmail = '') {
     try {
         await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, eventoId), {
             eventoId,
-            sonido: { tecnico },
+            sonido: { riderTecnico: tecnico },
             actualizadoEn: new Date().toISOString(),
             actualizadoPor: usuarioEmail || ''
         }, { merge: true });

@@ -31,6 +31,8 @@ import { obtenerGastosCajaFirestore, guardarGastosCajaFirestore, obtenerIngresos
 import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerProductorasFirestore, guardarProductorasFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore, obtenerChecklistProduccionPlantillaFirestore, guardarChecklistProduccionPlantillaFirestore } from "./services/configuracionService.js";
 import { obtenerInstrumentosFirestore, escucharInstrumentosEnTiempoReal, getEmojiParaInstrumento, obtenerInstrumentosActualesSync } from "./services/instrumentosService.js";
 
+import { obtenerSonidoEvento, guardarRiderTecnicoEvento } from "./services/sonidoService.js";
+
 import { idVenueEstable, idHistoricoEstable } from "./utils/ids.js";
 
 console.log(`[Mandala Festivales] Inicializando arquitectura modular (${APP_VERSION})...`);
@@ -82,6 +84,10 @@ window.MandalaApp = {
         guardar: guardarVenueFirestore,
         guardarLote: guardarLoteVenues,
         eliminar: eliminarVenueFirestore
+    },
+    sonido: {
+        obtener: obtenerSonidoEvento,
+        guardarTecnico: guardarRiderTecnicoEvento
     },
     sesionistas: {
         obtener: obtenerSesionistasFirestore,

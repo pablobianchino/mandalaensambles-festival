@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.1">
-    <script src="src/ui/iconos.js?v=v2.1"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.2">
+    <script src="src/ui/iconos.js?v=v2.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.1" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.2" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -380,7 +380,7 @@
                             Producción <span class="pill-status pill-neutral" id="contador-checklist-produccion" style="display:none;"></span>
                         </button>
                         <button class="segmented-tab-btn" data-tab="rider" onclick="switchTabEvento('rider')">
-                            Rider técnico
+                            Sonido
                         </button>
                         <button class="segmented-tab-btn" data-tab="cobertura" onclick="switchTabEvento('cobertura')">
                             Servicios
@@ -536,11 +536,14 @@
                     </div>
 
 
-                    <!-- Pestaña 3: Rider Técnico -->
+                    <!-- Pestaña 3: Sonido (Rider general, Rider técnico y Checklist de equipamiento) -->
                     <div id="tab-ev-rider" class="tab-ev-content" style="display:none;">
                         <div class="segmented-tabs-bar" style="margin-bottom:14px;">
                             <button class="segmented-tab-btn active" id="btn-subtab-bandas" onclick="switchRiderSubTab('bandas')">
-                                Bandas y músicos
+                                Rider general
+                            </button>
+                            <button class="segmented-tab-btn" id="btn-subtab-tecnico" onclick="switchRiderSubTab('tecnico')">
+                                Rider técnico
                             </button>
                             <button class="segmented-tab-btn" id="btn-subtab-checklist" onclick="switchRiderSubTab('checklist')">
                                 Checklist de equipamiento
@@ -553,7 +556,7 @@
                                 <!-- Cabecera Exclusiva de Impresión -->
                                 <div class="print-rider-header print-only">
                                     <div class="print-rider-header-inner">
-                                        <h2 id="print-title-rider" class="print-rider-title">Rider Técnico</h2>
+                                        <h2 id="print-title-rider" class="print-rider-title">Rider general</h2>
                                         <span class="print-rider-brand">Mandala Ensambles</span>
                                     </div>
                                 </div>
@@ -561,7 +564,7 @@
                                 <div class="card-header-flex no-print">
                                     <div>
                                         <h3 class="card-title">
-                                            <span class="screen-title">Rider técnico</span>
+                                            <span class="screen-title">Rider general</span>
                                         </h3>
                                         <span style="font-size:12px; color:var(--text-muted);" class="subtitulo-descriptivo-app">
                                             Una fila por canción. Arrastrá los músicos entre columnas para intercambiar posiciones; los nombres de columna se editan directo.
@@ -578,7 +581,7 @@
                                         <button type="button" class="btn-app btn-secondary" id="btn-rider-fullscreen" onclick="toggleRiderPantallaCompleta()" title="Agrandar la planilla a pantalla completa (Esc para salir)" aria-label="Pantalla completa">
                                             <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pantalla completa
                                         </button>
-                                        <button class="btn-app btn-secondary" onclick="imprimirRiderTecnico()" title="Imprimir planilla de rider técnico (Horizontal)" aria-label="Imprimir rider técnico">
+                                        <button class="btn-app btn-secondary" onclick="imprimirRiderTecnico()" title="Imprimir el rider general (horizontal)" aria-label="Imprimir rider general">
                                             🖨️
                                         </button>
                                         <button class="btn-app btn-primary" id="btn-rider-add-col" onclick="agregarColumnaInstrumentoRider()" title="Agregar nueva columna de instrumento">
@@ -604,6 +607,50 @@
                                             <!-- Las filas agrupadas por banda y por canción con botón '+' se generan reactivamente -->
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sub-pestaña Sonido: Rider técnico (lista de canales para el sonidista) -->
+                        <div id="rider-subtab-tecnico" style="display:none;">
+                            <div class="content-card" id="card-rider-tecnico">
+                                <!-- Cabecera exclusiva de impresión (mismo formato que el Rider general) -->
+                                <div class="print-rider-header print-only">
+                                    <div class="print-rider-header-inner">
+                                        <h2 id="print-title-tecnico" class="print-rider-title">Rider técnico</h2>
+                                        <span class="print-rider-brand">Mandala Ensambles</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-header-flex no-print">
+                                    <div>
+                                        <h3 class="card-title">
+                                            <span class="screen-title">Rider técnico</span>
+                                        </h3>
+                                        <span style="font-size:12px; color:var(--text-muted);" class="subtitulo-descriptivo-app">
+                                            Lista de canales para el sonidista. Se arma sola con los instrumentos del rider general; apagá los canales que no se usen.
+                                        </span>
+                                    </div>
+                                    <div class="sec-chips">
+                                        <span class="sec-chip" id="chip-tecnico-canales">0 canales</span>
+                                        <div class="rider-modo-switch" role="group" aria-label="Modo del rider técnico">
+                                            <button type="button" id="btn-tecnico-modo-vista" class="rider-modo-btn" onclick="setTecnicoModo('vista')" title="Ver la planilla limpia, como se imprime">👁 Vista</button>
+                                            <button type="button" id="btn-tecnico-modo-edicion" class="rider-modo-btn active" onclick="setTecnicoModo('edicion')" title="Editar canales y totales">✏️ Edición</button>
+                                        </div>
+                                        <button type="button" class="btn-app btn-secondary" id="btn-tecnico-fullscreen" onclick="toggleTecnicoPantallaCompleta()" title="Agrandar la planilla a pantalla completa (Esc para salir)" aria-label="Pantalla completa">
+                                            <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pantalla completa
+                                        </button>
+                                        <button class="btn-app btn-secondary" onclick="imprimirRiderCanales()" title="Imprimir el rider técnico (vertical u horizontal según el ancho)" aria-label="Imprimir rider técnico">
+                                            🖨️
+                                        </button>
+                                        <button class="btn-app btn-primary" id="btn-tecnico-add-canal" onclick="agregarCanalTecnico()" title="Agregar un canal que no sale del rider general (PC, ambiente, talkback…)">
+                                            ＋ Canal
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="tecnico-contenido">
+                                    <!-- Se renderiza vía renderizarRiderTecnicoCanales() -->
                                 </div>
                             </div>
                         </div>
@@ -3182,7 +3229,7 @@
     <div id="modal-agregar-columna-rider" class="modal-overlay">
         <div class="modal-box" style="width:460px;">
             <div class="modal-header">
-                <h3>🎸 Nueva Columna en Rider Técnico</h3>
+                <h3>🎸 Nueva columna en el Rider general</h3>
                 <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="modal-body">
@@ -3530,6 +3577,11 @@
                 const cardRider = document.getElementById('card-rider-bandas');
                 if (cardRider && cardRider.classList.contains('rider-fullscreen-active')) {
                     toggleRiderPantallaCompleta();
+                    return;
+                }
+                const cardTecnico = document.getElementById('card-rider-tecnico');
+                if (cardTecnico && cardTecnico.classList.contains('rider-fullscreen-active')) {
+                    toggleTecnicoPantallaCompleta();
                     return;
                 }
                 const confModal = document.getElementById('modal-mandala-confirm');
@@ -5854,7 +5906,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.1";
+        const APP_VERSION = "v2.2";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6331,7 +6383,9 @@
 
             const festNombre = fInfo?.nombre || 'Festival';
             const elTitleRider = document.getElementById('print-title-rider');
-            if (elTitleRider) elTitleRider.textContent = `Rider Técnico para ${festNombre}`;
+            if (elTitleRider) elTitleRider.textContent = `Rider general para ${festNombre}`;
+            const elTitleTecnico = document.getElementById('print-title-tecnico');
+            if (elTitleTecnico) elTitleTecnico.textContent = `Rider técnico para ${festNombre}`;
             const elTitleChecklist = document.getElementById('print-title-checklist');
             if (elTitleChecklist) elTitleChecklist.textContent = `Checklist de Equipamiento para ${festNombre}`;
 
@@ -8238,7 +8292,10 @@
 
         window.addEventListener('beforeprint', () => {
             const subtabChecklist = document.getElementById('rider-subtab-checklist');
-            if (subtabChecklist && subtabChecklist.style.display !== 'none') {
+            const subtabTecnico = document.getElementById('rider-subtab-tecnico');
+            if (subtabTecnico && subtabTecnico.style.display !== 'none' && typeof orientacionRiderCanales === 'function') {
+                establecerOrientacionImpresion(orientacionRiderCanales());
+            } else if (subtabChecklist && subtabChecklist.style.display !== 'none') {
                 establecerOrientacionImpresion('portrait');
             } else {
                 establecerOrientacionImpresion('landscape');
@@ -8246,12 +8303,17 @@
         });
 
         function switchRiderSubTab(subTabId) {
-            document.getElementById('rider-subtab-bandas').style.display = subTabId === 'bandas' ? 'block' : 'none';
-            document.getElementById('rider-subtab-checklist').style.display = subTabId === 'checklist' ? 'block' : 'none';
+            ['bandas', 'tecnico', 'checklist'].forEach(id => {
+                const panel = document.getElementById('rider-subtab-' + id);
+                if (panel) panel.style.display = (subTabId === id) ? 'block' : 'none';
+                const btn = document.getElementById('btn-subtab-' + id);
+                if (btn) btn.classList.toggle('active', subTabId === id);
+            });
 
-            document.getElementById('btn-subtab-bandas').classList.toggle('active', subTabId === 'bandas');
-            document.getElementById('btn-subtab-checklist').classList.toggle('active', subTabId === 'checklist');
-
+            if (subTabId === 'tecnico') {
+                if (typeof abrirRiderTecnicoCanales === 'function') abrirRiderTecnicoCanales();
+                return;
+            }
             establecerOrientacionImpresion(subTabId === 'checklist' ? 'portrait' : 'landscape');
         }
 
@@ -8411,7 +8473,9 @@
 
             // Actualizar títulos de impresión
             const elTitleRider = document.getElementById('print-title-rider');
-            if (elTitleRider) elTitleRider.textContent = `Rider Técnico para ${nombre}`;
+            if (elTitleRider) elTitleRider.textContent = `Rider general para ${nombre}`;
+            const elTitleTecnico = document.getElementById('print-title-tecnico');
+            if (elTitleTecnico) elTitleTecnico.textContent = `Rider técnico para ${nombre}`;
             const elTitleChecklist = document.getElementById('print-title-checklist');
             if (elTitleChecklist) elTitleChecklist.textContent = `Checklist de Equipamiento para ${nombre}`;
 
@@ -11680,7 +11744,7 @@
             // Actualizar título de impresión dinámicamente con el nombre del festival actual
             const festNombre = (typeof infoFestivales !== 'undefined' && infoFestivales[eventoActualId]?.nombre) || 'Festival';
             const elTitleRider = document.getElementById('print-title-rider');
-            if (elTitleRider) elTitleRider.textContent = `Rider Técnico para ${festNombre}`;
+            if (elTitleRider) elTitleRider.textContent = `Rider general para ${festNombre}`;
 
             aplicarRiderModoEnPantalla();
             const modoVista = (riderModo === 'vista');
@@ -12148,6 +12212,571 @@
         }
 
         // =========================================================
+        // SONIDO › RIDER TÉCNICO (lista de canales para el sonidista)
+        // - Se guarda en festivales_sonido/{eventoId}.sonido.tecnico, aparte del documento del
+        //   festival (que tiene finanzas): en v2.5 el sonidista va a leer y editar solo esa colección.
+        // - Los canales se precargan desde las columnas del Rider general y se mantienen en sincronía:
+        //   columna nueva → canal nuevo; renombrada → se renombra; quitada → el canal queda apagado.
+        // =========================================================
+        const sonidoTecnicoDB = {};       // festId -> { consola, canales, cajasDi, repuestos, notaEquipamiento }
+        const sonidoTecnicoEstado = {};   // festId -> 'cargando' | 'listo' | 'error'
+        const _timersGuardadoTecnico = {};
+        let tecnicoModo = 'edicion';
+        try { if (localStorage.getItem('mandala_tecnico_modo') === 'vista') tecnicoModo = 'vista'; } catch (e) { /* sin storage: queda en edición */ }
+
+        const TECNICO_OPCIONES_MIC = ['58', '57', '52', 'C02', 'KIT (52)', 'KIT (57)', 'DI', 'DI PRE', 'LÍNEA'];
+        const TECNICO_OPCIONES_PIE = ['PIE', 'CLAMP', '—'];
+        const TECNICO_REPUESTOS_DEFECTO = { pie: 1, clamp: 1, xlr: 0 };
+
+        function nuevoIdCanalTecnico() {
+            return 'ch-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        }
+        function normTecnico(s) {
+            return String(s || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+        }
+        function numTecnico(v) {
+            const n = parseInt(v, 10);
+            return isNaN(n) || n < 0 ? 0 : n;
+        }
+
+        function canalBaseTecnico(extra) {
+            return Object.assign({
+                id: nuevoIdCanalTecnico(), origenColId: null, origenNombre: '', sub: 0, canalAuto: '',
+                habilitado: true, inManual: '', canal: '', micDi: '', phantom: false, pie: '', rec: true, notas: '', aviso: '',
+                descartado: false // canal del rider general que se quitó a mano: queda oculto para que no se vuelva a crear
+            }, extra || {});
+        }
+
+        // Canales sugeridos para una columna del Rider general (la batería se abre en 4 y las teclas en 2)
+        function canalesSugeridosDeColumna(col, ctx) {
+            const nombre = String(col.nombre || '').trim().toUpperCase();
+            const n = normTecnico(nombre);
+            const ni = normTecnico(col.instrumento);
+            const tiene = (...claves) => claves.some(k => n.includes(k) || ni.includes(k));
+            const base = { origenColId: col.id, origenNombre: nombre };
+            const mk = (sub, canal, micDi, phantom, pie) => canalBaseTecnico({ ...base, sub, canal, canalAuto: canal, micDi, phantom, pie });
+
+            if (tiene('BATER', 'DRUM')) return [
+                mk(0, 'BOMBO', 'KIT (52)', false, 'PIE'),
+                mk(1, 'TACHO', 'KIT (57)', false, 'CLAMP'),
+                mk(2, 'OH L', 'C02', true, 'PIE'),
+                mk(3, 'OH R', 'C02', true, 'PIE')
+            ];
+            if (tiene('BAJO', 'BASS')) return [mk(0, nombre, 'DI PRE', false, '—')];
+            if (tiene('ACUST', 'GTR AC')) return [mk(0, nombre, 'DI PRE', false, '—')];
+            if (tiene('GTR', 'GUIT')) return [mk(0, nombre, '57', false, 'PIE')];
+            if (tiene('TECL', 'PIAN', 'SYNTH', 'SINT', 'KEY')) return [mk(0, nombre + ' L', 'DI', false, '—'), mk(1, nombre + ' R', 'DI', false, '—')];
+            if (tiene('MIC', 'VOZ', 'VOCAL', 'CORO', 'CANT')) {
+                ctx.voz++;
+                const m = nombre.match(/(\d+)/);
+                return [mk(0, 'VX ' + (m ? m[1] : ctx.voz), '58', false, 'PIE')];
+            }
+            if (tiene('CAJON', 'PERCU')) return [mk(0, nombre, '58', false, 'PIE')];
+            if (tiene('LINEA', 'LINE')) return [mk(0, nombre, 'DI', false, '—')];
+            return [mk(0, nombre, '', false, '')];
+        }
+
+        function crearTecnicoDesdeRider(columnas) {
+            const ctx = { voz: 0 };
+            const canales = [];
+            columnas.forEach(col => canales.push(...canalesSugeridosDeColumna(col, ctx)));
+            return { consola: '', canales, cajasDi: '', repuestos: { ...TECNICO_REPUESTOS_DEFECTO }, notaEquipamiento: '' };
+        }
+
+        function normalizarTecnico(t) {
+            if (!t || !Array.isArray(t.canales)) return null;
+            return {
+                consola: String(t.consola || ''),
+                canales: t.canales.filter(c => c && typeof c === 'object').map(c => canalBaseTecnico({ ...c, id: c.id || nuevoIdCanalTecnico() })),
+                cajasDi: (t.cajasDi === undefined || t.cajasDi === null) ? '' : String(t.cajasDi),
+                repuestos: { ...TECNICO_REPUESTOS_DEFECTO, ...(t.repuestos || {}) },
+                notaEquipamiento: String(t.notaEquipamiento || '')
+            };
+        }
+
+        // Mantiene los canales en sincronía con las columnas del Rider general. Devuelve true si cambió algo.
+        function sincronizarTecnicoConRider(tec, columnas) {
+            let cambios = false;
+            const idsCols = new Set(columnas.map(c => c.id));
+            const ctx = { voz: 0 };
+            columnas.forEach(col => {
+                const nombre = String(col.nombre || '').trim().toUpperCase();
+                let propios = tec.canales.filter(ch => ch.origenColId === col.id);
+                if (!propios.length) {
+                    // Columnas guardadas como texto no tienen id fijo: se reconocen por el nombre
+                    propios = tec.canales.filter(ch => ch.origenColId && !idsCols.has(ch.origenColId) && ch.origenNombre === nombre);
+                    propios.forEach(ch => { ch.origenColId = col.id; });
+                }
+                const sugeridos = canalesSugeridosDeColumna(col, ctx);
+                if (!propios.length) {
+                    sugeridos.forEach(ch => { ch.aviso = 'nuevo'; tec.canales.push(ch); });
+                    cambios = true;
+                    return;
+                }
+                if (propios.some(ch => ch.origenNombre !== nombre)) {
+                    propios.forEach(ch => {
+                        const sug = sugeridos.find(s => s.sub === ch.sub);
+                        if (sug) {
+                            if (ch.canal === ch.canalAuto) ch.canal = sug.canal; // solo si el nombre no se cambió a mano
+                            ch.canalAuto = sug.canal;
+                        }
+                        ch.origenNombre = nombre;
+                    });
+                    cambios = true;
+                }
+                propios.forEach(ch => {
+                    if (ch.aviso === 'quitado' && !ch.descartado) { ch.aviso = ''; ch.habilitado = true; cambios = true; }
+                });
+            });
+            tec.canales.forEach(ch => {
+                if (ch.origenColId && !idsCols.has(ch.origenColId) && ch.aviso !== 'quitado' && !ch.descartado) {
+                    ch.habilitado = false;
+                    ch.aviso = 'quitado';
+                    cambios = true;
+                }
+            });
+            return cambios;
+        }
+
+        function obtenerTecnicoEvento() {
+            const festId = eventoActualId;
+            if (!festId || sonidoTecnicoEstado[festId] !== 'listo') return null;
+            const columnas = obtenerColumnasRiderEvento();
+            let tec = sonidoTecnicoDB[festId];
+            if (!tec) {
+                tec = sonidoTecnicoDB[festId] = crearTecnicoDesdeRider(columnas);
+                guardarTecnicoEvento();
+            } else if (sincronizarTecnicoConRider(tec, columnas)) {
+                guardarTecnicoEvento();
+            }
+            return tec;
+        }
+
+        async function abrirRiderTecnicoCanales() {
+            const festId = eventoActualId;
+            if (!festId) return;
+            establecerOrientacionImpresion('portrait');
+            if (sonidoTecnicoEstado[festId] !== 'listo') sonidoTecnicoEstado[festId] = 'cargando';
+            renderizarRiderTecnicoCanales();
+            if (_timersGuardadoTecnico[festId]) return; // hay cambios sin guardar: no se pisan con lo de la base
+
+            const svc = window.MandalaApp && window.MandalaApp.sonido;
+            try {
+                if (!svc || typeof svc.obtener !== 'function') throw new Error('Servicio de sonido no disponible');
+                const res = await svc.obtener(festId);
+                if (_timersGuardadoTecnico[festId]) return;
+                const tec = res && res.datos && res.datos.sonido ? res.datos.sonido.tecnico : null;
+                sonidoTecnicoDB[festId] = normalizarTecnico(tec);
+                sonidoTecnicoEstado[festId] = 'listo';
+            } catch (e) {
+                console.warn('[Mandala Festivales] No se pudo leer el rider técnico:', e);
+                // Si ya estaba cargado se sigue mostrando lo que había; si no, se muestra el error y NO se precarga (para no pisar nada)
+                if (sonidoTecnicoEstado[festId] !== 'listo') sonidoTecnicoEstado[festId] = 'error';
+            }
+            if (festId === eventoActualId) renderizarRiderTecnicoCanales();
+        }
+        window.abrirRiderTecnicoCanales = abrirRiderTecnicoCanales;
+
+        function guardarTecnicoEvento() {
+            const festId = eventoActualId;
+            if (!festId || !sonidoTecnicoDB[festId]) return;
+            clearTimeout(_timersGuardadoTecnico[festId]);
+            _timersGuardadoTecnico[festId] = setTimeout(async () => {
+                const svc = window.MandalaApp && window.MandalaApp.sonido;
+                const tec = sonidoTecnicoDB[festId];
+                let ok = false;
+                if (svc && typeof svc.guardarTecnico === 'function' && tec) {
+                    const email = (window.MandalaApp.auth && window.MandalaApp.auth.instance && window.MandalaApp.auth.instance.currentUser && window.MandalaApp.auth.instance.currentUser.email) || '';
+                    ok = await svc.guardarTecnico(festId, JSON.parse(JSON.stringify(tec)), email);
+                }
+                delete _timersGuardadoTecnico[festId];
+                if (ok) console.log('[Mandala Festivales] Rider técnico guardado:', festId);
+            }, 650);
+        }
+
+        function tipoEntradaTecnico(micDi) {
+            const s = normTecnico(micDi);
+            if (!s || s === '—' || s === '-') return '';
+            if (s.startsWith('DI')) return 'di';
+            if (s.startsWith('LINEA') || s.startsWith('LINE')) return 'linea';
+            return 'mic';
+        }
+
+        function canalesVisiblesTecnico(tec) {
+            return tec.canales.filter(c => !c.descartado);
+        }
+
+        function calcularTotalesTecnico(tec) {
+            const hab = tec.canales.filter(c => c.habilitado);
+            const r = tec.repuestos || {};
+            const contar = f => hab.filter(f).length;
+            const mic = contar(c => tipoEntradaTecnico(c.micDi) === 'mic');
+            const di = contar(c => tipoEntradaTecnico(c.micDi) === 'di');
+            const pie = contar(c => normTecnico(c.pie) === 'PIE');
+            const clamp = contar(c => normTecnico(c.pie) === 'CLAMP');
+            return {
+                canales: hab.length,
+                apagados: canalesVisiblesTecnico(tec).length - hab.length,
+                mic,
+                pie: pie + numTecnico(r.pie),
+                clamp: clamp + numTecnico(r.clamp),
+                xlr: mic + di + numTecnico(r.xlr),
+                cajasDi: String(tec.cajasDi || '').trim()
+            };
+        }
+
+        // Número de entrada (IN): correlativo de los canales habilitados, salvo que se haya fijado a mano
+        function numerarCanalesTecnico(tec) {
+            let n = 0;
+            const mapa = {};
+            tec.canales.forEach(c => {
+                if (!c.habilitado) return;
+                n++;
+                mapa[c.id] = String(c.inManual || '').trim() || String(n);
+            });
+            return mapa;
+        }
+
+        function aplicarTecnicoModoEnPantalla() {
+            const card = document.getElementById('card-rider-tecnico');
+            if (card) card.classList.toggle('tecnico-modo-vista', tecnicoModo === 'vista');
+            const bV = document.getElementById('btn-tecnico-modo-vista');
+            const bE = document.getElementById('btn-tecnico-modo-edicion');
+            if (bV) bV.classList.toggle('active', tecnicoModo === 'vista');
+            if (bE) bE.classList.toggle('active', tecnicoModo === 'edicion');
+            const bAdd = document.getElementById('btn-tecnico-add-canal');
+            if (bAdd) bAdd.style.display = tecnicoModo === 'vista' ? 'none' : '';
+        }
+
+        function setTecnicoModo(modo) {
+            tecnicoModo = (modo === 'vista') ? 'vista' : 'edicion';
+            try { localStorage.setItem('mandala_tecnico_modo', tecnicoModo); } catch (e) { /* ignorar */ }
+            renderizarRiderTecnicoCanales();
+        }
+        window.setTecnicoModo = setTecnicoModo;
+
+        function toggleTecnicoPantallaCompleta() {
+            const card = document.getElementById('card-rider-tecnico');
+            const btn = document.getElementById('btn-tecnico-fullscreen');
+            if (!card) return;
+            const activo = card.classList.toggle('rider-fullscreen-active');
+            if (btn) {
+                btn.innerHTML = activo
+                    ? '<svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg> Salir (Esc)'
+                    : '<svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pantalla completa';
+                btn.title = activo ? 'Salir de pantalla completa (Esc)' : 'Agrandar la planilla a pantalla completa (Esc para salir)';
+            }
+            document.body.style.overflow = activo ? 'hidden' : '';
+        }
+        window.toggleTecnicoPantallaCompleta = toggleTecnicoPantallaCompleta;
+
+        function htmlHojaTecnico(tec) {
+            const nums = numerarCanalesTecnico(tec);
+            const t = calcularTotalesTecnico(tec);
+            const hab = tec.canales.filter(c => c.habilitado);
+            const r = tec.repuestos || {};
+            const rep = (v) => numTecnico(v) ? ` <span class="tecnico-hoja-rep">(+${numTecnico(v)})</span>` : '';
+            const filas = hab.length ? hab.map(c => `
+                <tr>
+                    <td>${esc(nums[c.id])}</td>
+                    <td class="izq">${esc(c.canal)}</td>
+                    <td>${esc(c.micDi)}</td>
+                    <td>${c.phantom ? 'SI' : ''}</td>
+                    <td>${esc(c.pie)}</td>
+                    <td>${c.rec ? '●' : ''}</td>
+                    <td class="izq">${esc(c.notas)}</td>
+                </tr>`).join('') : `<tr><td colspan="7" class="izq">No hay canales habilitados.</td></tr>`;
+            return `
+                ${tec.consola.trim() ? `<p class="tecnico-hoja-linea"><b>CONSOLA:</b> ${esc(tec.consola.trim())}</p>` : ''}
+                <table class="tecnico-hoja-tabla" id="tabla-tecnico-hoja">
+                    <thead><tr><th>IN</th><th class="izq">CANAL</th><th>MIC O DI</th><th>48V</th><th>PIE</th><th>REC</th><th class="izq">NOTAS</th></tr></thead>
+                    <tbody>${filas}</tbody>
+                </table>
+                <table class="tecnico-hoja-tabla tecnico-hoja-totales">
+                    <thead><tr><th>MIC</th><th>PIE</th><th>CLAMP</th><th>CABLE XLR</th><th>CAJA DI</th></tr></thead>
+                    <tbody><tr><td>${t.mic}</td><td>${t.pie}${rep(r.pie)}</td><td>${t.clamp}${rep(r.clamp)}</td><td>${t.xlr}${rep(r.xlr)}</td><td>${esc(t.cajasDi)}</td></tr></tbody>
+                </table>
+                ${tec.notaEquipamiento.trim() ? `<p class="tecnico-hoja-linea"><b>NOTA:</b> ${esc(tec.notaEquipamiento.trim())}</p>` : ''}`;
+        }
+
+        function htmlTotalesTecnico(tec) {
+            const t = calcularTotalesTecnico(tec);
+            const r = tec.repuestos || {};
+            const inpRep = (k) => `<input type="number" min="0" class="tecnico-inp-num" value="${numTecnico(r[k])}" onchange="editarRepuestoTecnico('${k}', this.value)" title="Repuestos que se suman al total">`;
+            return `
+                <div class="tecnico-totales-h">Totales <span>(canales habilitados)</span></div>
+                <div class="tecnico-tot-fila"><span>MIC</span><b>${t.mic}</b></div>
+                <div class="tecnico-tot-fila"><span>PIE <small>(+${numTecnico(r.pie)} repuesto)</small></span><b>${t.pie}</b></div>
+                <div class="tecnico-tot-fila"><span>CLAMP <small>(+${numTecnico(r.clamp)})</small></span><b>${t.clamp}</b></div>
+                <div class="tecnico-tot-fila"><span>CABLE XLR <small>(+${numTecnico(r.xlr)})</small></span><b>${t.xlr}</b></div>
+                <div class="tecnico-tot-fila"><span>CAJA DI <small>(a mano)</small></span><input type="text" class="tecnico-inp-num tecnico-inp-cajadi" value="${esc(tec.cajasDi)}" onchange="editarCampoTecnico('cajasDi', this.value)" placeholder="0" title="Cantidad de cajas DI (la carga el sonidista)"></div>
+                <div class="tecnico-totales-sub">Repuestos</div>
+                <div class="tecnico-repuestos">PIE + ${inpRep('pie')} CLAMP + ${inpRep('clamp')} XLR + ${inpRep('xlr')}</div>`;
+        }
+
+        function htmlFilaTecnico(c, idx, total, nums) {
+            const id = escJs(c.id);
+            const pill = c.aviso === 'nuevo'
+                ? '<span class="pill-status pill-info tecnico-aviso-pill" title="Se agregó porque el rider general tiene esta columna">nuevo</span>'
+                : (c.aviso === 'quitado' ? '<span class="pill-status pill-neutral tecnico-aviso-pill" title="Su columna ya no está en el rider general">fuera del rider</span>' : '');
+            const opcionesPie = ['', ...TECNICO_OPCIONES_PIE];
+            if (c.pie && !opcionesPie.includes(c.pie)) opcionesPie.push(c.pie);
+            return `
+                <tr class="${c.habilitado ? '' : 'tecnico-apagado'}" data-canal-id="${esc(c.id)}" ondragstart="tecnicoDragStart(event, '${id}')" ondragover="tecnicoDragOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="tecnicoDrop(event, '${id}')" ondragend="tecnicoDragEnd(event)">
+                    <td class="drag-handle tecnico-handle" title="Arrastrar para mover el canal" onmousedown="this.parentNode.draggable = true" onmouseup="this.parentNode.draggable = false">⠿</td>
+                    <td class="tecnico-c"><input type="checkbox" ${c.habilitado ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'habilitado', this.checked)" title="${c.habilitado ? 'Apagar este canal (queda sombreado y no se imprime)' : 'Volver a usar este canal'}"></td>
+                    <td class="tecnico-c"><input type="text" class="spreadsheet-inp tecnico-inp-in" value="${esc(c.inManual)}" placeholder="${c.habilitado ? esc(nums[c.id]) : '—'}" onchange="editarCanalTecnico('${id}', 'inManual', this.value)" title="Número de entrada. Vacío = correlativo automático"></td>
+                    <td><div class="tecnico-canal-wrap"><input type="text" class="spreadsheet-inp text-left tecnico-inp-canal" value="${esc(c.canal)}" placeholder="Canal" onchange="editarCanalTecnico('${id}', 'canal', this.value)">${pill}</div></td>
+                    <td><input type="text" class="spreadsheet-inp text-left" list="dl-tecnico-mic" value="${esc(c.micDi)}" placeholder="—" onchange="editarCanalTecnico('${id}', 'micDi', this.value)"></td>
+                    <td class="tecnico-c"><input type="checkbox" ${c.phantom ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'phantom', this.checked)" title="Phantom 48V"></td>
+                    <td><select class="spreadsheet-inp tecnico-sel" onchange="editarCanalTecnico('${id}', 'pie', this.value)">${opcionesPie.map(o => `<option value="${esc(o)}" ${o === c.pie ? 'selected' : ''}>${o ? esc(o) : '·'}</option>`).join('')}</select></td>
+                    <td class="tecnico-c"><input type="checkbox" ${c.rec ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'rec', this.checked)" title="Se graba este canal"></td>
+                    <td><input type="text" class="spreadsheet-inp text-left" value="${esc(c.notas)}" placeholder="Notas" onchange="editarCanalTecnico('${id}', 'notas', this.value)"></td>
+                    <td class="tecnico-c tecnico-acciones">
+                        <button type="button" class="btn-row-del" onclick="quitarCanalTecnico('${id}')" title="Quitar canal" aria-label="Quitar canal"></button>
+                    </td>
+                </tr>`;
+        }
+
+        function renderizarRiderTecnicoCanales() {
+            const cont = document.getElementById('tecnico-contenido');
+            if (!cont) return;
+            aplicarTecnicoModoEnPantalla();
+            const chip = document.getElementById('chip-tecnico-canales');
+            const estado = sonidoTecnicoEstado[eventoActualId];
+            if (estado === 'error') {
+                if (chip) chip.textContent = '—';
+                cont.innerHTML = `<div class="tecnico-estado tecnico-estado-error">No se pudo leer el rider técnico de este evento. Revisá la conexión y volvé a abrir la pestaña. <button type="button" class="btn-app btn-secondary" onclick="abrirRiderTecnicoCanales()">Reintentar</button></div>`;
+                return;
+            }
+            const tec = obtenerTecnicoEvento();
+            if (!tec) {
+                if (chip) chip.textContent = '…';
+                cont.innerHTML = `<div class="tecnico-estado">Cargando el rider técnico…</div>`;
+                return;
+            }
+            const t = calcularTotalesTecnico(tec);
+            if (chip) chip.textContent = `${t.canales} ${t.canales === 1 ? 'canal' : 'canales'}${t.apagados ? ` · ${t.apagados} apagado${t.apagados === 1 ? '' : 's'}` : ''}`;
+
+            const nums = numerarCanalesTecnico(tec);
+            const visibles = canalesVisiblesTecnico(tec);
+            const nuevos = visibles.filter(c => c.aviso === 'nuevo');
+            const quitados = visibles.filter(c => c.aviso === 'quitado');
+            const avisos = [];
+            if (nuevos.length) avisos.push(`Se ${nuevos.length === 1 ? 'agregó el canal' : 'agregaron los canales'} <b>${nuevos.map(c => esc(c.canal)).join(', ')}</b> porque el rider general tiene ${nuevos.length === 1 ? 'una columna nueva' : 'columnas nuevas'}.`);
+            if (quitados.length) avisos.push(`${quitados.length === 1 ? 'El canal' : 'Los canales'} <b>${quitados.map(c => esc(c.canal)).join(', ')}</b> ${quitados.length === 1 ? 'quedó apagado' : 'quedaron apagados'}: su columna ya no está en el rider general.`);
+            const banner = (avisos.length && tecnicoModo !== 'vista') ? `
+                <div class="tecnico-banner no-print">
+                    <div>${avisos.join('<br>')}</div>
+                    ${nuevos.length ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="descartarAvisosTecnico()">Entendido</button>` : ''}
+                </div>` : '';
+
+            const edicion = `
+                <div class="tecnico-edicion no-print">
+                    <div class="tecnico-consola">
+                        <label for="inp-tecnico-consola"><b>Consola</b> <span>(opcional)</span></label>
+                        <input type="text" id="inp-tecnico-consola" class="spreadsheet-inp text-left" value="${esc(tec.consola)}" placeholder="Ej.: Yamaha EMX 860 ST" onchange="editarCampoTecnico('consola', this.value)">
+                    </div>
+                    ${banner}
+                    <div class="tecnico-layout">
+                        <div class="table-responsive tecnico-tabla-wrap">
+                            <table class="spreadsheet-table tecnico-tabla" id="tabla-tecnico-edicion">
+                                <thead><tr>
+                                    <th class="tecnico-c col-drag-header" style="width:32px;" title="Arrastrá la fila para mover el canal">⠿</th>
+                                    <th class="tecnico-c" title="Habilitado: apagá los canales que no se usan" style="width:40px;">✓</th>
+                                    <th class="tecnico-c" style="width:46px;">IN</th>
+                                    <th style="width:22%; text-align:left;">Canal</th>
+                                    <th style="width:104px; text-align:left;">Mic o DI</th>
+                                    <th class="tecnico-c" style="width:48px;">48V</th>
+                                    <th style="width:86px; text-align:left;">Pie</th>
+                                    <th class="tecnico-c" style="width:48px;">REC</th>
+                                    <th style="text-align:left;">Notas</th>
+                                    <th class="tecnico-c" style="width:40px;" title="Acciones"></th>
+                                </tr></thead>
+                                <tbody>
+                                    ${visibles.length ? visibles.map((c, i) => htmlFilaTecnico(c, i, visibles.length, nums)).join('') : `<tr><td colspan="10" class="tecnico-vacio">No hay canales. El rider general no tiene columnas: agregá canales con ＋ Canal.</td></tr>`}
+                                </tbody>
+                            </table>
+                        </div>
+                        <aside class="tecnico-lateral">
+                            <div class="tecnico-totales" id="tecnico-totales">${htmlTotalesTecnico(tec)}</div>
+                            <div class="tecnico-nota">
+                                <label for="inp-tecnico-nota">Nota de equipamiento</label>
+                                <textarea id="inp-tecnico-nota" rows="3" placeholder="Ej.: El venue cuenta con 4 SM58 y 6 pies." onchange="editarCampoTecnico('notaEquipamiento', this.value)">${esc(tec.notaEquipamiento)}</textarea>
+                            </div>
+                        </aside>
+                    </div>
+                    <datalist id="dl-tecnico-mic">${TECNICO_OPCIONES_MIC.map(o => `<option value="${esc(o)}"></option>`).join('')}</datalist>
+                </div>`;
+
+            const hoja = `<div class="tecnico-hoja ${tecnicoModo === 'vista' ? '' : 'print-only'}" id="tecnico-hoja">${htmlHojaTecnico(tec)}</div>`;
+            cont.innerHTML = (tecnicoModo === 'vista' ? '' : edicion) + hoja;
+        }
+        window.renderizarRiderTecnicoCanales = renderizarRiderTecnicoCanales;
+
+        // Refresca totales, hoja y contador sin rearmar la tabla (no se pierde el foco al tabular)
+        function refrescarResumenTecnico() {
+            const tec = sonidoTecnicoDB[eventoActualId];
+            if (!tec) return;
+            const tot = document.getElementById('tecnico-totales');
+            if (tot) tot.innerHTML = htmlTotalesTecnico(tec);
+            const hoja = document.getElementById('tecnico-hoja');
+            if (hoja) hoja.innerHTML = htmlHojaTecnico(tec);
+            const chip = document.getElementById('chip-tecnico-canales');
+            const t = calcularTotalesTecnico(tec);
+            if (chip) chip.textContent = `${t.canales} ${t.canales === 1 ? 'canal' : 'canales'}${t.apagados ? ` · ${t.apagados} apagado${t.apagados === 1 ? '' : 's'}` : ''}`;
+        }
+
+        function editarCanalTecnico(id, campo, valor) {
+            const tec = sonidoTecnicoDB[eventoActualId];
+            const c = tec && tec.canales.find(x => x.id === id);
+            if (!c) return;
+            if (campo === 'canal' || campo === 'micDi' || campo === 'notas' || campo === 'inManual') valor = String(valor || '').trim();
+            if (campo === 'canal' || campo === 'micDi') valor = valor.toUpperCase();
+            c[campo] = valor;
+            if (campo === 'habilitado' && c.aviso === 'quitado' && valor) c.aviso = '';
+            if (campo === 'canal' && c.aviso === 'nuevo') c.aviso = '';
+            guardarTecnicoEvento();
+            if (campo === 'habilitado' || campo === 'inManual') renderizarRiderTecnicoCanales();
+            else refrescarResumenTecnico();
+        }
+        window.editarCanalTecnico = editarCanalTecnico;
+
+        function editarCampoTecnico(campo, valor) {
+            const tec = sonidoTecnicoDB[eventoActualId];
+            if (!tec) return;
+            tec[campo] = String(valor || '').trim();
+            guardarTecnicoEvento();
+            refrescarResumenTecnico();
+        }
+        window.editarCampoTecnico = editarCampoTecnico;
+
+        function editarRepuestoTecnico(k, valor) {
+            const tec = sonidoTecnicoDB[eventoActualId];
+            if (!tec) return;
+            tec.repuestos = { ...TECNICO_REPUESTOS_DEFECTO, ...(tec.repuestos || {}), [k]: numTecnico(valor) };
+            guardarTecnicoEvento();
+            refrescarResumenTecnico();
+        }
+        window.editarRepuestoTecnico = editarRepuestoTecnico;
+
+        function agregarCanalTecnico() {
+            const tec = sonidoTecnicoDB[eventoActualId];
+            if (!tec) { mostrarToast('Esperá a que termine de cargar el rider técnico.', 'info'); return; }
+            const c = canalBaseTecnico({ canal: '', rec: true });
+            tec.canales.push(c);
+            guardarTecnicoEvento();
+            renderizarRiderTecnicoCanales();
+            setTimeout(() => {
+                const filas = document.querySelectorAll('#tabla-tecnico-edicion tbody tr');
+                const ult = filas[filas.length - 1];
+                const inp = ult && ult.querySelector('.tecnico-inp-canal');
+                if (inp) inp.focus();
+            }, 30);
+        }
+        window.agregarCanalTecnico = agregarCanalTecnico;
+
+        // Reordenar arrastrando la fila desde el agarre ⠿ (igual que en el Rider general)
+        let tecnicoCanalArrastrado = null;
+        function tecnicoDragStart(e, id) {
+            tecnicoCanalArrastrado = id;
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', id); } catch (err) { /* algunos navegadores lo exigen */ }
+            e.currentTarget.classList.add('dragging');
+        }
+        function tecnicoDragOver(e) {
+            if (!tecnicoCanalArrastrado) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            document.querySelectorAll('#tabla-tecnico-edicion tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+            e.currentTarget.classList.add('drag-over');
+        }
+        function tecnicoDragEnd(e) {
+            tecnicoCanalArrastrado = null;
+            if (e && e.currentTarget) { e.currentTarget.classList.remove('dragging'); e.currentTarget.draggable = false; }
+            document.querySelectorAll('#tabla-tecnico-edicion tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+        }
+        function tecnicoDrop(e, idDestino) {
+            e.preventDefault();
+            e.stopPropagation();
+            const idOrigen = tecnicoCanalArrastrado;
+            tecnicoDragEnd(e);
+            const tec = sonidoTecnicoDB[eventoActualId];
+            if (!tec || !idOrigen || idOrigen === idDestino) return;
+            const iOrigen = tec.canales.findIndex(x => x.id === idOrigen);
+            const iDestino = tec.canales.findIndex(x => x.id === idDestino);
+            if (iOrigen < 0 || iDestino < 0) return;
+            const [canal] = tec.canales.splice(iOrigen, 1);
+            // Al sacar el canal, los de abajo suben un lugar: insertar en iDestino lo deja después del destino si se baja y antes si se sube (como en el Rider general)
+            tec.canales.splice(iDestino, 0, canal);
+            guardarTecnicoEvento();
+            renderizarRiderTecnicoCanales();
+        }
+        window.tecnicoDragStart = tecnicoDragStart;
+        window.tecnicoDragOver = tecnicoDragOver;
+        window.tecnicoDragEnd = tecnicoDragEnd;
+        window.tecnicoDrop = tecnicoDrop;
+
+        async function quitarCanalTecnico(id) {
+            const tec = sonidoTecnicoDB[eventoActualId];
+            const c = tec && tec.canales.find(x => x.id === id);
+            if (!c) return;
+            const deRider = !!c.origenColId && c.aviso !== 'quitado';
+            const conf = await mostrarModalConfirmacion({
+                titulo: 'Quitar canal',
+                mensaje: `¿Quitar el canal <strong>"${esc(c.canal || 'sin nombre')}"</strong> del rider técnico?` +
+                    (deRider ? '<br><br>Sale del rider general: si solo no se usa en este evento, conviene <strong>apagarlo</strong> con la casilla de la izquierda. Si lo quitás, vuelve a aparecer solo si la columna se agrega de nuevo.' : ''),
+                icono: '🗑️',
+                textoConfirmar: 'Quitar',
+                esPeligroso: true
+            });
+            if (!conf) return;
+            if (deRider) {
+                // Se oculta en vez de borrarlo: si no, la sincronización con el rider general lo volvería a crear
+                c.habilitado = false;
+                c.descartado = true;
+                c.aviso = '';
+            } else {
+                tec.canales = tec.canales.filter(x => x.id !== id);
+            }
+            guardarTecnicoEvento();
+            renderizarRiderTecnicoCanales();
+        }
+        window.quitarCanalTecnico = quitarCanalTecnico;
+
+        function descartarAvisosTecnico() {
+            const tec = sonidoTecnicoDB[eventoActualId];
+            if (!tec) return;
+            tec.canales.forEach(c => { if (c.aviso === 'nuevo') c.aviso = ''; });
+            guardarTecnicoEvento();
+            renderizarRiderTecnicoCanales();
+        }
+        window.descartarAvisosTecnico = descartarAvisosTecnico;
+
+        // Orientación automática: vertical si la hoja entra en A4 vertical, si no horizontal
+        function orientacionRiderCanales() {
+            const hoja = document.getElementById('tecnico-hoja');
+            const tabla = hoja && hoja.querySelector('#tabla-tecnico-hoja');
+            if (!tabla) return 'portrait';
+            const prev = hoja.getAttribute('style') || '';
+            const oculto = hoja.offsetParent === null;
+            if (oculto) hoja.setAttribute('style', 'display:block !important; position:absolute; left:-10000px; top:0; visibility:hidden; width:auto;');
+            const ancho = tabla.scrollWidth;
+            if (oculto) hoja.setAttribute('style', prev);
+            const ANCHO_A4_VERTICAL_PX = 718; // 210 mm - márgenes (≈190 mm) a 96 dpi
+            return ancho > ANCHO_A4_VERTICAL_PX ? 'landscape' : 'portrait';
+        }
+        window.orientacionRiderCanales = orientacionRiderCanales;
+
+        function imprimirRiderCanales() {
+            if (!sonidoTecnicoDB[eventoActualId]) { mostrarToast('Esperá a que termine de cargar el rider técnico.', 'info'); return; }
+            refrescarResumenTecnico();
+            establecerOrientacionImpresion(orientacionRiderCanales());
+            setTimeout(() => window.print(), 60);
+        }
+        window.imprimirRiderCanales = imprimirRiderCanales;
+
+        // =========================================================
         // GESTIÓN DE NOTAS TÉCNICAS (COLUMNAS Y CANCIONES)
         // =========================================================
         let _notaRiderEditandoTipo = null;
@@ -12345,7 +12974,7 @@
             const nombre = col ? col.nombre : `Columna ${colIdx + 1}`;
             const conf = await mostrarModalConfirmacion({
                 titulo: 'Eliminar Columna de Instrumento',
-                mensaje: `¿Eliminar la columna <strong>"${esc(nombre)}"</strong> de todo el Rider Técnico de este festival?`,
+                mensaje: `¿Eliminar la columna <strong>"${esc(nombre)}"</strong> de todo el Rider general de este festival?`,
                 icono: '🗑️',
                 textoConfirmar: 'Eliminar Columna',
                 esPeligroso: true

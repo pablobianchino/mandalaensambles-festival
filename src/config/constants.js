@@ -2,7 +2,7 @@
 // src/config/constants.js — Constantes y Configuración de Firebase Mandala
 // =======================================================================
 
-export const APP_VERSION = "v2.1";
+export const APP_VERSION = "v2.2";
 
 // Cuenta de emergencia: siempre puede ingresar (misma regla que en las reglas de Firestore de Admisión)
 export const EMAIL_CUENTA_EMERGENCIA = "productora.mandalahouse@gmail.com";
@@ -27,5 +27,6 @@ export const COLLECTIONS = {
     INSTRUMENTOS: "instrumentos",             // Instrumentos maestros (compartido con Admisión)
     PRODUCTORA_CONFIG: "productora_config",   // Tarifas maestras de productora audiovisual
     USUARIOS_SISTEMA: "usuarios_sistema",     // Usuarios del ecosistema Mandala (compartido con Admisión)
-    CAJA_FESTIVALES: "caja_festivales"        // Gastos e Ingresos manuales de Caja
+    CAJA_FESTIVALES: "caja_festivales",       // Gastos e Ingresos manuales de Caja
+    FESTIVALES_SONIDO: "festivales_sonido"    // Sonido del evento (Rider técnico, REC): aparte de las finanzas
 };

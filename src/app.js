@@ -31,7 +31,7 @@ import { obtenerGastosCajaFirestore, guardarGastosCajaFirestore, obtenerIngresos
 import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerProductorasFirestore, guardarProductorasFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore, obtenerChecklistProduccionPlantillaFirestore, guardarChecklistProduccionPlantillaFirestore, obtenerCategoriasEquipamientoFirestore, guardarCategoriasEquipamientoFirestore } from "./services/configuracionService.js";
 import { obtenerInstrumentosFirestore, escucharInstrumentosEnTiempoReal, getEmojiParaInstrumento, obtenerInstrumentosActualesSync } from "./services/instrumentosService.js";
 
-import { obtenerSonidoEvento, guardarRiderTecnicoEvento, guardarRecEvento, espejarSonidoEvento, eliminarSonidoEvento, escucharEventosSonidoEnCurso } from "./services/sonidoService.js";
+import { obtenerSonidoEvento, guardarRiderTecnicoEvento, guardarRecEvento, copiarSonidoEvento, espejarSonidoEvento, eliminarSonidoEvento, escucharEventosSonidoEnCurso } from "./services/sonidoService.js";
 import { obtenerSonidistasFirestore, guardarDatosSonidistaFirestore, altaSonidistaFirestore, cambiarActivoSonidistaFirestore, quitarSonidistaFirestore } from "./services/sonidistasService.js";
 
 import { idVenueEstable, idHistoricoEstable } from "./utils/ids.js";
@@ -90,6 +90,7 @@ window.MandalaApp = {
         obtener: obtenerSonidoEvento,
         guardarTecnico: guardarRiderTecnicoEvento,
         guardarRec: guardarRecEvento,
+        copiar: copiarSonidoEvento,
         espejar: espejarSonidoEvento,
         eliminar: eliminarSonidoEvento,
         escucharEnCurso: escucharEventosSonidoEnCurso

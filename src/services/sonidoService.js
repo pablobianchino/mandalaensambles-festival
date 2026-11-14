@@ -45,6 +45,32 @@ export async function espejarSonidoEvento(eventoId, partes) {
     }
 }
 
+/**
+ * Al duplicar un evento: copia su Rider técnico y su REC al evento nuevo, para editarlos después.
+ * Devuelve { ok, copiado } (copiado = qué partes había para copiar).
+ */
+export async function copiarSonidoEvento(origenId, destinoId) {
+    try {
+        const snap = await getDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, origenId));
+        const sonido = (snap.exists() && snap.data().sonido) || {};
+        const aCopiar = {};
+        if (sonido.riderTecnico) aCopiar.riderTecnico = sonido.riderTecnico;
+        if (sonido.rec) aCopiar.rec = sonido.rec;
+        const copiado = Object.keys(aCopiar);
+        if (!copiado.length) return { ok: true, copiado };
+        await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, destinoId), {
+            eventoId: destinoId,
+            sonido: aCopiar,
+            actualizadoEn: new Date().toISOString(),
+            actualizadoPor: ''
+        }, { merge: true });
+        return { ok: true, copiado };
+    } catch (err) {
+        console.warn(`[Mandala Festivales] No se pudo copiar el sonido de ${origenId} a ${destinoId}:`, err);
+        return { ok: false, copiado: [] };
+    }
+}
+
 /** Borra la copia de un evento eliminado (también su Rider técnico y REC). */
 export async function eliminarSonidoEvento(eventoId) {
     try {

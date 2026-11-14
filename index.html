@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.6">
-    <script src="src/ui/iconos.js?v=v2.6"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.7">
+    <script src="src/ui/iconos.js?v=v2.7"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.6" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.7" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -6081,7 +6081,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.6";
+        const APP_VERSION = "v2.7";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -9238,6 +9238,8 @@
                     regreso: false
                 }));
                 checklistFestivalesDB[nuevoId] = chkLimpio;
+                // El orden de categorías del evento origen también se hereda (después se cambia solo en el evento nuevo)
+                if (Array.isArray(checklistOrdenCategoriasDB[idOrigen])) checklistOrdenCategoriasDB[nuevoId] = checklistOrdenCategoriasDB[idOrigen].slice();
             } else {
                 tarifasFestivales[nuevoId] = { ...obtenerTarifasVigentesProductora(productoraSel), fechaCongelado: new Date().toLocaleDateString('es-AR') };
                 entradasFestivales[nuevoId] = obtenerEntradasVigentesPorDefecto();
@@ -9319,6 +9321,7 @@
                     serviciosAdicionales: serviciosAdicionalesFestivalesDB[nuevoId] || {},
                     ...(cuposContratoFestivalesDB[nuevoId] ? { cuposContrato: cuposContratoFestivalesDB[nuevoId] } : {}),
                     checklist: checklistFestivalesDB[nuevoId] || [],
+                    ...(checklistOrdenCategoriasDB[nuevoId] ? { checklistOrden: checklistOrdenCategoriasDB[nuevoId] } : {}),
                     checklistProduccion: checklistProduccionFestivalesDB[nuevoId] || [],
                     finanzas: {
                         brutoOnline: 0,
@@ -9330,6 +9333,13 @@
                 window.MandalaApp.festivales.guardar(nuevoId, festivalDoc).then(ok => {
                     if (ok === false) console.warn('[Mandala Festivales] El festival nuevo no se pudo guardar en Firestore.');
                 }).catch(e => console.warn('Error guardando en Firestore:', e));
+            }
+
+            // Al duplicar, el Rider técnico y el REC del evento origen también se copian (se editan después en el evento nuevo)
+            if (esDuplicacion && window.MandalaApp && window.MandalaApp.sonido && typeof window.MandalaApp.sonido.copiar === 'function') {
+                window.MandalaApp.sonido.copiar(idOrigen, nuevoId).then(res => {
+                    if (res && res.ok === false) mostrarToast('El evento se duplicó, pero no se pudieron copiar el Rider técnico y el REC. Se pueden cargar a mano.', 'warning');
+                });
             }
 
             cerrarModales();
@@ -9595,6 +9605,7 @@
                     if (fest.checklist) {
                         checklistFestivalesDB[fId] = fest.checklist;
                     }
+                    if (Array.isArray(fest.checklistOrden)) checklistOrdenCategoriasDB[fId] = fest.checklistOrden;
                     if (Array.isArray(fest.checklistProduccion)) {
                         checklistProduccionFestivalesDB[fId] = fest.checklistProduccion;
                         if (fId === eventoActualId) {
@@ -12622,7 +12633,7 @@
                     asignaciones: riderAsignacionesFestivales[id] || {},
                     cancionesNotas: riderCancionesNotasFestivales[id] || {}
                 },
-                checklist: { items: sanearChecklistParaSonido(checklistFestivalesDB[id]), categorias: categoriasParaSonido() }
+                checklist: { items: sanearChecklistParaSonido(checklistFestivalesDB[id]), categorias: categoriasParaSonido(), orden: checklistOrdenCategoriasDB[id] || [] }
             });
         }
 
@@ -12636,14 +12647,23 @@
                 partes.riderGeneral = { columnas: campos.rider.columnas || [], asignaciones: campos.rider.asignaciones || {}, cancionesNotas: campos.rider.cancionesNotas || {} };
             }
             if (Array.isArray(campos.checklist)) partes.checklist = { items: sanearChecklistParaSonido(campos.checklist), categorias: categoriasParaSonido() };
+            if (Array.isArray(campos.checklistOrden)) partes.checklist = { ...(partes.checklist || {}), orden: campos.checklistOrden };
             return Object.keys(partes).length ? limpiarParaFirestore(partes) : null;
         }
 
         // Junta varios guardados seguidos en una sola escritura
         function programarEspejoSonido(id, partes) {
             if (!id || !partes) return;
+            // Se juntan las partes pendientes; dentro de cada parte (ficha, checklist…) se mezclan los campos para no perder ninguno
             const prev = _espejoPendiente[id] || {};
-            _espejoPendiente[id] = { ...prev, ...partes, ...(partes.ficha || prev.ficha ? { ficha: { ...(prev.ficha || {}), ...(partes.ficha || {}) } } : {}) };
+            const junto = { ...prev };
+            Object.keys(partes).forEach(k => {
+                const nuevoVal = partes[k];
+                junto[k] = (nuevoVal && typeof nuevoVal === 'object' && !Array.isArray(nuevoVal) && prev[k] && typeof prev[k] === 'object')
+                    ? { ...prev[k], ...nuevoVal }
+                    : nuevoVal;
+            });
+            _espejoPendiente[id] = junto;
             clearTimeout(_espejoTimers[id]);
             _espejoTimers[id] = setTimeout(async () => {
                 const pendiente = _espejoPendiente[id];
@@ -12725,7 +12745,8 @@
                     estado: f.estado || 'En Curso',
                     participantes: (d.artistas && d.artistas.participantes) || [],
                     rider: d.riderGeneral || {},
-                    checklist: (d.checklist && d.checklist.items) || []
+                    checklist: (d.checklist && d.checklist.items) || [],
+                    checklistOrden: (d.checklist && Array.isArray(d.checklist.orden)) ? d.checklist.orden : []
                 };
             });
             riderModo = 'vista'; // el Rider general se ve limpio y de solo lectura (no se guarda como preferencia)
@@ -13324,39 +13345,7 @@
                 cajasDi: (e.cajasDi === undefined || e.cajasDi === null) ? '' : String(e.cajasDi),
                 repuestos: { ...TECNICO_REPUESTOS_DEFECTO, ...(e.repuestos || {}) }
             }));
-            return { equipos, nota: String((r && r.nota) || ''), importadoTecnicoViejo: !!(r && r.importadoTecnicoViejo) };
-        }
-
-        // El Rider técnico de la v2.2 (sonido.tecnico) tenía el formato de REC. Se vuelca una sola vez al REC como un equipo más
-        // (queda marcado en rec.importadoTecnicoViejo) y lo viejo se deja intacto en la base. Devuelve true si importó algo.
-        function volcarTecnicoViejoEnRec(rec, viejo) {
-            if (!viejo || !Array.isArray(viejo.canales) || rec.importadoTecnicoViejo) return false;
-            const canales = viejo.canales.filter(c => c && typeof c === 'object' && !c.descartado);
-            if (!canales.length) return false;
-            const nums = numerarCanalesTecnico({ canales });
-            rec.equipos.push(equipoRecBase({
-                nombre: 'Rider técnico anterior',
-                destino: '',
-                canales: canales.map(c => canalRecBase({
-                    id: nuevoIdCanalTecnico(),
-                    // Los que no se grababan quedan apagados: se conservan los datos pero no se imprimen
-                    habilitado: c.habilitado !== false && c.rec !== false,
-                    inManual: String(nums[c.id] || c.inManual || ''),
-                    canal: String(c.canal || ''),
-                    micDi: String(c.micDi || ''),
-                    phantom: !!c.phantom,
-                    pie: String(c.pie || ''),
-                    notas: String(c.notas || '')
-                })),
-                cajasDi: (viejo.cajasDi === undefined || viejo.cajasDi === null) ? '' : String(viejo.cajasDi),
-                repuestos: { ...TECNICO_REPUESTOS_DEFECTO, ...(viejo.repuestos || {}) }
-            }));
-            const extra = [];
-            if (String(viejo.consola || '').trim()) extra.push(`CONSOLA: ${String(viejo.consola).trim()}`);
-            if (String(viejo.notaEquipamiento || '').trim()) extra.push(String(viejo.notaEquipamiento).trim());
-            if (extra.length) rec.nota = [rec.nota.trim(), ...extra].filter(Boolean).join(' · ');
-            rec.importadoTecnicoViejo = true;
-            return true;
+            return { equipos, nota: String((r && r.nota) || '') };
         }
 
         function obtenerRecEvento() {
@@ -13377,14 +13366,8 @@
                 const res = await svc.obtener(festId);
                 if (_timersGuardadoRec[festId]) return;
                 const sonido = (res && res.datos && res.datos.sonido) || {};
-                const rec = normalizarRec(sonido.rec);
-                const importado = volcarTecnicoViejoEnRec(rec, sonido.tecnico);
-                sonidoRecDB[festId] = rec;
+                sonidoRecDB[festId] = normalizarRec(sonido.rec);
                 sonidoRecEstado[festId] = 'listo';
-                if (importado && festId === eventoActualId) {
-                    guardarRecEventoActual();
-                    mostrarToast('Se volcaron al REC los canales del rider técnico anterior (equipo "Rider técnico anterior").', 'info');
-                }
             } catch (e) {
                 console.warn('[Mandala Festivales] No se pudo leer el REC:', e);
                 if (sonidoRecEstado[festId] !== 'listo') sonidoRecEstado[festId] = 'error';
@@ -14390,6 +14373,9 @@
         const CHK_SIN_USAR = '__sinusar';
         const CHK_SIN_CAT = '__sincat';
         const CHK_COLUMNAS = 10;
+        // Orden de las categorías propio de cada evento (ids). Sin orden propio se usa el de Configuración.
+        // Reordenar en un evento NO cambia los demás.
+        const checklistOrdenCategoriasDB = {};
         let checklistFiltro = new Set();
         let checklistSinUsarPlegado = null; // null = automático (plegado si hay más de 10)
 
@@ -14568,6 +14554,24 @@
         window.catDragEnd = catDragEnd;
         window.catDrop = catDrop;
 
+        // Reordenar categorías desde la tabla del checklist: se guarda en el evento actual, no en Configuración ni en otros eventos
+        function chkCatDrop(e, idDestino) {
+            e.preventDefault();
+            e.stopPropagation();
+            const idOrigen = categoriaArrastrada;
+            catDragEnd(e);
+            if (!idOrigen || idOrigen === idDestino || !eventoActualId) return;
+            const ids = categoriasOrdenadasEvento().map(c => c.id);
+            const iO = ids.indexOf(idOrigen);
+            const iD = ids.indexOf(idDestino);
+            if (iO < 0 || iD < 0) return;
+            ids.splice(iD, 0, ids.splice(iO, 1)[0]);
+            checklistOrdenCategoriasDB[eventoActualId] = ids;
+            if (typeof autoguardarDetalleFestivalFirestore === 'function') autoguardarDetalleFestivalFirestore('checklistOrden', ids);
+            renderizarChecklistFestival();
+        }
+        window.chkCatDrop = chkCatDrop;
+
         // ---------- Checklist del evento ----------
         function nuevoIdItemChecklist() {
             return 'ck-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -14592,8 +14596,19 @@
             return categoriasEquipamiento.some(c => c.id === it.categoriaId) ? it.categoriaId : CHK_SIN_CAT;
         }
 
+        // Categorías en el orden del evento actual: primero las que tienen lugar en su orden propio, después las demás (orden de Configuración)
+        function categoriasOrdenadasEvento() {
+            const orden = checklistOrdenCategoriasDB[eventoActualId];
+            if (!Array.isArray(orden) || !orden.length) return categoriasEquipamiento;
+            const pos = new Map(orden.map((id, i) => [id, i]));
+            return categoriasEquipamiento
+                .map((c, i) => ({ c, k: pos.has(c.id) ? pos.get(c.id) : 100000 + i }))
+                .sort((a, b) => a.k - b.k)
+                .map(x => x.c);
+        }
+
         function gruposChecklist(lista) {
-            const grupos = categoriasEquipamiento.map(c => ({ key: c.id, nombre: c.nombre, items: lista.filter(it => claveGrupoItemChecklist(it) === c.id) }));
+            const grupos = categoriasOrdenadasEvento().map(c =>({ key: c.id, nombre: c.nombre, items: lista.filter(it => claveGrupoItemChecklist(it) === c.id) }));
             grupos.push({ key: CHK_SIN_CAT, nombre: 'Sin categoría', items: lista.filter(it => claveGrupoItemChecklist(it) === CHK_SIN_CAT) });
             // El sonidista solo ve lo que se usa
             grupos.push({ key: CHK_SIN_USAR, nombre: 'Sin usar en este evento', items: window.modoSonidista ? [] : lista.filter(it => claveGrupoItemChecklist(it) === CHK_SIN_USAR), sinUsar: true });
@@ -14691,11 +14706,11 @@
                     return;
                 }
                 if (mostrarEncabezados) {
-                    // Las categorías reales se reordenan arrastrando su título (vale para todos los eventos, igual que en Configuración)
+                    // Las categorías reales se reordenan arrastrando su título; el orden vale solo para este evento
                     const movible = g.key !== CHK_SIN_CAT && !window.modoSonidista && categoriasEquipamientoEstado === 'ok';
                     const idCat = escJs(g.key);
                     filas.push(movible
-                        ? `<tr class="chk-grupo chk-grupo-movible" ondragstart="catDragStart(event, '${idCat}')" ondragover="catDragOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="catDrop(event, '${idCat}')" ondragend="catDragEnd(event)"><td colspan="${CHK_COLUMNAS}"><span class="chk-grupo-handle no-print" title="Arrastrar para ordenar las categorías (vale para todos los eventos)" onmousedown="this.closest('tr').draggable = true" onmouseup="this.closest('tr').draggable = false">⠿</span>${esc(g.nombre)} · ${g.items.length}</td></tr>`
+                        ? `<tr class="chk-grupo chk-grupo-movible" ondragstart="catDragStart(event, '${idCat}')" ondragover="catDragOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="chkCatDrop(event, '${idCat}')" ondragend="catDragEnd(event)"><td colspan="${CHK_COLUMNAS}"><span class="chk-grupo-handle no-print" title="Arrastrar para ordenar las categorías (solo en este evento)" onmousedown="this.closest('tr').draggable = true" onmouseup="this.closest('tr').draggable = false">⠿</span>${esc(g.nombre)} · ${g.items.length}</td></tr>`
                         : `<tr class="chk-grupo"><td colspan="${CHK_COLUMNAS}">${esc(g.nombre)} · ${g.items.length}</td></tr>`);
                 }
                 g.items.forEach(it => filas.push(htmlFilaChecklist(it)));

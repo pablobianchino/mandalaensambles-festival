@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.5">
-    <script src="src/ui/iconos.js?v=v2.5"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.6">
+    <script src="src/ui/iconos.js?v=v2.6"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.5" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.6" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -54,10 +54,38 @@
     </div>
     <script>
         (function () {
-            var t0 = Date.now(), texto = document.getElementById('splash-texto'), btn = document.getElementById('splash-reintentar');
-            // Si el arranque tarda más de 10 s, se avisa y se ofrece reintentar (la pantalla no se cierra sola)
-            var lenta = setTimeout(function () { if (texto) texto.textContent = 'Está tardando más de lo normal…'; if (btn) btn.style.display = 'inline-flex'; }, 10000);
-            if (btn) btn.onclick = function () { location.reload(); };
+            var t0 = Date.now(), lenta = null;
+            var INTERIOR = '<div class="splash-logo"><svg class="splash-anillo" viewBox="0 0 112 112" aria-hidden="true"><circle cx="56" cy="56" r="54"/></svg><img src="logo.png" alt=""></div>'
+                + '<div id="splash-texto" class="splash-texto">Cargando</div>'
+                + '<button type="button" id="splash-reintentar" class="splash-reintentar" style="display:none;">Reintentar</button>';
+            // Si tarda más de 10 s, se avisa y se ofrece reintentar (la pantalla no se cierra sola)
+            function armarTemporizador() {
+                t0 = Date.now();
+                clearTimeout(lenta);
+                var btn = document.getElementById('splash-reintentar');
+                if (btn) btn.onclick = function () { location.reload(); };
+                lenta = setTimeout(function () {
+                    var texto = document.getElementById('splash-texto'), b = document.getElementById('splash-reintentar');
+                    if (texto) texto.textContent = 'Está tardando más de lo normal…';
+                    if (b) b.style.display = 'inline-flex';
+                }, 10000);
+            }
+            armarTemporizador();
+            // Vuelve a mostrar la pantalla de carga (por ejemplo al iniciar sesión): la misma del arranque, con el logo
+            window.mostrarSplashInicial = function () {
+                var el = document.getElementById('splash-inicial');
+                if (el && !el.getAttribute('data-oculto')) return; // ya se está mostrando
+                if (el && el.parentNode) el.parentNode.removeChild(el); // el anterior terminaba de desvanecerse
+                el = document.createElement('div');
+                el.id = 'splash-inicial';
+                el.setAttribute('role', 'status');
+                el.setAttribute('aria-live', 'polite');
+                el.setAttribute('aria-label', 'Cargando');
+                el.style.cssText = 'position:fixed; inset:0; background:#fbfaf8; z-index:2147483600;';
+                el.innerHTML = INTERIOR;
+                document.body.insertBefore(el, document.body.firstChild);
+                armarTemporizador();
+            };
             // Se muestra al menos 0,6 s (sin parpadeo) y sale con un desvanecido de 0,35 s
             window.ocultarSplashInicial = function () {
                 var el = document.getElementById('splash-inicial');
@@ -5950,7 +5978,7 @@
             }
             errorDiv.style.display = 'none';
             document.documentElement.classList.remove('festivales-loaded');
-            mostrarIndicadorCarga(textoCarga('arranque'));
+            if (window.mostrarSplashInicial) window.mostrarSplashInicial(); else mostrarIndicadorCarga(textoCarga('arranque')); // misma pantalla de carga con logo que al abrir la app
 
             try {
                 // Solo Firebase Auth: si las credenciales son válidas, onAuthStateChanged (src/app.js)
@@ -5980,7 +6008,7 @@
             if (btnGoogle) btnGoogle.disabled = true;
             if (errorDiv) errorDiv.style.display = 'none';
             document.documentElement.classList.remove('festivales-loaded');
-            mostrarIndicadorCarga(textoCarga('arranque'));
+            if (window.mostrarSplashInicial) window.mostrarSplashInicial(); else mostrarIndicadorCarga(textoCarga('arranque')); // misma pantalla de carga con logo que al abrir la app
 
             try {
                 if (window.MandalaApp && window.MandalaApp.auth) {
@@ -6053,7 +6081,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.5";
+        const APP_VERSION = "v2.6";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -9989,14 +10017,21 @@
 
             if (btn) {
                 const rect = btn.getBoundingClientRect();
+                const margen = 8;
+                // El menú nunca es más alto que la ventana: si no entra entero, se desplaza adentro
+                menu.style.maxHeight = (window.innerHeight - margen * 2) + 'px';
+                menu.style.overflowY = 'auto';
                 const menuHeight = menu.offsetHeight || 140;
-                const espacioAbajo = window.innerHeight - rect.bottom;
+                const hayLugarAbajo = window.innerHeight - rect.bottom - 4 >= menuHeight + margen;
+                const hayLugarArriba = rect.top - 4 >= menuHeight + margen;
 
-                // Si no hay suficiente espacio abajo (menos de 155px) y hay lugar arriba, abrir hacia arriba
-                if (espacioAbajo < 155 && rect.top > menuHeight) {
+                // Abre hacia abajo si entra; si no, hacia arriba; si no entra en ninguno, se acomoda dentro de la pantalla
+                if (hayLugarAbajo) {
+                    menu.style.top = (rect.bottom + 4) + 'px';
+                } else if (hayLugarArriba) {
                     menu.style.top = (rect.top - menuHeight - 4) + 'px';
                 } else {
-                    menu.style.top = (rect.bottom + 4) + 'px';
+                    menu.style.top = Math.max(margen, Math.min(rect.bottom + 4, window.innerHeight - menuHeight - margen)) + 'px';
                 }
 
                 // Alinear a la derecha del botón
@@ -14503,13 +14538,13 @@
             if (!categoriaArrastrada) return;
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
-            document.querySelectorAll('#tbody-categorias-equipamiento tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+            document.querySelectorAll('#tbody-categorias-equipamiento tr.drag-over, #tbody-checklist-filas tr.drag-over').forEach(r => r.classList.remove('drag-over'));
             e.currentTarget.classList.add('drag-over');
         }
         function catDragEnd(e) {
             categoriaArrastrada = null;
             if (e && e.currentTarget) { e.currentTarget.classList.remove('dragging'); e.currentTarget.draggable = false; }
-            document.querySelectorAll('#tbody-categorias-equipamiento tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+            document.querySelectorAll('#tbody-categorias-equipamiento tr.drag-over, #tbody-checklist-filas tr.drag-over').forEach(r => r.classList.remove('drag-over'));
         }
         async function catDrop(e, idDestino) {
             e.preventDefault();
@@ -14655,7 +14690,14 @@
                     if (!plegado) g.items.forEach(it => filas.push(htmlFilaChecklist(it)));
                     return;
                 }
-                if (mostrarEncabezados) filas.push(`<tr class="chk-grupo"><td colspan="${CHK_COLUMNAS}">${esc(g.nombre)} · ${g.items.length}</td></tr>`);
+                if (mostrarEncabezados) {
+                    // Las categorías reales se reordenan arrastrando su título (vale para todos los eventos, igual que en Configuración)
+                    const movible = g.key !== CHK_SIN_CAT && !window.modoSonidista && categoriasEquipamientoEstado === 'ok';
+                    const idCat = escJs(g.key);
+                    filas.push(movible
+                        ? `<tr class="chk-grupo chk-grupo-movible" ondragstart="catDragStart(event, '${idCat}')" ondragover="catDragOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="catDrop(event, '${idCat}')" ondragend="catDragEnd(event)"><td colspan="${CHK_COLUMNAS}"><span class="chk-grupo-handle no-print" title="Arrastrar para ordenar las categorías (vale para todos los eventos)" onmousedown="this.closest('tr').draggable = true" onmouseup="this.closest('tr').draggable = false">⠿</span>${esc(g.nombre)} · ${g.items.length}</td></tr>`
+                        : `<tr class="chk-grupo"><td colspan="${CHK_COLUMNAS}">${esc(g.nombre)} · ${g.items.length}</td></tr>`);
+                }
                 g.items.forEach(it => filas.push(htmlFilaChecklist(it)));
             });
             tbody.innerHTML = filas.length ? filas.join('') : `<tr><td colspan="${CHK_COLUMNAS}" class="tecnico-vacio">${lista.length ? 'Ningún ítem coincide con el filtro.' : 'El checklist está vacío. Agregá ítems con ＋ Ítem.'}</td></tr>`;

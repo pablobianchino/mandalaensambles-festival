@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.4">
-    <script src="src/ui/iconos.js?v=v2.4"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.5">
+    <script src="src/ui/iconos.js?v=v2.5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.4" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.5" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -172,6 +172,12 @@
                     <span class="nav-badge" id="badge-total-sesionistas">6</span>
                 </li>
 
+                <li class="nav-item" data-view="sonidistas" onclick="navegarPanel('sonidistas')">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8v8M8 5v14M12 9v6M16 6v12M20 10v4"/></svg></span>
+                    <span>Sonidistas</span>
+                    <span class="nav-badge" id="badge-total-sonidistas">0</span>
+                </li>
+
                 <li class="nav-item" data-view="productoras" onclick="navegarPanel('productoras')">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span>
                     <span>Productoras</span>
@@ -288,7 +294,7 @@
                                 <button class="btn-app btn-secondary" style="display:none; background:var(--ok-bg); border-color:color-mix(in srgb, var(--ok) 25%, white); color:var(--ok);" onclick="restaurarFestivalesHistoricosEliminados()" title="Recuperar de inmediato los 9 festivales históricos originales de la carga masiva">
                                     ♻️ Recuperar Carga Masiva
                                 </button>
-                                <button class="btn-app btn-primary" onclick="abrirModalCrearEvento()">＋ Nuevo Evento</button>
+                                <button class="btn-app btn-primary solo-gestion" onclick="abrirModalCrearEvento()">＋ Nuevo Evento</button>
                             </div>
                         </div>
 
@@ -410,10 +416,10 @@
                             <div class="ficha-chips">
                                 <span class="ficha-chip" title="Venue y dirección"><b>📍</b><span id="det-ev-venue">Gregón Bar</span> · <span id="det-ev-direccion" style="color:var(--text-muted);">Hipólito Yrigoyen 4071, Almagro</span> <span id="det-ev-capacidad" style="color:var(--text-muted);">👥 100 - 130</span></span>
                                 <span class="ficha-chip" title="Fecha y horario"><b>📅</b><span id="det-ev-fecha">Jueves 24/09/2026 - 18:00 hs</span></span>
-                                <span class="ficha-chip" title="Productora audiovisual"><b>🎬</b><span id="det-ev-productora">Jodida Productora</span></span>
-                                <span class="ficha-chip" title="Link de venta"><b>🔗</b><a href="#" target="_blank" rel="noopener noreferrer" style="color:var(--accent-teal);" onclick="event.stopPropagation();" id="det-ev-link">-</a></span>
+                                <span class="ficha-chip solo-gestion" title="Productora audiovisual"><b>🎬</b><span id="det-ev-productora">Jodida Productora</span></span>
+                                <span class="ficha-chip solo-gestion" title="Link de venta"><b>🔗</b><a href="#" target="_blank" rel="noopener noreferrer" style="color:var(--accent-teal);" onclick="event.stopPropagation();" id="det-ev-link">-</a></span>
                             </div>
-                            <div class="ficha-chips" style="margin-top:8px;" title="Contrato de participación aplicado (solo lectura)">
+                            <div class="ficha-chips solo-gestion" style="margin-top:8px;" title="Contrato de participación aplicado (solo lectura)">
                                 <span class="ficha-chip"><b>📜 Cupos</b>Alumno regular <strong id="det-ev-cupo-alumno">5</strong> · Invitado <strong id="det-ev-cupo-invitado">3</strong> · JAM <strong id="det-ev-cupo-jam">2</strong></span>
                             </div>
                         </div>
@@ -430,7 +436,7 @@
                                     <button class="btn-app btn-secondary" id="btn-toggle-todos-ensambles" onclick="toggleTodosLosEnsambles()" title="Comprimir o descomprimir todos los ensambles">
                                         🔽 Expandir todo
                                     </button>
-                                    <button class="btn-app btn-primary" onclick="agregarNuevoArtistaEnTabla()">＋ Banda</button>
+                                    <button class="btn-app btn-primary solo-gestion" onclick="agregarNuevoArtistaEnTabla()">＋ Banda</button>
                                 </div>
                             </div>
 
@@ -1492,6 +1498,44 @@
                         </div>
                     </div>
 
+                </section>
+
+                <!-- =====================================================
+                     SECCIÓN: SONIDISTAS (directorio + usuario de acceso reducido)
+                     ===================================================== -->
+                <section id="panel-sonidistas" style="display:none;">
+                    <div class="content-card">
+                        <div class="card-header-flex">
+                            <div>
+                                <span style="font-size:13px; color:var(--ink-3);">
+                                    Personas de sonido. Al cargar a alguien se le crea un usuario con acceso reducido: ve los eventos en curso y completa el Rider técnico y el REC. Con el interruptor Activo le das o le sacás el acceso.
+                                </span>
+                            </div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn-app btn-secondary" onclick="sincronizarEventosParaSonidistas()" title="Vuelve a copiar los eventos en curso para que los vean los sonidistas">Actualizar eventos para sonidistas</button>
+                                <button class="btn-app btn-primary" onclick="abrirModalNuevoSonidista()">＋ Nuevo sonidista</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="spreadsheet-table" id="tabla-sonidistas-lista">
+                                <thead>
+                                    <tr>
+                                        <th style="width:190px; text-align:left;">Nombre</th>
+                                        <th style="width:190px; text-align:left;">Apellido</th>
+                                        <th style="width:190px; text-align:left;">Teléfono</th>
+                                        <th style="text-align:left;">Email (usuario de acceso)</th>
+                                        <th style="width:84px; text-align:center;" title="Activo: puede ingresar. Apagado: no puede entrar">Activo</th>
+                                        <th style="width:44px; text-align:center;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-sonidistas-filas"></tbody>
+                            </table>
+                        </div>
+                        <div id="vacio-sonidistas" style="display:none; padding:22px; text-align:center; color:var(--text-muted); font-size:13px;">
+                            Todavía no hay sonidistas. Agregá el primero con <strong>＋ Nuevo sonidista</strong>.
+                        </div>
+                    </div>
                 </section>
 
                 <!-- =====================================================
@@ -3344,6 +3388,47 @@
         </div>
     </div>
 
+    <!-- Modal: nuevo sonidista -->
+    <div id="modal-nuevo-sonidista" class="modal-overlay">
+        <div class="modal-box" style="width:460px;">
+            <div class="modal-header">
+                <h3>Nuevo sonidista</h3>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div class="modal-body">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group"><label for="sonidista-nuevo-nombre">Nombre</label><input type="text" id="sonidista-nuevo-nombre" class="form-control" autocomplete="off"></div>
+                    <div class="form-group"><label for="sonidista-nuevo-apellido">Apellido</label><input type="text" id="sonidista-nuevo-apellido" class="form-control" autocomplete="off"></div>
+                </div>
+                <div class="form-group"><label for="sonidista-nuevo-telefono">Teléfono (WhatsApp)</label><input type="text" id="sonidista-nuevo-telefono" class="form-control" placeholder="+54 9 11..." autocomplete="off"></div>
+                <div class="form-group"><label for="sonidista-nuevo-email">Email</label><input type="email" id="sonidista-nuevo-email" class="form-control" placeholder="nombre@gmail.com" autocomplete="off"></div>
+                <span style="font-size:12px; color:var(--text-muted); display:block; line-height:1.5;">Con este email se crea su usuario de acceso, con la clave inicial. En su primer ingreso se le pide cambiarla.</span>
+                <div id="sonidista-nuevo-error" style="display:none; margin-top:10px; font-size:12.5px; font-weight:600; color:var(--bad);"></div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
+                <button type="button" class="btn-app btn-primary" id="btn-guardar-sonidista" onclick="guardarNuevoSonidista()">Crear sonidista</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: datos de acceso del sonidista recién cargado -->
+    <div id="modal-sonidista-acceso" class="modal-overlay">
+        <div class="modal-box" style="width:460px;">
+            <div class="modal-header">
+                <h3>Sonidista creado</h3>
+                <button class="btn-close-modal" onclick="cerrarModales()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div class="modal-body">
+                <div id="sonidista-acceso-detalle" style="font-size:13.5px; line-height:1.6;"></div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn-app btn-secondary" id="btn-sonidista-acceso-whatsapp" onclick="enviarAccesoSonidistaWhatsApp()">Enviar por WhatsApp</button>
+                <button type="button" class="btn-app btn-primary" onclick="cerrarModales()">Listo</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Carga Masiva de Equipamiento Checklist (.xlsx / .csv) -->
     <div id="modal-carga-masiva-checklist" class="modal-overlay">
         <div class="modal-box" style="width:700px; max-height:90vh; overflow-y:auto;">
@@ -4865,7 +4950,7 @@
         }
         window.poblarVenuesDesdeFirestore = poblarVenuesDesdeFirestore;
 
-        function abrirWhatsAppDirecto(telefono, nombre) {
+        function abrirWhatsAppDirecto(telefono, nombre, texto) {
             if (!telefono) {
                 mostrarToast('Este contacto no tiene un teléfono cargado.', 'info');
                 return;
@@ -4883,7 +4968,7 @@
             } else if (!digits.startsWith('54') && digits.length === 10) {
                 digits = '549' + digits;
             }
-            window.open(`https://wa.me/${digits}`, '_blank');
+            window.open(`https://wa.me/${digits}${texto ? '?text=' + encodeURIComponent(texto) : ''}`, '_blank');
         }
         window.abrirWhatsAppDirecto = abrirWhatsAppDirecto;
 
@@ -5968,7 +6053,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.4";
+        const APP_VERSION = "v2.5";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6234,6 +6319,7 @@
                 'venues': 'Venues',
                 'productoras': 'Productoras',
                 'sesionistas': 'Sesionistas',
+                'sonidistas': 'Sonidistas',
                 'finanzas': 'Finanzas',
                 'deudas': 'Deudas',
                 'configuracion': 'Configuración General',
@@ -6248,6 +6334,7 @@
             }
             if (panelId === 'deudas') renderizarPanelDeudas();
             if (panelId === 'sesionistas') renderizarTablaSesionistas();
+            if (panelId === 'sonidistas') cargarSonidistas();
             if (panelId === 'estadisticas') renderizarGraficos();
         }
 
@@ -6906,7 +6993,8 @@
                     : 70;
                 acuerdoTextoCabecera = `${porcEsc}% Escuela / ${100 - porcEsc}% Venue`;
             }
-            const sub = `<strong>Fecha:</strong> ${fecha} &nbsp;·&nbsp; <strong>Venue:</strong> ${esc(venue)} &nbsp;·&nbsp; <strong>Acuerdo:</strong> ${acuerdoTextoCabecera}`;
+            // El acuerdo con el venue es información económica: el sonidista no la ve
+            const sub = `<strong>Fecha:</strong> ${fecha} &nbsp;·&nbsp; <strong>Venue:</strong> ${esc(venue)}` + (window.modoSonidista ? '' : ` &nbsp;·&nbsp; <strong>Acuerdo:</strong> ${acuerdoTextoCabecera}`);
 
             let claseEstado = 'estado-programado';
             if (estado === 'Lapiz') claseEstado = 'estado-lapiz';
@@ -8753,6 +8841,7 @@
         window.estaUsuarioEditandoDetalleFestival = estaUsuarioEditandoDetalleFestival;
 
         function autoguardarDetalleFestivalFirestore(campo, datos) {
+            if (window.modoSonidista) return; // el sonidista no escribe en `festivales` (solo en festivales_sonido)
             if (!eventoActualId || !window.MandalaApp || !window.MandalaApp.festivales || typeof window.MandalaApp.festivales.actualizarCampos !== 'function') return;
             window._ultimoAutoguardadoLocalTs = Date.now();
             _bufferAutoguardadoFestival[campo] = datos;
@@ -12288,6 +12377,344 @@
         }
 
         // =========================================================
+        // SONIDISTAS (v2.5): directorio con usuario de acceso reducido
+        // =========================================================
+        const URL_APP_FESTIVALES = 'https://mandalaensambles-festival.vercel.app';
+        let sonidistasDirDB = [];
+        let _ultimoAccesoSonidista = null;
+
+        function esAdminActual() {
+            const u = window.usuarioActual || {};
+            const roles = (Array.isArray(u.roles) ? u.roles : []).map(r => String(r || '').toLowerCase().trim());
+            return !!u.esEmergencia || roles.includes('admin');
+        }
+
+        async function cargarSonidistas() {
+            const svc = window.MandalaApp && window.MandalaApp.sonidistas;
+            if (!svc) return;
+            sonidistasDirDB = await svc.obtener();
+            renderizarTablaSonidistas();
+        }
+        window.cargarSonidistas = cargarSonidistas;
+
+        function renderizarTablaSonidistas() {
+            const tbody = document.getElementById('tbody-sonidistas-filas');
+            if (!tbody) return;
+            const badge = document.getElementById('badge-total-sonidistas');
+            if (badge) badge.textContent = sonidistasDirDB.length;
+            const vacio = document.getElementById('vacio-sonidistas');
+            if (vacio) vacio.style.display = sonidistasDirDB.length ? 'none' : 'block';
+            tbody.innerHTML = sonidistasDirDB.map(s => {
+                const id = escJs(s.id);
+                const tieneTel = String(s.telefono || '').replace(/\D/g, '').length >= 6;
+                const activo = s.activo !== false;
+                return `
+                    <tr class="${activo ? '' : 'sonidista-inactivo'}">
+                        <td><input type="text" class="spreadsheet-inp text-left" style="font-weight:700; color:var(--text-main);" value="${esc(s.nombre)}" placeholder="Nombre" onchange="editarDatosSonidista('${id}', 'nombre', this.value)"></td>
+                        <td><input type="text" class="spreadsheet-inp text-left" value="${esc(s.apellido)}" placeholder="Apellido" onchange="editarDatosSonidista('${id}', 'apellido', this.value)"></td>
+                        <td>
+                            <div style="display:inline-flex; align-items:center; gap:3px;">
+                                <input type="text" class="spreadsheet-inp text-left" style="width:135px; min-width:120px;" value="${esc(s.telefono || '')}" placeholder="+54 9 11..." onchange="editarDatosSonidista('${id}', 'telefono', this.value)">
+                                <button type="button" class="btn-ws-icon ${tieneTel ? '' : 'disabled'}" onclick="abrirWhatsAppDirecto('${escJs(s.telefono || '')}', '${escJs(s.nombre || '')}')" title="Enviar WhatsApp a ${esc(s.nombre)}">💬</button>
+                            </div>
+                        </td>
+                        <td style="font-size:13px; color:var(--text-main);">${esc(s.email)}</td>
+                        <td style="text-align:center;">
+                            <label class="sw-activo" title="${activo ? 'Con acceso. Apagalo para bloquearlo' : 'Sin acceso. Encendelo para dárselo de nuevo'}">
+                                <input type="checkbox" ${activo ? 'checked' : ''} onchange="toggleActivoSonidista('${id}', this)"><span class="sw-activo-pista"></span>
+                            </label>
+                        </td>
+                        <td style="text-align:center;"><button type="button" class="btn-row-del" onclick="quitarSonidista('${id}')" title="Quitar sonidista" aria-label="Quitar sonidista"></button></td>
+                    </tr>`;
+            }).join('');
+        }
+
+        async function editarDatosSonidista(id, campo, valor) {
+            const s = sonidistasDirDB.find(x => x.id === id);
+            const svc = window.MandalaApp && window.MandalaApp.sonidistas;
+            if (!s || !svc) return;
+            valor = String(valor || '').trim();
+            if (campo === 'nombre' && !valor) { mostrarToast('El sonidista necesita un nombre.', 'warning'); renderizarTablaSonidistas(); return; }
+            const ok = await svc.guardarDatos(s, { [campo]: valor });
+            if (ok) { s[campo] = valor; }
+            renderizarTablaSonidistas();
+        }
+        window.editarDatosSonidista = editarDatosSonidista;
+
+        async function toggleActivoSonidista(id, chk) {
+            const s = sonidistasDirDB.find(x => x.id === id);
+            const svc = window.MandalaApp && window.MandalaApp.sonidistas;
+            if (!s || !svc) return;
+            const activo = chk.checked;
+            chk.disabled = true;
+            const ok = await svc.cambiarActivo(s, activo);
+            if (ok) {
+                s.activo = activo;
+                mostrarToast(activo ? `${s.nombre} puede ingresar de nuevo.` : `${s.nombre} ya no puede ingresar.`, 'info');
+            }
+            renderizarTablaSonidistas();
+        }
+        window.toggleActivoSonidista = toggleActivoSonidista;
+
+        async function quitarSonidista(id) {
+            const s = sonidistasDirDB.find(x => x.id === id);
+            const svc = window.MandalaApp && window.MandalaApp.sonidistas;
+            if (!s || !svc) return;
+            const conf = await mostrarModalConfirmacion({
+                titulo: 'Quitar sonidista',
+                mensaje: `¿Quitar a <strong>${esc((s.nombre + ' ' + (s.apellido || '')).trim())}</strong>? Se borra de la tabla y se le quita el acceso. Si solo querés bloquearlo un tiempo, apagá <strong>Activo</strong>.<br><br><span style="font-size:12px; color:var(--text-muted);">La cuenta de ingreso no se puede borrar del todo desde acá: queda sin permisos. Si lo volvés a cargar con el mismo email, entra con la última clave que usó.</span>`,
+                icono: '🗑️',
+                textoConfirmar: 'Quitar',
+                esPeligroso: true
+            });
+            if (!conf) return;
+            const res = await svc.quitar(s, esAdminActual());
+            if (!res.ok) { mostrarToast(res.mensaje || 'No se pudo quitar al sonidista.', 'error'); return; }
+            sonidistasDirDB = sonidistasDirDB.filter(x => x.id !== id);
+            renderizarTablaSonidistas();
+            mostrarToast('Sonidista quitado.', 'info');
+        }
+        window.quitarSonidista = quitarSonidista;
+
+        function abrirModalNuevoSonidista() {
+            ['nombre', 'apellido', 'telefono', 'email'].forEach(k => { const el = document.getElementById('sonidista-nuevo-' + k); if (el) el.value = ''; });
+            const err = document.getElementById('sonidista-nuevo-error');
+            if (err) err.style.display = 'none';
+            const btn = document.getElementById('btn-guardar-sonidista');
+            if (btn) { btn.disabled = false; btn.textContent = 'Crear sonidista'; }
+            document.getElementById('modal-nuevo-sonidista').classList.add('active');
+            setTimeout(() => document.getElementById('sonidista-nuevo-nombre')?.focus(), 120);
+        }
+        window.abrirModalNuevoSonidista = abrirModalNuevoSonidista;
+
+        async function guardarNuevoSonidista() {
+            const svc = window.MandalaApp && window.MandalaApp.sonidistas;
+            if (!svc) return;
+            const datos = {};
+            ['nombre', 'apellido', 'telefono', 'email'].forEach(k => { datos[k] = document.getElementById('sonidista-nuevo-' + k)?.value || ''; });
+            const err = document.getElementById('sonidista-nuevo-error');
+            const btn = document.getElementById('btn-guardar-sonidista');
+            if (btn) { btn.disabled = true; btn.textContent = 'Creando…'; }
+            const res = await svc.alta(datos, esAdminActual());
+            if (!res.ok) {
+                if (err) { err.textContent = res.mensaje || 'No se pudo crear el sonidista.'; err.style.display = 'block'; }
+                if (btn) { btn.disabled = false; btn.textContent = 'Crear sonidista'; }
+                return;
+            }
+            cerrarModales();
+            await cargarSonidistas();
+            mostrarAccesoSonidista(res, { ...datos, email: String(datos.email).trim().toLowerCase() });
+        }
+        window.guardarNuevoSonidista = guardarNuevoSonidista;
+
+        function mostrarAccesoSonidista(res, datos) {
+            _ultimoAccesoSonidista = { res, datos };
+            const nombre = esc(`${datos.nombre} ${datos.apellido || ''}`.trim());
+            let cuerpo;
+            if (res.claveInicial) {
+                cuerpo = `<p><strong>${nombre}</strong> ya puede ingresar a ${esc(URL_APP_FESTIVALES)}</p>
+                    <p>Usuario: <strong>${esc(datos.email)}</strong><br>Clave inicial: <strong>${esc(res.claveInicial)}</strong></p>
+                    <p style="font-size:12.5px; color:var(--text-muted);">En su primer ingreso con correo y clave se le pide cambiarla.</p>`;
+            } else if (res.usuarioNuevo) {
+                cuerpo = `<p><strong>${nombre}</strong> ya tenía una cuenta de acceso con ese email, así que entra con la <strong>última clave que usó</strong> (no con la inicial).</p>
+                    <p>Usuario: <strong>${esc(datos.email)}</strong></p>`;
+            } else {
+                cuerpo = `<p><strong>${nombre}</strong> ya era usuario de Mandala: se le sumó el rol de sonidista. Ingresa con su clave de siempre.</p>
+                    <p>Usuario: <strong>${esc(datos.email)}</strong></p>`;
+            }
+            document.getElementById('sonidista-acceso-detalle').innerHTML = cuerpo;
+            const btnWa = document.getElementById('btn-sonidista-acceso-whatsapp');
+            if (btnWa) btnWa.style.display = String(datos.telefono || '').replace(/\D/g, '').length >= 6 ? '' : 'none';
+            document.getElementById('modal-sonidista-acceso').classList.add('active');
+        }
+
+        function enviarAccesoSonidistaWhatsApp() {
+            if (!_ultimoAccesoSonidista) return;
+            const { res, datos } = _ultimoAccesoSonidista;
+            let texto = `Hola ${datos.nombre}! Ya podés ingresar a Mandala Festivales para cargar el rider técnico y el REC de los eventos: ${URL_APP_FESTIVALES}\nUsuario: ${datos.email}`;
+            if (res.claveInicial) texto += `\nClave inicial: ${res.claveInicial} (te pide cambiarla al entrar)`;
+            abrirWhatsAppDirecto(datos.telefono, datos.nombre, texto);
+        }
+        window.enviarAccesoSonidistaWhatsApp = enviarAccesoSonidistaWhatsApp;
+
+        // =========================================================
+        // COPIA DE LECTURA PARA SONIDISTAS (festivales_sonido)
+        // Los sonidistas no pueden leer `festivales` (tiene las finanzas). Cada vez que se guarda la ficha, los artistas,
+        // el Rider general o el checklist de un evento en curso, se actualiza una copia sin finanzas en `festivales_sonido`.
+        // =========================================================
+        const FICHA_ESPEJO_SONIDO = ['nombre', 'venue', 'direccion', 'capacidad', 'fechaHora', 'fecha', 'estado'];
+        const _espejoPendiente = {};
+        const _espejoTimers = {};
+        const _espejadosEstaSesion = new Set();
+
+        function limpiarParaFirestore(obj) {
+            return JSON.parse(JSON.stringify(obj === undefined ? null : obj));
+        }
+
+        // Solo los campos que se muestran (nada de montos, cupos ni traspasos)
+        function sanearParticipantesParaSonido(lista) {
+            return (Array.isArray(lista) ? lista : []).map(p => ({
+                id: p.id || '',
+                tipo: p.tipo || '',
+                nombre: p.nombre || '',
+                canciones: Array.isArray(p.canciones) ? p.canciones : [],
+                alumnos: (Array.isArray(p.alumnos) ? p.alumnos : []).map(a => ({
+                    nombre: a.nombre || '',
+                    instrumento: a.instrumento || '',
+                    instrumentos: Array.isArray(a.instrumentos) ? a.instrumentos : [],
+                    alumnoId: a.alumnoId || a.id || ''
+                }))
+            }));
+        }
+        function sanearChecklistParaSonido(lista) {
+            return (Array.isArray(lista) ? lista : []).map(it => ({
+                id: it.id || '', item: it.item || '', origen: it.origen || '', categoriaId: it.categoriaId || '',
+                usar: it.usar !== false, preparado: !!it.preparado, listo: !!it.listo, regreso: !!it.regreso, notas: it.notas || ''
+            }));
+        }
+        function categoriasParaSonido() {
+            return categoriasEquipamiento.map(c => ({ id: c.id, nombre: c.nombre, orden: c.orden }));
+        }
+
+        function espejoCompletoDesdeMemoria(id) {
+            const info = infoFestivales[id];
+            if (!info) return null;
+            return limpiarParaFirestore({
+                ficha: { nombre: info.nombre || '', venue: info.venue || '', direccion: info.dir || '', capacidad: info.cap || '', fechaHora: info.fechaRaw || '', estado: info.estado || '' },
+                artistas: { participantes: sanearParticipantesParaSonido(participantesFestivalesDB[id]) },
+                riderGeneral: {
+                    columnas: riderColumnasFestivales[id] || [],
+                    asignaciones: riderAsignacionesFestivales[id] || {},
+                    cancionesNotas: riderCancionesNotasFestivales[id] || {}
+                },
+                checklist: { items: sanearChecklistParaSonido(checklistFestivalesDB[id]), categorias: categoriasParaSonido() }
+            });
+        }
+
+        function espejoParcialDesdeCampos(campos) {
+            const partes = {};
+            const ficha = {};
+            FICHA_ESPEJO_SONIDO.forEach(k => { if (campos[k] !== undefined && campos[k] !== null) ficha[k] = campos[k]; });
+            if (Object.keys(ficha).length) partes.ficha = ficha;
+            if (Array.isArray(campos.participantes)) partes.artistas = { participantes: sanearParticipantesParaSonido(campos.participantes) };
+            if (campos.rider && typeof campos.rider === 'object') {
+                partes.riderGeneral = { columnas: campos.rider.columnas || [], asignaciones: campos.rider.asignaciones || {}, cancionesNotas: campos.rider.cancionesNotas || {} };
+            }
+            if (Array.isArray(campos.checklist)) partes.checklist = { items: sanearChecklistParaSonido(campos.checklist), categorias: categoriasParaSonido() };
+            return Object.keys(partes).length ? limpiarParaFirestore(partes) : null;
+        }
+
+        // Junta varios guardados seguidos en una sola escritura
+        function programarEspejoSonido(id, partes) {
+            if (!id || !partes) return;
+            const prev = _espejoPendiente[id] || {};
+            _espejoPendiente[id] = { ...prev, ...partes, ...(partes.ficha || prev.ficha ? { ficha: { ...(prev.ficha || {}), ...(partes.ficha || {}) } } : {}) };
+            clearTimeout(_espejoTimers[id]);
+            _espejoTimers[id] = setTimeout(async () => {
+                const pendiente = _espejoPendiente[id];
+                delete _espejoPendiente[id];
+                delete _espejoTimers[id];
+                const svc = window.MandalaApp && window.MandalaApp.sonido;
+                if (svc && typeof svc.espejar === 'function' && pendiente) await svc.espejar(id, pendiente);
+            }, 1500);
+        }
+
+        window.addEventListener('mandala:festival-guardado', (e) => {
+            if (window.modoSonidista) return;
+            const { id, campos } = (e && e.detail) || {};
+            if (!id || !campos) return;
+            if (campos.estado === 'En Curso') {
+                // Pasó a "En Curso": se copia todo el evento desde la memoria
+                const completo = espejoCompletoDesdeMemoria(id);
+                if (completo) { completo.ficha = { ...(completo.ficha || {}), estado: 'En Curso' }; programarEspejoSonido(id, completo); }
+                _espejadosEstaSesion.add(id);
+                return;
+            }
+            const enCurso = infoFestivales[id] && infoFestivales[id].estado === 'En Curso';
+            if (!enCurso && campos.estado === undefined) return; // eventos que no están en curso no se copian
+            programarEspejoSonido(id, espejoParcialDesdeCampos(campos));
+        });
+        window.addEventListener('mandala:festival-eliminado', (e) => {
+            const id = e && e.detail && e.detail.id;
+            const svc = window.MandalaApp && window.MandalaApp.sonido;
+            if (id && svc && typeof svc.eliminar === 'function' && !window.modoSonidista) svc.eliminar(id);
+        });
+
+        // Una vez por sesión se asegura que los eventos en curso tengan su copia (cubre los que ya estaban antes de v2.5)
+        function espejarEnCursoParaSonidistas(lista) {
+            if (window.modoSonidista) return;
+            (Array.isArray(lista) ? lista : []).forEach(f => {
+                if (!f || !f.id || f.estado !== 'En Curso' || _espejadosEstaSesion.has(f.id)) return;
+                _espejadosEstaSesion.add(f.id);
+                programarEspejoSonido(f.id, espejoCompletoDesdeMemoria(f.id));
+            });
+        }
+        window.espejarEnCursoParaSonidistas = espejarEnCursoParaSonidistas;
+
+        function sincronizarEventosParaSonidistas() {
+            const enCurso = Object.values(infoFestivales).filter(f => f && f.estado === 'En Curso');
+            enCurso.forEach(f => { _espejadosEstaSesion.add(f.id); programarEspejoSonido(f.id, espejoCompletoDesdeMemoria(f.id)); });
+            mostrarToast(enCurso.length ? `Se actualizaron ${enCurso.length} evento${enCurso.length === 1 ? '' : 's'} en curso para los sonidistas.` : 'No hay eventos en curso para copiar.', 'info');
+        }
+        window.sincronizarEventosParaSonidistas = sincronizarEventosParaSonidistas;
+
+        // Si cambian las categorías del checklist, se actualiza la copia de los eventos en curso
+        function reespejarChecklistEnCurso() {
+            if (window.modoSonidista) return;
+            Object.values(infoFestivales).filter(f => f && f.estado === 'En Curso').forEach(f => {
+                programarEspejoSonido(f.id, limpiarParaFirestore({ checklist: { items: sanearChecklistParaSonido(checklistFestivalesDB[f.id]), categorias: categoriasParaSonido() } }));
+            });
+        }
+
+        // =========================================================
+        // MODO SONIDISTA: los eventos salen de la copia de lectura (festivales_sonido), nunca de `festivales`
+        // =========================================================
+        function poblarEventosSonidista(lista) {
+            const docs = Array.isArray(lista) ? lista : [];
+            // Las categorías del checklist vienen dentro de la copia (el sonidista no puede leer la configuración)
+            const conCat = docs.find(d => d.checklist && Array.isArray(d.checklist.categorias));
+            if (conCat) {
+                categoriasEquipamiento = conCat.checklist.categorias.filter(c => c && c.id && c.nombre).map(c => ({ id: String(c.id), nombre: String(c.nombre), orden: Number(c.orden) || 0 })).sort((a, b) => a.orden - b.orden);
+                categoriasEquipamientoEstado = 'ok';
+            }
+            const festivales = docs.map(d => {
+                const f = d.ficha || {};
+                return {
+                    id: d.id,
+                    nombre: f.nombre || 'Festival',
+                    venue: f.venue || 'Venue',
+                    direccion: f.direccion || '',
+                    capacidad: f.capacidad || '',
+                    fechaHora: f.fechaHora || f.fecha || '',
+                    fecha: f.fecha || '',
+                    estado: f.estado || 'En Curso',
+                    participantes: (d.artistas && d.artistas.participantes) || [],
+                    rider: d.riderGeneral || {},
+                    checklist: (d.checklist && d.checklist.items) || []
+                };
+            });
+            riderModo = 'vista'; // el Rider general se ve limpio y de solo lectura (no se guarda como preferencia)
+            poblarFestivalesDesdeFirestore(festivales);
+
+            if (eventoActualId && !infoFestivales[eventoActualId] && document.getElementById('panel-evento-detalle')?.style.display === 'block') {
+                mostrarToast('Ese evento ya no está en curso.', 'info');
+                navegarPanel('eventos', false);
+            } else if (eventoActualId && infoFestivales[eventoActualId]) {
+                try {
+                    renderizarArtistasFestival();
+                    renderizarRiderTecnicoFestival();
+                    renderizarChecklistFestival(checklistFestivalesDB[eventoActualId] || null);
+                } catch (e) { console.warn('[Sonidista] No se pudo refrescar el evento abierto:', e); }
+            }
+            if (typeof ocultarIndicadorCarga === 'function') ocultarIndicadorCarga();
+            if (!docs.length) {
+                const tbody = document.getElementById('tbody-eventos-dinamicos');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:36px 16px; color:var(--text-muted);"><div style="font-weight:700; color:var(--text-main); font-size:13.5px;">No hay eventos en curso</div><div style="font-size:12px; margin-top:4px;">Cuando haya un evento en curso lo vas a ver acá.</div></td></tr>`;
+            }
+        }
+        window.poblarEventosSonidista = poblarEventosSonidista;
+
+        // =========================================================
         // SONIDO › RIDER TÉCNICO (lista de canales para el sonidista)
         // - Se guarda en festivales_sonido/{eventoId}.sonido.tecnico, aparte del documento del
         //   festival (que tiene finanzas): en v2.5 el sonidista va a leer y editar solo esa colección.
@@ -13962,7 +14389,9 @@
             categoriasEquipamiento.forEach((c, i) => { c.orden = i; });
             const svc = window.MandalaApp && window.MandalaApp.configuracion;
             if (!svc || typeof svc.guardarCategoriasEquipamiento !== 'function') return false;
-            return await svc.guardarCategoriasEquipamiento(categoriasEquipamiento.map(c => ({ id: c.id, nombre: c.nombre, orden: c.orden })));
+            const ok = await svc.guardarCategoriasEquipamiento(categoriasEquipamiento.map(c => ({ id: c.id, nombre: c.nombre, orden: c.orden })));
+            if (ok && typeof reespejarChecklistEnCurso === 'function') reespejarChecklistEnCurso();
+            return ok;
         }
 
         function contarUsoCategoriaEquipamiento(catId) {
@@ -14131,7 +14560,8 @@
         function gruposChecklist(lista) {
             const grupos = categoriasEquipamiento.map(c => ({ key: c.id, nombre: c.nombre, items: lista.filter(it => claveGrupoItemChecklist(it) === c.id) }));
             grupos.push({ key: CHK_SIN_CAT, nombre: 'Sin categoría', items: lista.filter(it => claveGrupoItemChecklist(it) === CHK_SIN_CAT) });
-            grupos.push({ key: CHK_SIN_USAR, nombre: 'Sin usar en este evento', items: lista.filter(it => claveGrupoItemChecklist(it) === CHK_SIN_USAR), sinUsar: true });
+            // El sonidista solo ve lo que se usa
+            grupos.push({ key: CHK_SIN_USAR, nombre: 'Sin usar en este evento', items: window.modoSonidista ? [] : lista.filter(it => claveGrupoItemChecklist(it) === CHK_SIN_USAR), sinUsar: true });
             return grupos;
         }
 
@@ -14380,6 +14810,7 @@
         // PROPAGACIÓN DE CHECKLIST DE EQUIPAMIENTO ENTRE EVENTOS 2026
         // =======================================================================
         function propagarChecklistVol5AOtrosEventos2026(festivalesList) {
+            if (window.modoSonidista) return;
             if (!Array.isArray(festivalesList) || festivalesList.length === 0) return;
 
             // 1. Identificar evento VOL 5 2026

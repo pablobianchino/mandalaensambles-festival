@@ -3976,6 +3976,43 @@ tr.cierre-banda-h:hover td { background: var(--surface-2); }
 .tecnico-hoja-totales td { font-family: 'Geist Mono', monospace; min-width: 70px; }
 .tecnico-hoja-rep { font-weight: 500; font-size: 11px; }
 
+/* SONIDISTAS (v2.5): interruptor Activo en la tabla */
+.sw-activo { position: relative; display: inline-block; width: 38px; height: 22px; cursor: pointer; vertical-align: middle; }
+.sw-activo input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
+.sw-activo-pista { position: absolute; inset: 0; background: var(--line-2); border-radius: 999px; transition: background .15s; }
+.sw-activo-pista::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .15s; }
+.sw-activo input:checked + .sw-activo-pista { background: var(--teal); }
+.sw-activo input:checked + .sw-activo-pista::after { transform: translateX(16px); }
+.sw-activo input:focus-visible + .sw-activo-pista { box-shadow: 0 0 0 3px var(--teal-100); }
+.sw-activo input:disabled { cursor: wait; }
+#tabla-sonidistas-lista tr.sonidista-inactivo td { background: var(--surface-2); }
+#tabla-sonidistas-lista tr.sonidista-inactivo .spreadsheet-inp, #tabla-sonidistas-lista tr.sonidista-inactivo td { color: var(--ink-3); }
+
+/* MODO SONIDISTA (v2.5): acceso reducido. Ve solo Eventos en curso; lee Info, artistas, Rider general y Checklist; edita Rider técnico y REC.
+   Esto oculta lo que no le corresponde; la seguridad real la ponen las reglas de Firestore (no puede leer `festivales`). */
+html.modo-sonidista .solo-gestion,
+html.modo-sonidista #sidebar .nav-item:not([data-view="eventos"]),
+html.modo-sonidista #sidebar .nav-divider,
+html.modo-sonidista .btn-nuevo-sidebar,
+html.modo-sonidista #panel-evento-detalle .mode-switch-pill,
+html.modo-sonidista #panel-evento-detalle > .segmented-tabs-bar .segmented-tab-btn[data-tab="cronograma"],
+html.modo-sonidista #panel-evento-detalle > .segmented-tabs-bar .segmented-tab-btn[data-tab="produccion"],
+html.modo-sonidista #panel-evento-detalle > .segmented-tabs-bar .segmented-tab-btn[data-tab="cobertura"],
+html.modo-sonidista #panel-evento-detalle > .segmented-tabs-bar .segmented-tab-btn[data-tab="cierre-entradas"],
+html.modo-sonidista #panel-evento-detalle > .segmented-tabs-bar .segmented-tab-btn[data-tab="comunicaciones"],
+html.modo-sonidista #tabla-eventos-filas th:last-child,
+html.modo-sonidista #tabla-eventos-filas td:last-child,
+html.modo-sonidista #tab-ev-info .editable-hint,
+html.modo-sonidista #card-rider-bandas .rider-modo-switch,
+html.modo-sonidista #btn-rider-add-col,
+html.modo-sonidista #rider-subtab-checklist .btn-primary { display: none !important; }
+/* Solo lectura: se bloquean los controles de edición (las tablas se pueden seguir desplazando) */
+html.modo-sonidista #tab-ev-info .editable-card,
+html.modo-sonidista #tab-ev-info .band-grid { pointer-events: none; }
+html.modo-sonidista #tab-ev-info .band-grid .group-arrow { pointer-events: auto; cursor: pointer; }
+html.modo-sonidista #card-rider-bandas :is(input, textarea, select, .btn-col-nota, .btn-tema-nota, .btn-del-col, .musico-draggable-tag),
+html.modo-sonidista #tabla-checklist-interactiva :is(input, select, textarea, button, .drag-handle) { pointer-events: none; }
+
 /* CHECKLIST DE EQUIPAMIENTO: chips de filtro, grupos por categoría y ítems sin usar (v2.4) */
 .chk-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 12px; }
 .chk-chip { border: 1px solid var(--line-2); background: var(--surface); color: var(--ink-2); border-radius: var(--r-pill); padding: 4px 11px; font: 700 12.5px var(--font); cursor: pointer; white-space: nowrap; }

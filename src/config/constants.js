@@ -2,7 +2,13 @@
 // src/config/constants.js — Constantes y Configuración de Firebase Mandala
 // =======================================================================
 
-export const APP_VERSION = "v2.4";
+export const APP_VERSION = "v2.5";
+
+// Clave inicial de las cuentas nuevas (la misma que usa Mandala Admisión). La persona debe cambiarla en su primer ingreso.
+export const CLAVE_INICIAL_DEFECTO = "mandala333";
+
+// Rol de las personas de sonido: solo ven los eventos en curso (lectura) y editan el Rider técnico y el REC
+export const ROL_SONIDISTA = "sonidista_festivales";
 
 // Cuenta de emergencia: siempre puede ingresar (misma regla que en las reglas de Firestore de Admisión)
 export const EMAIL_CUENTA_EMERGENCIA = "productora.mandalahouse@gmail.com";
@@ -28,5 +34,7 @@ export const COLLECTIONS = {
     PRODUCTORA_CONFIG: "productora_config",   // Tarifas maestras de productora audiovisual
     USUARIOS_SISTEMA: "usuarios_sistema",     // Usuarios del ecosistema Mandala (compartido con Admisión)
     CAJA_FESTIVALES: "caja_festivales",       // Gastos e Ingresos manuales de Caja
-    FESTIVALES_SONIDO: "festivales_sonido"    // Sonido del evento (Rider técnico, REC): aparte de las finanzas
+    FESTIVALES_SONIDO: "festivales_sonido",   // Sonido del evento (Rider técnico, REC) y copia de lectura para sonidistas: aparte de las finanzas
+    SONIDISTAS: "sonidistas",                 // Directorio de sonidistas (cada uno con su usuario de acceso)
+    ACCESO: "acceso"                          // Lista de acceso (acceso/lista), compartida con Admisión
 };

@@ -9,7 +9,7 @@
 // editar esta colección sin tener acceso a las finanzas del evento.
 // =======================================================================
 
-import { db, doc, getDoc, setDoc } from "../config/firebase.js";
+import { db, doc, getDoc, setDoc, deleteDoc, collection, query, where, onSnapshot } from "../config/firebase.js";
 import { COLLECTIONS } from "../config/constants.js";
 import { notificarErrorPersistencia } from "../utils/errores.js";
 
@@ -23,6 +23,53 @@ export async function obtenerSonidoEvento(eventoId) {
     const snap = await getDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, eventoId));
     if (!snap.exists()) return { existe: false, datos: {} };
     return { existe: true, datos: snap.data() || {} };
+}
+
+/**
+ * Copia de lectura para sonidistas: los datos del evento que ellos pueden ver (sin finanzas).
+ * `partes` puede traer: ficha { nombre, venue, direccion, capacidad, fechaHora, fecha, estado }, artistas { participantes },
+ * riderGeneral { columnas, asignaciones, cancionesNotas }, checklist { items, categorias }.
+ * Se mezcla con lo que ya hay (merge): no toca `sonido` (Rider técnico y REC).
+ */
+export async function espejarSonidoEvento(eventoId, partes) {
+    try {
+        await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, eventoId), {
+            eventoId,
+            ...partes,
+            espejoActualizadoEn: new Date().toISOString()
+        }, { merge: true });
+        return true;
+    } catch (err) {
+        console.warn(`[Mandala Festivales] No se pudo actualizar la copia para sonidistas de ${eventoId}:`, err);
+        return false;
+    }
+}
+
+/** Borra la copia de un evento eliminado (también su Rider técnico y REC). */
+export async function eliminarSonidoEvento(eventoId) {
+    try {
+        await deleteDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, eventoId));
+        return true;
+    } catch (err) {
+        console.warn(`[Mandala Festivales] No se pudo borrar la copia para sonidistas de ${eventoId}:`, err);
+        return false;
+    }
+}
+
+/**
+ * Escucha en tiempo real los eventos "En Curso" (lo único que ve un sonidista).
+ * La consulta lleva el filtro porque las reglas solo dejan leer esos documentos.
+ */
+export function escucharEventosSonidoEnCurso(onDatos, onError) {
+    const q = query(collection(db, COLLECTIONS.FESTIVALES_SONIDO), where('ficha.estado', '==', 'En Curso'));
+    return onSnapshot(q, (snap) => {
+        const lista = [];
+        snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
+        onDatos(lista);
+    }, (err) => {
+        console.warn('[Mandala Festivales] Error al escuchar los eventos para sonidistas:', err);
+        if (typeof onError === 'function') onError(err);
+    });
 }
 
 /**

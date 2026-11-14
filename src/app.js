@@ -31,7 +31,8 @@ import { obtenerGastosCajaFirestore, guardarGastosCajaFirestore, obtenerIngresos
 import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerProductorasFirestore, guardarProductorasFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore, obtenerChecklistProduccionPlantillaFirestore, guardarChecklistProduccionPlantillaFirestore, obtenerCategoriasEquipamientoFirestore, guardarCategoriasEquipamientoFirestore } from "./services/configuracionService.js";
 import { obtenerInstrumentosFirestore, escucharInstrumentosEnTiempoReal, getEmojiParaInstrumento, obtenerInstrumentosActualesSync } from "./services/instrumentosService.js";
 
-import { obtenerSonidoEvento, guardarRiderTecnicoEvento, guardarRecEvento } from "./services/sonidoService.js";
+import { obtenerSonidoEvento, guardarRiderTecnicoEvento, guardarRecEvento, espejarSonidoEvento, eliminarSonidoEvento, escucharEventosSonidoEnCurso } from "./services/sonidoService.js";
+import { obtenerSonidistasFirestore, guardarDatosSonidistaFirestore, altaSonidistaFirestore, cambiarActivoSonidistaFirestore, quitarSonidistaFirestore } from "./services/sonidistasService.js";
 
 import { idVenueEstable, idHistoricoEstable } from "./utils/ids.js";
 
@@ -88,7 +89,17 @@ window.MandalaApp = {
     sonido: {
         obtener: obtenerSonidoEvento,
         guardarTecnico: guardarRiderTecnicoEvento,
-        guardarRec: guardarRecEvento
+        guardarRec: guardarRecEvento,
+        espejar: espejarSonidoEvento,
+        eliminar: eliminarSonidoEvento,
+        escucharEnCurso: escucharEventosSonidoEnCurso
+    },
+    sonidistas: {
+        obtener: obtenerSonidistasFirestore,
+        guardarDatos: guardarDatosSonidistaFirestore,
+        alta: altaSonidistaFirestore,
+        cambiarActivo: cambiarActivoSonidistaFirestore,
+        quitar: quitarSonidistaFirestore
     },
     sesionistas: {
         obtener: obtenerSesionistasFirestore,
@@ -139,6 +150,9 @@ function mostrarPantallaLogin() {
     const loginContainer = document.getElementById('login-container');
     const appLayout = document.getElementById('app-layout');
     document.documentElement.classList.remove('user-has-session');
+    // Si se cierra una sesión de sonidista, la siguiente persona no hereda el modo reducido
+    document.documentElement.classList.remove('modo-sonidista');
+    window.modoSonidista = false;
     if (typeof window.ocultarIndicadorCarga === 'function') window.ocultarIndicadorCarga();
     if (loginContainer) loginContainer.style.display = 'flex';
     if (appLayout) appLayout.classList.remove('active');
@@ -151,7 +165,7 @@ function mostrarPantallaLogin() {
 const MENSAJES_ACCESO_DENEGADO = {
     sin_perfil: 'Tu correo no está dado de alta en el sistema Mandala. Consultá con administración.',
     inactivo: 'Tu usuario se encuentra inactivo. Consultá con administración.',
-    sin_rol_festivales: 'Tu usuario no tiene el perfil "Gestor de Festivales". Pedile a administración que te lo asigne.',
+    sin_rol_festivales: 'Tu usuario no tiene el perfil "Gestor de Festivales" ni el de sonidista. Pedile a administración que te lo asigne.',
     sin_permiso: 'Tu usuario no tiene permiso para acceder. Consultá con administración.',
     error: 'No se pudo verificar tu acceso. Revisá tu conexión y reintentá.'
 };
@@ -185,9 +199,13 @@ async function manejarCambioSesion(user) {
     }
 
     const perfil = acceso.perfil;
+    const esSoloSonidista = !!perfil.esSoloSonidista;
     const nombreUsuario = perfil.nombre || user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario');
-    const rolUsuario = perfil.rol ? (perfil.rol.charAt(0).toUpperCase() + perfil.rol.slice(1)) : 'Coordinador';
+    const rolUsuario = esSoloSonidista ? 'Sonidista' : (perfil.rol ? (perfil.rol.charAt(0).toUpperCase() + perfil.rol.slice(1)) : 'Coordinador');
     window.usuarioActual = perfil;
+    // Modo sonidista: acceso reducido (solo eventos en curso; lee casi todo y edita Rider técnico y REC)
+    window.modoSonidista = esSoloSonidista;
+    document.documentElement.classList.toggle('modo-sonidista', esSoloSonidista);
 
     // Datos solo de presentación (no otorgan acceso): evitan parpadeos al recargar
     try {
@@ -213,7 +231,23 @@ async function manejarCambioSesion(user) {
         if (typeof window.exigirCambioClaveInicial === 'function') window.exigirCambioClaveInicial();
     }
 
-    sincronizarDatosTrasLogin();
+    if (esSoloSonidista) sincronizarDatosSonidista();
+    else sincronizarDatosTrasLogin();
+}
+
+/**
+ * Datos de un sonidista: solo los eventos "En Curso" de `festivales_sonido` (copia sin finanzas), en tiempo real.
+ * No lee festivales, caja, alumnos ni nada más: las reglas de Firestore no se lo permiten.
+ */
+function sincronizarDatosSonidista() {
+    detenerListenersTiempoReal();
+    listenersActivos.push(escucharEventosSonidoEnCurso((lista) => {
+        console.log(`[Mandala Festivales] Modo sonidista: ${lista.length} evento(s) en curso.`);
+        if (typeof window.poblarEventosSonidista === 'function') window.poblarEventosSonidista(lista);
+    }, () => {
+        if (typeof window.ocultarIndicadorCarga === 'function') window.ocultarIndicadorCarga();
+        if (typeof window.mostrarToast === 'function') window.mostrarToast('No se pudieron cargar los eventos. Revisá la conexión.', 'error');
+    }));
 }
 
 /**
@@ -236,6 +270,8 @@ async function sincronizarDatosTrasLogin() {
             if (typeof window.poblarFestivalesDesdeFirestore === 'function') {
                 window.poblarFestivalesDesdeFirestore(festivalesActualizados);
             }
+            // Una vez por sesión se asegura la copia de lectura de los eventos en curso para los sonidistas
+            if (typeof window.espejarEnCursoParaSonidistas === 'function') window.espejarEnCursoParaSonidistas(festivalesActualizados);
         }));
 
         // Sincronización continua en tiempo real de Caja (Gastos e Ingresos manuales) desde Firestore

@@ -347,6 +347,8 @@ export async function guardarFestivalFirestore(festivalId, festivalData) {
             }
         }
         console.log(`[Mandala Festivales] Festival ${festivalId} guardado con éxito en Firestore.`);
+        // Aviso para que la app actualice la copia de lectura de los sonidistas (festivales_sonido)
+        try { window.dispatchEvent(new CustomEvent('mandala:festival-guardado', { detail: { id: festivalId, campos: festivalData } })); } catch (e) { /* sin window (tests) */ }
         return true;
     } catch (err) {
         console.error(`[Mandala Festivales] Error al guardar festival ${festivalId}:`, err);
@@ -419,6 +421,7 @@ export async function eliminarFestivalFirestore(festivalId) {
             console.warn(`[Mandala Festivales] No se pudo eliminar ${festivalId} del histórico:`, e);
         }
         console.log(`[Mandala Festivales] Festival ${festivalId} eliminado de Firestore.`);
+        try { window.dispatchEvent(new CustomEvent('mandala:festival-eliminado', { detail: { id: festivalId } })); } catch (e) { /* sin window (tests) */ }
         return true;
     } catch (err) {
         console.error(`[Mandala Festivales] Error al eliminar festival ${festivalId}:`, err);

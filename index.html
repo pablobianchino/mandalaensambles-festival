@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.8">
-    <script src="src/ui/iconos.js?v=v2.8"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.9">
+    <script src="src/ui/iconos.js?v=v2.9"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.8" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.9" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -6088,7 +6088,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.8";
+        const APP_VERSION = "v2.9";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -18070,6 +18070,20 @@
         window.buscarTraspasoEntradasPendienteAlumno = buscarTraspasoEntradasPendienteAlumno;
 
         // Verifica si un alumno con traspaso ya fue integrado en otro festival posterior
+        // Cuántas de las entradas traspasadas ya cubrió el alumno en el festival destino.
+        // Lo más viejo se cubre primero: lo que vendió en el destino se imputa antes a las entradas traspasadas que a su cupo propio.
+        function calcularEntradasTraspasoCubiertas(destinoFestId, contratoOrigen, cantTraspaso) {
+            try {
+                const contDestino = (obtenerListaParticipantesContratoFestival(destinoFestId) || [])
+                    .find(x => x && !x.esSes && !x.excluido && mismoAlumno(x.nombre, x.alumnoId, contratoOrigen.nombre, contratoOrigen.alumnoId));
+                if (!contDestino) return 0;
+                return Math.min(cantTraspaso, Math.max(0, Number(contDestino.vendidas || 0)));
+            } catch (e) {
+                console.warn('[Traspasos] No se pudo calcular lo cubierto de', contratoOrigen && contratoOrigen.nombre, e);
+                return 0;
+            }
+        }
+
         function verificarSiTraspasoFueAbsorbido(nombreAlumno, festOrigenId, alumnoId = null) {
             if (!nombreAlumno) return null;
 
@@ -19650,6 +19664,11 @@
                                 // No es una deuda a cobrar, pero queda a la vista para el seguimiento (puede demorar en cubrirse).
                                 c.traspasoDestinoFestId = absorbido.destinoFestId;
                                 const cantAbs = Math.max(1, Number(c.traspasoEntradas || c.faltantes || 1));
+                                // Si ya vendió lo suficiente en el festival destino, las entradas traspasadas están cubiertas y no se listan.
+                                // Si cubrió una parte, queda solo lo que falta.
+                                const cubiertasAbs = calcularEntradasTraspasoCubiertas(absorbido.destinoFestId, c, cantAbs);
+                                if (cubiertasAbs >= cantAbs) return;
+                                const faltanAbs = cantAbs - cubiertasAbs;
                                 deudas.push({
                                     id: `rollover-${festId}-${c.id || c.nombre}`,
                                     festId,
@@ -19660,13 +19679,15 @@
                                     tipoBadge: '',
                                     concepto: `👤 ${c.nombre}`,
                                     banda: c.banda || 'Participantes',
-                                    faltantes: cantAbs,
+                                    faltantes: faltanAbs,
                                     categoria: 'Traspaso asignado',
                                     monto: 0,
                                     esPasivoEscuela: false,
                                     medio: 'Entradas',
                                     responsable: 'Dirección / Guido',
-                                    obs: `Se cubre con +${cantAbs} ${cantAbs === 1 ? 'entrada' : 'entradas'} en ${absorbido.destinoFestNombre} (banda ${absorbido.bandaNombre}).`,
+                                    obs: cubiertasAbs > 0
+                                        ? `Cubrió ${cubiertasAbs} de ${cantAbs} en ${absorbido.destinoFestNombre} (banda ${absorbido.bandaNombre}); le ${faltanAbs === 1 ? 'falta 1 entrada' : 'faltan ' + faltanAbs + ' entradas'}.`
+                                        : `Se cubre con +${cantAbs} ${cantAbs === 1 ? 'entrada' : 'entradas'} en ${absorbido.destinoFestNombre} (banda ${absorbido.bandaNombre}).`,
                                     itemId: c.id || c.nombre,
                                     idxCuota: null,
                                     esTraspaso: true,

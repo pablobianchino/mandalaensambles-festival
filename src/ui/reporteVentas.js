@@ -41,7 +41,7 @@
         '.rv table{width:100%;border-collapse:collapse}' +
         '.rv th{background:#faf8f3;color:#8a9097;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:8px 10px;border-bottom:1px solid #ddd5c8}' +
         '.rv td{padding:8px 10px;border-bottom:1px solid #ece6dc}' +
-        '.rv .r{text-align:right;font-family:"Geist Mono",ui-monospace,Consolas,monospace}.rv .c{text-align:center}' +
+        '.rv .r{text-align:right;white-space:nowrap;font-family:"Geist Mono",ui-monospace,Consolas,monospace}.rv .c{text-align:center}' +
         '.rv tfoot td{font-weight:800;background:#faf8f3;border-bottom:0}' +
         '.rv .resta .r{color:#b2402b}' +
         '.rv .total td{font-size:15px;font-weight:800;background:#e8f4f6;color:#006173;border-top:2px solid #007b8f;border-bottom:0}' +
@@ -132,6 +132,17 @@
         var info = infoDe(fId);
         var fin = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[fId]) ? ingresosFestivalesDB[fId] : {};
         var gastos = (Array.isArray(fin.gastosOperativos) ? fin.gastosOperativos : []).filter(function (g) { return g && !(g.esSonido && !(parseFloat(g.monto || 0) > 0)); }); // Sonido en $ 0 = servicio no usado
+        // Orden del reporte: primero lo pendiente, después lo pagado; dentro de cada grupo, por fecha
+        var fechaNum = function (s) {
+            var m = String(s || '').match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+            if (!m) return 9e9;
+            var a = m[3] ? (m[3].length === 2 ? 2000 + parseInt(m[3], 10) : parseInt(m[3], 10)) : 0;
+            return a * 10000 + parseInt(m[2], 10) * 100 + parseInt(m[1], 10);
+        };
+        gastos = gastos.map(function (g, i) { return { g: g, i: i }; }).sort(function (a, b) {
+            var pa = a.g.pagado ? 1 : 0, pb = b.g.pagado ? 1 : 0;
+            return (pa - pb) || (fechaNum(a.g.fecha) - fechaNum(b.g.fecha)) || (a.i - b.i);
+        }).map(function (x) { return x.g; });
         var totOp = 0, pendOp = 0;
         gastos.forEach(function (g) {
             var m = Math.max(0, parseFloat(g.monto || 0) || 0);
@@ -146,9 +157,9 @@
 
         var filasGastos = gastos.length ? gastos.map(function (g) {
             var m = Math.max(0, parseFloat(g.monto || 0) || 0);
-            var esProv = !!(g.proveedorId || (typeof buscarProductora === 'function' && buscarProductora(g.proveedor)));
-            var prov = esProv ? (g.proveedor || '-') : ('Gasto de la escuela' + (g.proveedor ? ' (' + g.proveedor + ')' : ''));
-            var quien = g.responsable ? ((esProv ? (g.pagado ? 'Pagó: ' : 'Paga: ') : (g.pagado ? 'Pagó: ' : 'Paga: ')) + g.responsable) : '';
+            var dest = (typeof destinoGasto === 'function') ? destinoGasto(g) : { nombre: g.proveedor || '' };
+            var prov = dest.nombre || g.proveedor || '-';
+            var quien = g.responsable ? ((g.pagado ? 'Pagó: ' : 'Paga: ') + g.responsable) : '';
             var pago = [g.metodo || 'Transferencia', quien].filter(Boolean).join(' · ');
             return '<tr><td>' + esc(g.fecha || '-') + '</td><td>' + esc(g.concepto || '-') + '</td><td>' + esc(prov) + '</td><td>' + esc(pago) +
                 '</td><td class="' + (g.pagado ? 'est-ok' : 'est-pend') + '">' + (g.pagado ? 'Pagado' : 'Pendiente') + '</td><td class="r">' + ars(m) + '</td></tr>';
@@ -157,16 +168,33 @@
         var pie = '<tr><td colspan="5">Total gastos operativos</td><td class="r">' + ars(totOp) + '</td></tr>';
         if (pendOp > 0) pie += '<tr><td colspan="5">Pendiente de pago</td><td class="r">' + ars(pendOp) + '</td></tr>';
 
-        // Cobertura audiovisual
-        var filasCob = '<tr><td>Cobertura de la escuela (video y fotos)</td><td class="r">' + ars(cob.baseVideo + cob.baseFotos) + '</td></tr>';
-        if (cob.cantReelsEscuela > 0) filasCob += '<tr><td>Reels de la escuela (' + cob.cantReelsEscuela + ' × ' + ars(cob.baseReel) + ')</td><td class="r">' + ars(cob.costoReelsEscuela) + '</td></tr>';
-        if (cob.costoEdicionReelsBandas > 0) filasCob += '<tr><td>Edición de reels de las bandas (' + cob.cantReelsBandas + ')</td><td class="r">' + ars(cob.costoEdicionReelsBandas) + '</td></tr>';
-        filasCob += '<tr><td><b>Total a pagar a la productora' + (productora ? ' (' + esc(productora) + ')' : '') + '</b></td><td class="r"><b>' + ars(cob.presupuestoProductora) + '</b></td></tr>';
-        filasCob += '<tr class="resta"><td>Aporte de las bandas (cuando paguen toda su cobertura)</td><td class="r">- ' + ars(cob.totalBandas) + '</td></tr>';
-        filasCob += '<tr class="total"><td>A cargo de Mandala</td><td class="r">' + ars(cob.saldoEscuela) + '</td></tr>';
-        var contactoPago = (typeof obtenerContactoPagoCobertura === 'function') ? obtenerContactoPagoCobertura(fId) : null;
-        if (contactoPago) filasCob += '<tr><td colspan="2" style="color:#4b5159">Pagar a: <b>' + esc(contactoPago.nombre) + '</b> · Alias: <b>' + esc(contactoPago.alias) + '</b></td></tr>';
-        var notaCob = '<p class="aviso">El aporte de las bandas se cuenta completo, hayan pagado ya o no su cobertura.' +
+        // Cobertura audiovisual: Fotos y Video, cada uno con su costo, lo que cubren las bandas y lo que falta pagar
+        var filasCob = '';
+        var totCosto = 0, totAporte = 0, totPagar = 0, totPend = 0;
+        // Lo pendiente primero (Fotos antes que Video si empatan)
+        (cob.itemsCobertura || []).slice().sort(function (a, b) {
+            var pa = (a.diferencia > 0 && !a.pagada) ? 0 : 1, pb = (b.diferencia > 0 && !b.pagada) ? 0 : 1;
+            return pa - pb;
+        }).forEach(function (it) {
+            var detalle = '';
+            if (it.clave === 'video') {
+                var partes = ['base ' + ars(cob.baseVideo)];
+                if (cob.cantReelsEscuela > 0) partes.push('reels de la escuela (' + cob.cantReelsEscuela + ' × ' + ars(cob.baseReel) + ') ' + ars(cob.costoReelsEscuela));
+                if (cob.costoEdicionReelsBandas > 0) partes.push('edición de reels de las bandas (' + cob.cantReelsBandas + ') ' + ars(cob.costoEdicionReelsBandas));
+                detalle = '<div style="font-size:11px;color:#8a9097;font-weight:400">' + partes.join(' · ') + '</div>';
+            }
+            var aporteUsado = Math.min(it.aporte, it.costo);
+            var estado = it.diferencia <= 0
+                ? '<td class="est-ok">Cubierto</td>'
+                : '<td class="' + (it.pagada ? 'est-ok' : 'est-pend') + '">' + (it.pagada ? 'Pagado' : 'Pendiente') + '</td>';
+            filasCob += '<tr><td><b>' + it.nombre + '</b>' + detalle + '</td><td class="r">' + ars(it.costo) + '</td><td class="r">' + ars(aporteUsado) + '</td>' + estado + '<td class="r">' + ars(it.diferencia) + '</td></tr>';
+            totCosto += it.costo; totAporte += aporteUsado; totPagar += it.diferencia;
+            if (!it.pagada) totPend += it.diferencia;
+        });
+        if (!filasCob) filasCob = '<tr><td colspan="5" style="color:#8a9097">Sin cobertura audiovisual en este evento</td></tr>';
+        var pieCob = '<tr><td>Total cobertura audiovisual</td><td class="r">' + ars(totCosto) + '</td><td class="r">' + ars(totAporte) + '</td><td></td><td class="r">' + ars(totPagar) + '</td></tr>';
+        if (totPend > 0) pieCob += '<tr><td colspan="4">Pendiente de pago</td><td class="r">' + ars(totPend) + '</td></tr>';
+        var notaCob = '<p class="aviso">Lo que cubren las bandas se cuenta completo, hayan pagado ya o no su cobertura.' +
             (cob.excedenteCobertura > 0 ? ' Las bandas aportan ' + ars(cob.excedenteCobertura) + ' más que el costo: ese excedente queda para la escuela.' : '') + '</p>';
 
         // Servicios adelantados
@@ -182,17 +210,17 @@
 
         // Resumen final
         var resumen = '<tr><td>Gastos operativos</td><td class="r">' + ars(totOp) + '</td></tr>' +
-            '<tr><td>Cobertura audiovisual (a cargo de Mandala)</td><td class="r">' + ars(cob.saldoEscuela) + '</td></tr>' +
+            '<tr><td>Cobertura audiovisual (sin lo que cubren las bandas)</td><td class="r">' + ars(cob.saldoEscuela) + '</td></tr>' +
             (serv.adelantado > 0 ? '<tr><td>Servicios adelantados</td><td class="r">' + ars(serv.adelantado) + '</td></tr>' : '') +
             '<tr class="total"><td>Total de gastos del evento</td><td class="r">' + ars(totalEgresos) + '</td></tr>';
 
         return '<div class="kpis">' +
             '<div class="kpi"><small>Gastos operativos</small><b>' + ars(totOp) + '</b><em>' + gastos.length + (gastos.length === 1 ? ' gasto cargado' : ' gastos cargados') + '</em></div>' +
-            '<div class="kpi"><small>Cobertura audiovisual</small><b>' + ars(cob.saldoEscuela) + '</b><em>a cargo de Mandala, de ' + ars(cob.presupuestoProductora) + ' en total</em></div>' +
+            '<div class="kpi"><small>Cobertura audiovisual</small><b>' + ars(cob.saldoEscuela) + '</b><em>sin lo que cubren las bandas, de ' + ars(cob.presupuestoProductora) + ' en total</em></div>' +
             '<div class="kpi neto"><small>Total de gastos</small><b>' + ars(totalEgresos) + '</b><em>lo que paga la escuela</em></div></div>' +
-            '<h3>Gastos del evento</h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Proveedor</th><th>Pago</th><th>Estado</th><th class="r">Monto</th></tr></thead><tbody>' +
+            '<h3>Gastos del evento</h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Destinatario</th><th>Pago</th><th>Estado</th><th class="r">Monto</th></tr></thead><tbody>' +
             filasGastos + '</tbody><tfoot>' + pie + '</tfoot></table>' +
-            '<h3>Cobertura audiovisual</h3><table><tbody>' + filasCob + '</tbody></table>' + notaCob +
+            '<h3>Cobertura audiovisual</h3><table><thead><tr><th>Concepto</th><th class="r">Costo</th><th class="r">Cubierto por bandas</th><th>Estado</th><th class="r">A pagar</th></tr></thead><tbody>' + filasCob + '</tbody><tfoot>' + pieCob + '</tfoot></table>' + notaCob +
             bloqueServ +
             '<h3>Total de gastos del evento</h3><table><tbody>' + resumen + '</tbody></table>';
     }

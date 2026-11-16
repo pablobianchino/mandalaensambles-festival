@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.13">
-    <script src="src/ui/iconos.js?v=v2.13"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.15">
+    <script src="src/ui/iconos.js?v=v2.15"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.13" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.15" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -2039,10 +2039,10 @@
 
                         <!-- SUB-PESTAÑA 3: GASTOS DEL EVENTO -->
                         <div id="tab-fin-gastos" class="tab-fin-content" style="display:none;">
-                            <div class="content-card">
-                                <div class="card-header-flex">
+                            <div class="content-card" id="card-gastos-evento">
+                                <div class="card-header-flex" onclick="toggleBloqueGastosEvento(event)" style="cursor:pointer;" title="Click para colapsar o abrir la tabla de gastos">
                                     <div>
-                                        <h3 class="card-title">Gastos del evento</h3>
+                                        <h3 class="card-title"><span class="collapsible-chevron" id="chevron-gastos-evento">▼</span>Gastos del evento</h3>
                                         <span style="font-size:12px; color:var(--text-muted);">
                                             Gastos reales de este festival (fletes, sonido extra, staff) con su estado de pago. La cobertura y los servicios adelantados se calculan solos.
                                         </span>
@@ -2060,10 +2060,10 @@
                                             <tr>
                                                 <th style="width:125px;">Fecha</th>
                                                 <th style="min-width:240px;">Concepto</th>
-                                                <th style="width:180px;">Proveedor</th>
+                                                <th style="width:180px;">Destinatario</th>
                                                 <th class="r" style="width:130px;">Monto</th>
-                                                <th style="width:280px;">Detalle del pago</th>
-                                                <th style="width:110px;">Estado</th>
+                                                <th style="width:360px;">Detalle del pago</th>
+                                                <th style="width:100px;">Estado</th>
                                                 <th class="r" style="width:150px;" id="th-accion-gastos-fest">Acción</th>
                                             </tr>
                                         </thead>
@@ -2072,39 +2072,10 @@
                                         </tbody>
                                         <tbody id="tbody-gasto-cobertura-escuela">
                                             <!-- FILA AUTOMÁTICA: COBERTURA AUDIOVISUAL ESCUELA -->
-                                            <tr id="tr-gasto-cobertura-escuela">
-                                                <td class="sec-mono m-cero" style="text-align:left;" id="gasto-prod-fecha">24/09/2026</td>
-                                                <td>
-                                                    <strong id="txt-titulo-cobertura-escuela-gastos">Cobertura audiovisual de la escuela</strong> <span class="pill-status pill-info" style="font-size:10.5px;" title="Se calcula desde la solapa Servicios / Cobertura">Automático</span>
-                                                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">
-                                                        Presupuesto <span id="gasto-prod-real-txt" class="sec-mono">$ 0</span> · Aportado por bandas <span id="gasto-prod-participantes-txt" class="sec-mono">$ 0</span><span id="gasto-prod-diferencia-txt" style="display:none;">$ 0</span>
-                                                    </div>
-                                                </td>
-                                                <td id="txt-proveedor-cobertura-escuela">Jodida Productora</td>
-                                                <td class="r sec-mono" id="gasto-prod-monto-neto-txt">$ 0</td>
-                                                <td>
-                                                    <span class="srv-det-pago">
-                                                        <select id="sel-gasto-prod-metodo" class="installment-select" onchange="actualizarPagoCoberturaEscuela('metodo', this.value)">
-                                                            <option value="Transferencia">Transferencia</option>
-                                                            <option value="Efectivo">Efectivo</option>
-                                                        </select>
-                                                        <select id="sel-gasto-prod-responsable" class="installment-select" onchange="actualizarPagoCoberturaEscuela('responsable', this.value)">
-                                                            <option value="Guido">Guido</option>
-                                                            <option value="Nacho">Nacho</option>
-                                                            <option value="Belu">Belu</option>
-                                                            <option value="Ariel">Ariel</option>
-                                                        </select>
-                                                    </span>
-                                                    <div class="srv-det-pago" style="margin-top:6px;">
-                                                        <select id="sel-gasto-prod-contacto" class="installment-select" onchange="actualizarPagoCoberturaEscuela('contacto', this.value)" title="A quién se le paga la cobertura (datos de pago de la productora, en Productoras)"></select>
-                                                    </div>
-                                                    <div class="gasto-contacto-det" id="gasto-prod-contacto-det"></div>
-                                                </td>
-                                                <td><span class="pill-status pill-warning" id="pill-gasto-prod-estado">Pendiente</span></td>
-                                                <td class="r" id="td-accion-cobertura-escuela">
-                                                    <button type="button" id="btn-gasto-prod-pagado" class="btn-app btn-primary btn-sm" onclick="alternarPagoCoberturaEscuela()">Marcar pagado</button>
-                                                </td>
-                                            </tr>
+                                            <!-- FILAS AUTOMÁTICAS: COBERTURA AUDIOVISUAL (Fotos y Video por separado), se arman en renderizarFilasCoberturaGastos() -->
+                                            <tr id="tr-gasto-cob-fotos"></tr>
+                                            <tr id="tr-gasto-cob-video"></tr>
+                                            <tr id="tr-gasto-cob-resumen"></tr>
                                             <tr id="tr-gasto-servicios-adelantados" style="display:none;">
                                                 <td class="sec-mono m-cero" style="text-align:left;">—</td>
                                                 <td>
@@ -3866,6 +3837,25 @@
         // Responsables de cobro: salen de los usuarios del sistema con el rol "gestor_festivales" (se usa el nombre de pila).
         // Si todavía no cargaron (o falla la lectura) rige esta lista de respaldo.
         const RESPONSABLES_COBRO_RESPALDO = ['Guido', 'Nacho', 'Belu', 'Ariel'];
+        // Socios que pagan los gastos del evento
+        const SOCIOS_GASTOS = ['Guido', 'Belu', 'Ari', 'Nacho'];
+        // A quién va un gasto del evento: { valor: '' | 'sonidista' | id de productora | 'socio:Nombre', tipo, nombre, prod }
+        // Los gastos anteriores guardaban solo un texto: se reconoce si coincide con una productora, un socio o el sonido.
+        function destinoGasto(g) {
+            g = g || {};
+            const id = String(g.proveedorId || '');
+            if (id.startsWith('socio:')) return { valor: id, tipo: 'socio', nombre: id.slice(6), prod: null };
+            if (id === 'sonidista') return { valor: id, tipo: 'sonidista', nombre: 'Sonidista', prod: null };
+            const pId = id ? buscarProductoraPorId(id) : null;
+            if (pId) return { valor: pId.id, tipo: 'productora', nombre: pId.nombre, prod: pId };
+            const txt = String(g.proveedor || '').trim();
+            const pTxt = txt ? buscarProductora(txt) : null;
+            if (pTxt) return { valor: pTxt.id, tipo: 'productora', nombre: pTxt.nombre, prod: pTxt };
+            const socio = SOCIOS_GASTOS.find(s => s.toLowerCase() === txt.toLowerCase());
+            if (socio) return { valor: 'socio:' + socio, tipo: 'socio', nombre: socio, prod: null };
+            if (txt.toLowerCase() === 'sonidista' || (g.esSonido && !txt)) return { valor: 'sonidista', tipo: 'sonidista', nombre: 'Sonidista', prod: null };
+            return { valor: '', tipo: '', nombre: txt, prod: null };
+        }
         let responsablesCobroCache = null;
         function obtenerResponsablesCobro() {
             return (responsablesCobroCache && responsablesCobroCache.length) ? responsablesCobroCache : RESPONSABLES_COBRO_RESPALDO;
@@ -4057,6 +4047,30 @@
             return contactos.find(c => c.id === datos.coberturaEscuelaContactoId) || contactos[0];
         }
         window.obtenerContactoPagoCobertura = obtenerContactoPagoCobertura;
+
+        // Pago de cada parte de la cobertura (fotos / video): método, quién paga, a quién y si ya se pagó.
+        // Los eventos anteriores tenían un solo pago para toda la cobertura: sirve de valor inicial para ambas partes.
+        function obtenerPagoCoberturaItem(datos, clave) {
+            const d = datos || {};
+            const it = (d.coberturaItems && d.coberturaItems[clave]) || {};
+            return {
+                metodo: it.metodo || d.coberturaEscuelaMetodo || 'Transferencia',
+                responsable: it.responsable || d.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO,
+                contactoId: it.contactoId || d.coberturaEscuelaContactoId || '',
+                pagada: it.pagada !== undefined ? Boolean(it.pagada) : Boolean(d.coberturaEscuelaPagada)
+            };
+        }
+        window.obtenerPagoCoberturaItem = obtenerPagoCoberturaItem;
+        // Contacto de pago de una parte de la cobertura (si no eligió, el primero de la productora)
+        function contactoPagoCoberturaItem(festId, clave) {
+            const prod = buscarProductora(productoraDeFestival(festId));
+            const contactos = prod ? normalizarContactosPago(prod.contactosPago) : [];
+            if (!contactos.length) return null;
+            const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) || {};
+            const pago = obtenerPagoCoberturaItem(datos, clave);
+            return contactos.find(c => c.id === pago.contactoId) || contactos[0];
+        }
+        window.contactoPagoCoberturaItem = contactoPagoCoberturaItem;
         function copiarAliasPago(alias) {
             const txt = String(alias || '');
             if (!txt) return;
@@ -6147,7 +6161,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.13";
+        const APP_VERSION = "v2.15";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6826,9 +6840,10 @@
                 egresos = fila('Gastos del festival', htmlMonto(m.egresosTotales));
             }
             const pie = [];
-            if ((m.gastosServicios || 0) > 0 || (m.ingresosSalasPropias || 0) > 0 || (m.serviciosPorCobrar || 0) > 0) {
-                pie.push(fila('Por cobrar (servicios)', htmlMonto(m.serviciosPorCobrar)));
-                pie.push(fila('Pendiente de pago a proveedores', htmlMonto(m.serviciosCostoPendiente)));
+            if (m.conDetalle) {
+                // Igual que en Deudas: todo lo que falta cobrar y todo lo que falta pagar de este evento
+                pie.push(fila('Por cobrar', htmlMonto(m.deudasPorCobrar)));
+                pie.push(fila('Pendiente de pago', htmlMonto(m.deudasPorPagar)));
                 if ((m.serviciosRetenido || 0) > 0) pie.push(fila('Retenido para proveedores', htmlMonto(m.serviciosRetenido)));
             }
             return '<div class="fin-grupos">'
@@ -7443,6 +7458,13 @@
             if (subfila.style.display === 'none' || subfila.style.display === '') {
                 subfila.style.display = 'table-row';
                 if (btn) btn.textContent = '−';
+                // Se recalcula al abrir: Por cobrar / Pendiente de pago dependen de datos que pueden haber llegado después de armar la tabla
+                try {
+                    cacheDeudasFinanzas.t = 0;
+                    const cuerpoSub = subfila.querySelector('.sub-fin-cuerpo');
+                    const festObj = (typeof infoFestivales !== 'undefined') ? infoFestivales[festId] : null;
+                    if (cuerpoSub) cuerpoSub.innerHTML = htmlDesplegableFinanzas(calcularBalanceGeneralFestival(festId, festObj));
+                } catch (e) { console.warn('No se pudo actualizar el detalle de finanzas', e); }
             } else {
                 subfila.style.display = 'none';
                 if (btn) btn.textContent = '＋';
@@ -10042,6 +10064,9 @@
                 gastosServicios: serv.costoPagado,
                 serviciosPorCobrar: serv.porCobrar,
                 serviciosCostoPendiente: serv.costoPendiente,
+                // Lo mismo que figura en Deudas para este evento (cobros y pagos pendientes de todo tipo)
+                deudasPorCobrar: resumenDeudasFestival(fId).porCobrar,
+                deudasPorPagar: resumenDeudasFestival(fId).porPagar,
                 gananciaEscuela,
                 montoVenue: datosVenue.montoVenue,
                 venueMontoFijo: datosVenue.esAlquiler,
@@ -10050,6 +10075,25 @@
             };
         }
         window.calcularBalanceGeneralFestival = calcularBalanceGeneralFestival;
+
+        // Cobros y pagos pendientes de un evento, tomados de la pantalla Deudas (fuente única). Se guarda un instante para no recalcular por cada evento.
+        let cacheDeudasFinanzas = { t: 0, lista: [] };
+        function resumenDeudasFestival(fId) {
+            try {
+                if (Date.now() - cacheDeudasFinanzas.t > 1500) {
+                    cacheDeudasFinanzas = { t: Date.now(), lista: recopilarTodasLasDeudas() || [] };
+                }
+                let porCobrar = 0, porPagar = 0;
+                cacheDeudasFinanzas.lista.forEach(d => {
+                    if (!d || d.festId !== fId) return;
+                    const m = Math.max(0, Number(d.monto) || 0);
+                    if (d.esPasivoEscuela) porPagar += m; else porCobrar += m;
+                });
+                return { porCobrar, porPagar };
+            } catch (e) {
+                return { porCobrar: 0, porPagar: 0 };
+            }
+        }
 
         function sincronizarFilaTablaFinanzasGeneral(fId = eventoActualId) {
             if (!fId) return;
@@ -16635,10 +16679,16 @@
                 const listado = lineas.length > 0 ? lineas.join('\n') : '(Aún no hay bandas con cobertura contratada confirmada)';
 
                 // A quién transferir: el contacto de pago elegido para la cobertura del evento (datos de la productora, en Productoras)
-                const contactoPago = (typeof obtenerContactoPagoCobertura === 'function') ? obtenerContactoPagoCobertura(festId) : null;
-                const datosPago = contactoPago
-                    ? `Alias: ${contactoPago.alias}\n${contactoPago.nombre}`
-                    : '(Falta cargar los datos de pago de la productora en Productoras)';
+                // Si fotos y video se pagan a distinto alias, se indican los dos
+                const cFotos = contactoPagoCoberturaItem(festId, 'fotos');
+                const cVideo = contactoPagoCoberturaItem(festId, 'video');
+                let datosPago = '(Falta cargar los datos de pago de la productora en Productoras)';
+                if (cFotos && cVideo && cFotos.id !== cVideo.id) {
+                    datosPago = `Fotos → Alias: ${cFotos.alias} (${cFotos.nombre})\nVideo → Alias: ${cVideo.alias} (${cVideo.nombre})`;
+                } else if (cVideo || cFotos) {
+                    const c = cVideo || cFotos;
+                    datosPago = `Alias: ${c.alias}\n${c.nombre}`;
+                }
 
                 return `Buenas buenas!! Felicitaciones a tod@s por el hermoso despliegue que se mandaron en el festi!\n\nTema cobertura de show, les paso la info de a quién tienen que abonar. En lo posible porfi que uno solo haga la transferencia del total (uno de cada banda) así es más simple la vida je 🙏\n\n💸TRANSFERIR A:\n${datosPago}\n\n📷COBERTURA DE BANDAS\n${listado}`;
             }
@@ -16786,12 +16836,20 @@
             let totalBandas = 0;
             let cantReelsBandas = 0;
             let costoEdicionReelsBandas = 0;
+            // Parte de lo aportado por las bandas que corresponde a Fotos (sugerida según el plan de cada banda)
+            let autoAporteFotos = 0;
+            const aporteFotosDe = (item, tipo) => {
+                if (item.plan === 'fotos') return Number(item.precio || 0);
+                if (item.plan === 'ambas') return Math.min(Number(item.precio || 0), Number(tipo === 'invitado' ? t.artFotos : t.aluFotos) || 0);
+                return 0;
+            };
 
             if (bandasValidas.length > 0) {
                 bandasValidas.forEach(banda => {
                     const item = cobObj[banda.nombre];
                     if (!item || !item.plan || item.plan === '-') return;
                     totalBandas += Number(item.precio || 0);
+                    autoAporteFotos += aporteFotosDe(item, banda.tipo);
                     if (item.plan === 'reel' || item.plan === 'ambas') {
                         const r = Math.max(1, parseInt(item.reels || 1));
                         const unitReel = (banda.tipo === 'invitado') ? costoEdicionArt : costoEdicionAlu;
@@ -16803,6 +16861,7 @@
                 Object.entries(cobObj).forEach(([key, item]) => {
                     if (key.startsWith('_') || !item || typeof item !== 'object' || !item.plan || item.plan === '-') return;
                     totalBandas += Number(item.precio || 0);
+                    autoAporteFotos += aporteFotosDe(item, item.tipo);
                     if (item.plan === 'reel' || item.plan === 'ambas') {
                         const r = Math.max(1, parseInt(item.reels || 1));
                         const unitReel = (item.tipo === 'invitado') ? costoEdicionArt : costoEdicionAlu;
@@ -16815,11 +16874,35 @@
             const costoReelsEscuela = cantReelsEscuela * baseReel;
             const costoCoberturaEscuela = (baseFotos + baseVideo) + costoReelsEscuela;
             const presupuestoProductora = costoCoberturaEscuela + costoEdicionReelsBandas;
-            const saldoEscuela = Math.max(0, presupuestoProductora - totalBandas);
+            // Cobertura segmentada: Fotos y Video se pagan por separado (cada uno con su alias).
+            // Video incluye el reel base, los reels de la escuela y la edición de reels de las bandas.
+            const costoFotos = baseFotos;
+            const costoVideo = baseVideo + costoReelsEscuela + costoEdicionReelsBandas;
+            const finDatos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) || {};
+            const manual = finDatos.coberturaAportes && typeof finDatos.coberturaAportes === 'object' ? finDatos.coberturaAportes : null;
+            const sugFotos = Math.min(costoFotos, autoAporteFotos);
+            const sugVideo = Math.max(0, totalBandas - sugFotos);
+            const aporteFotos = manual ? Math.max(0, Number(manual.fotos) || 0) : sugFotos;
+            const aporteVideo = manual ? Math.max(0, Number(manual.video) || 0) : sugVideo;
+            const itemsCobertura = [
+                { clave: 'fotos', nombre: 'Fotos', costo: costoFotos, aporte: aporteFotos, aporteSugerido: sugFotos },
+                { clave: 'video', nombre: 'Video', costo: costoVideo, aporte: aporteVideo, aporteSugerido: sugVideo }
+            ].map(it => {
+                const pago = obtenerPagoCoberturaItem(finDatos, it.clave);
+                const diferencia = Math.max(0, it.costo - it.aporte);
+                return Object.assign(it, pago, { diferencia, pagada: pago.pagada || diferencia <= 0 });
+            });
+            const saldoEscuela = itemsCobertura.reduce((a, it) => a + it.diferencia, 0);
+            const pendienteCobertura = itemsCobertura.reduce((a, it) => a + (it.pagada ? 0 : it.diferencia), 0);
+            const aporteAsignado = aporteFotos + aporteVideo;
             // Si lo cobrado a las bandas supera el costo, la diferencia es ganancia de la escuela (antes se perdía)
             const excedenteCobertura = Math.max(0, totalBandas - presupuestoProductora);
 
             return {
+                itemsCobertura,
+                pendienteCobertura,
+                aporteAsignado,
+                aporteManual: Boolean(manual),
                 baseFotos,
                 baseVideo,
                 baseReel,
@@ -16891,7 +16974,7 @@
             // Fila de Sonido por defecto: el operador le pone el monto; en $ 0 es que no se usa el servicio
             if (!datos.sonidoOmitido && !datos.gastosOperativos.some(x => x && x.esSonido)) {
                 datos.gastosOperativos.unshift({
-                    id: 'gasto-op-sonido', fecha: '', concepto: 'Sonido', proveedor: '', proveedorId: '', contactoPagoId: '',
+                    id: 'gasto-op-sonido', fecha: '', concepto: 'Sonido', proveedor: 'Sonidista', proveedorId: 'sonidista', contactoPagoId: '',
                     monto: 0, metodo: 'Transferencia', responsable: RESPONSABLE_COBRO_DEFECTO, pagado: false, esSonido: true
                 });
             }
@@ -16915,21 +16998,29 @@
                 const resp = g.responsable || RESPONSABLE_COBRO_DEFECTO;
                 const montoNum = Math.max(0, parseFloat(g.monto || 0) || 0);
                 const montoDisplay = montoNum > 0 ? `$ ${montoNum.toLocaleString('es-AR')}` : '$ 0';
-                // Proveedor de la lista (productoras) o gasto de la escuela. Un texto viejo que coincide con una productora se toma como ese proveedor.
-                const prodSel = (g.proveedorId ? buscarProductoraPorId(g.proveedorId) : null) || buscarProductora(g.proveedor);
+                // Destinatario: sonidista, la productora del evento o uno de los socios. Un texto viejo que coincide se toma como ese destinatario.
+                const dest = destinoGasto(g);
+                const prodSel = dest.tipo === 'productora' ? dest.prod : null;
                 const contactosProv = prodSel ? normalizarContactosPago(prodSel.contactosPago) : [];
                 const contactoSel = contactosProv.find(c => c.id === g.contactoPagoId) || contactosProv[0] || null;
-                const listaResp = obtenerResponsablesCobro().slice();
+                // En los gastos del evento pagan los socios; un valor anterior distinto (ej. "Ariel") se conserva
+                const listaResp = SOCIOS_GASTOS.slice();
                 if (resp && !listaResp.includes(resp)) listaResp.push(resp);
                 const etqResp = pagado ? 'Pagó' : 'Paga';
-                const opcionesProv = '<option value="">Gasto de la escuela</option>' + productorasDB.map(p => `<option value="${esc(p.id)}" ${prodSel && prodSel.id === p.id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('');
+                const prodEvento = buscarProductora(productoraDeFestival(eventoActualId));
+                const listaProds = prodEvento ? [prodEvento] : [];
+                if (prodSel && !listaProds.some(p => p.id === prodSel.id)) listaProds.push(prodSel);
+                const opcionesProv = (dest.valor ? '' : '<option value="" selected>Elegir destinatario…</option>')
+                    + '<optgroup label="Proveedores"><option value="sonidista" ' + (dest.valor === 'sonidista' ? 'selected' : '') + '>Sonidista</option>'
+                    + listaProds.map(p => `<option value="${esc(p.id)}" ${dest.valor === p.id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('') + '</optgroup>'
+                    + '<optgroup label="Socios">' + SOCIOS_GASTOS.map(s => `<option value="socio:${esc(s)}" ${dest.valor === 'socio:' + s ? 'selected' : ''}>${esc(s)}</option>`).join('') + '</optgroup>';
                 const celdaProveedor = `
-                        <select class="installment-select" style="width:100%;" onchange="cambiarProveedorGasto(${idx}, this.value)" title="Elegí el proveedor de la lista. Si no es un proveedor, es un gasto de la escuela y en el detalle del pago se indica quién pagó.">${opcionesProv}</select>
-                        ${!prodSel && g.proveedor ? `<input type="text" class="spreadsheet-inp text-left" style="margin-top:4px; font-size:11.5px;" value="${esc(g.proveedor)}" placeholder="Detalle (opcional)" oninput="actualizarGastoOperativoFestival(${idx}, 'proveedor', this.value)">` : ''}`;
+                        <select class="installment-select" style="width:100%;" onchange="cambiarProveedorGasto(${idx}, this.value)" title="A quién va el gasto: el sonidista, la productora o uno de los socios. En el detalle del pago se indica quién paga.">${opcionesProv}</select>
+                        ${!dest.valor && g.proveedor ? `<input type="text" class="spreadsheet-inp text-left" style="margin-top:4px; font-size:11.5px;" value="${esc(g.proveedor)}" placeholder="Detalle (opcional)" oninput="actualizarGastoOperativoFestival(${idx}, 'proveedor', this.value)">` : ''}`;
                 const celdaContacto = prodSel
                     ? (contactoSel
-                        ? `<span class="srv-det-pago" style="margin-top:6px;"><select class="installment-select" onchange="cambiarContactoPagoGasto(${idx}, this.value)" title="A quién se le paga (datos de pago del proveedor)">${contactosProv.map(c => `<option value="${esc(c.id)}" ${c.id === contactoSel.id ? 'selected' : ''}>Pagar a: ${esc(c.nombre)}</option>`).join('')}</select></span>
-                           <div class="gasto-contacto-det"><span>Alias: <strong>${esc(contactoSel.alias)}</strong></span><button type="button" onclick="copiarAliasPago('${escJs(contactoSel.alias)}')" title="Copiar el alias">Copiar</button></div>`
+                        ? `<div class="gasto-contacto-linea"><select class="installment-select" onchange="cambiarContactoPagoGasto(${idx}, this.value)" title="A quién se le paga (datos de pago del proveedor)">${contactosProv.map(c => `<option value="${esc(c.id)}" ${c.id === contactoSel.id ? 'selected' : ''}>Pagar a: ${esc(c.nombre)}</option>`).join('')}</select>
+                           <span class="gasto-contacto-det"><span>Alias: <strong>${esc(contactoSel.alias)}</strong></span><button type="button" onclick="copiarAliasPago('${escJs(contactoSel.alias)}')" title="Copiar el alias">Copiar</button></span></div>`
                         : `<div class="gasto-contacto-det"><span>Sin datos de pago (cargalos en Productoras)</span></div>`)
                     : '';
                 const tr = document.createElement('tr');
@@ -16938,7 +17029,10 @@
                         <input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-size:12px;" value="${esc(g.fecha || '')}" placeholder="dd/mm/aaaa" oninput="actualizarGastoOperativoFestival(${idx}, 'fecha', this.value)">
                     </td>
                     <td>
-                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${esc(g.concepto || '')}" placeholder="Ej: Flete / Alquiler sonido / Staff..." oninput="actualizarGastoOperativoFestival(${idx}, 'concepto', this.value)">
+                        <div class="gasto-concepto-fila">
+                            <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${esc(g.concepto || '')}" placeholder="Ej: Flete / Alquiler sonido / Staff..." oninput="actualizarGastoOperativoFestival(${idx}, 'concepto', this.value)">
+                            <input type="text" class="spreadsheet-inp text-left gasto-obs-inp" value="${esc(g.obs || '')}" placeholder="Observaciones…" oninput="actualizarGastoOperativoFestival(${idx}, 'obs', this.value)">
+                        </div>
                     </td>
                     <td>${celdaProveedor}
                     </td>
@@ -17026,14 +17120,21 @@
             const datos = obtenerDatosIngresosEventoActual();
             const g = datos.gastosOperativos && datos.gastosOperativos[idx];
             if (!g) return;
-            const previo = (g.proveedorId ? buscarProductoraPorId(g.proveedorId) : null) || buscarProductora(g.proveedor);
-            const nuevo = provId ? buscarProductoraPorId(provId) : null;
-            if (nuevo) {
+            const previo = destinoGasto(g);
+            if (provId === 'sonidista') {
+                g.proveedorId = 'sonidista';
+                g.proveedor = 'Sonidista';
+            } else if (String(provId).startsWith('socio:')) {
+                g.proveedorId = provId;
+                g.proveedor = provId.slice(6);
+                g.responsable = g.proveedor; // el socio es quien adelanta el gasto; se puede cambiar en el detalle del pago
+            } else if (provId && buscarProductoraPorId(provId)) {
+                const nuevo = buscarProductoraPorId(provId);
                 g.proveedorId = nuevo.id;
                 g.proveedor = nuevo.nombre;
             } else {
                 g.proveedorId = '';
-                if (previo) g.proveedor = ''; // al pasar a gasto de la escuela no queda el nombre del proveedor anterior
+                if (previo.valor) g.proveedor = '';
             }
             g.contactoPagoId = '';
             renderizarTablaGastosOperativosFestival();
@@ -17085,58 +17186,119 @@
         }
         window.eliminarGastoOperativoFestival = eliminarGastoOperativoFestival;
 
-        function cambiarEstadoPagoCoberturaEscuela(estadoPagado) {
+        // Pago de la cobertura por parte (fotos / video). Se parte siempre de los valores de la cobertura anterior (un solo pago).
+        function asegurarItemsCobertura(datos) {
+            if (!datos.coberturaItems || typeof datos.coberturaItems !== 'object') datos.coberturaItems = {};
+            ['fotos', 'video'].forEach(clave => {
+                if (!datos.coberturaItems[clave]) datos.coberturaItems[clave] = obtenerPagoCoberturaItem(datos, clave);
+            });
+            return datos.coberturaItems;
+        }
+        // La marca general queda sincronizada: cobertura pagada = ninguna parte pendiente
+        function sincronizarCoberturaPagada(datos, festId) {
+            const res = calcularResumenPresupuestoProductora(festId || eventoActualId);
+            datos.coberturaEscuelaPagada = res.pendienteCobertura <= 0;
+        }
+
+        function cambiarEstadoPagoCoberturaItem(clave, estadoPagado) {
             const datos = obtenerDatosIngresosEventoActual();
-            datos.coberturaEscuelaPagada = Boolean(estadoPagado);
+            asegurarItemsCobertura(datos)[clave].pagada = Boolean(estadoPagado);
+            sincronizarCoberturaPagada(datos);
             renderizarGastosFestival(false);
             recalcularIngresosFestival(true);
-            mostrarToast(
-                estadoPagado
-                    ? 'Cobertura Audiovisual Escuela marcada como Pagada'
-                    : 'Cobertura Audiovisual Escuela marcada como Pendiente',
-                estadoPagado ? 'success' : 'info'
-            );
+            mostrarToast('Cobertura ' + (clave === 'fotos' ? 'de fotos' : 'de video') + (estadoPagado ? ' marcada como Pagada' : ' marcada como Pendiente'), estadoPagado ? 'success' : 'info');
         }
-        window.cambiarEstadoPagoCoberturaEscuela = cambiarEstadoPagoCoberturaEscuela;
+        window.cambiarEstadoPagoCoberturaItem = cambiarEstadoPagoCoberturaItem;
 
-        // Botón único de la fila de cobertura: marca como pagada o deshace
-        function alternarPagoCoberturaEscuela() {
+        function actualizarPagoCoberturaItem(clave, campo, valor) {
             const datos = obtenerDatosIngresosEventoActual();
-            cambiarEstadoPagoCoberturaEscuela(!datos.coberturaEscuelaPagada);
-        }
-        window.alternarPagoCoberturaEscuela = alternarPagoCoberturaEscuela;
-
-        function actualizarPagoCoberturaEscuela(campo, valor) {
-            const datos = obtenerDatosIngresosEventoActual();
-            if (campo === 'metodo') datos.coberturaEscuelaMetodo = valor;
-            if (campo === 'responsable') datos.coberturaEscuelaResponsable = valor;
-            if (campo === 'contacto') datos.coberturaEscuelaContactoId = valor;
+            const it = asegurarItemsCobertura(datos)[clave];
+            if (campo === 'metodo') it.metodo = valor;
+            if (campo === 'responsable') it.responsable = valor;
+            if (campo === 'contacto') it.contactoId = valor;
+            renderizarGastosFestival(false);
             recalcularIngresosFestival(true);
         }
-        window.actualizarPagoCoberturaEscuela = actualizarPagoCoberturaEscuela;
+        window.actualizarPagoCoberturaItem = actualizarPagoCoberturaItem;
 
-        // "Pagar a": contactos de pago de la productora del evento; muestra el alias con botón para copiarlo
-        function renderizarContactoPagoCobertura() {
-            const sel = document.getElementById('sel-gasto-prod-contacto');
-            const det = document.getElementById('gasto-prod-contacto-det');
-            if (!sel) return;
+        // Cuánto de lo aportado por las bandas cubre cada parte. Al editar una se fijan las dos (la otra queda como se veía).
+        function actualizarAporteCoberturaItem(clave, valor) {
+            const datos = obtenerDatosIngresosEventoActual();
+            const res = calcularResumenPresupuestoProductora(eventoActualId);
+            const n = Math.max(0, parseFloat(String(valor).replace(/[^0-9]/g, '')) || 0);
+            const act = {};
+            res.itemsCobertura.forEach(it => { act[it.clave] = it.aporte; });
+            act[clave] = n;
+            datos.coberturaAportes = { fotos: act.fotos, video: act.video };
+            sincronizarCoberturaPagada(datos);
+            renderizarGastosFestival(false);
+            recalcularAmortizacionCobertura();
+            recalcularIngresosFestival(true);
+        }
+        window.actualizarAporteCoberturaItem = actualizarAporteCoberturaItem;
+
+        // Vuelve a repartir el aporte de las bandas según el plan de cada una (fotos / reel / ambas)
+        function restablecerAporteCobertura() {
+            const datos = obtenerDatosIngresosEventoActual();
+            delete datos.coberturaAportes;
+            sincronizarCoberturaPagada(datos);
+            renderizarGastosFestival(false);
+            recalcularAmortizacionCobertura();
+            recalcularIngresosFestival(true);
+        }
+        window.restablecerAporteCobertura = restablecerAporteCobertura;
+
+        // Filas automáticas de Cobertura audiovisual: Fotos y Video, cada una con su aporte de bandas, diferencia a pagar y alias
+        function renderizarFilasCoberturaGastos(res, fechaEvento, nomProductora) {
+            const trF = document.getElementById('tr-gasto-cob-fotos');
+            const trV = document.getElementById('tr-gasto-cob-video');
+            const trR = document.getElementById('tr-gasto-cob-resumen');
+            if (!trF || !trV || !trR) return;
             const prod = buscarProductora(productoraDeFestival(eventoActualId));
             const contactos = prod ? normalizarContactosPago(prod.contactosPago) : [];
-            if (!contactos.length) {
-                sel.innerHTML = '<option value="">Sin datos de pago (cargalos en Productoras)</option>';
-                sel.disabled = true;
-                if (det) det.innerHTML = '';
-                return;
-            }
-            sel.disabled = false;
-            const actual = obtenerContactoPagoCobertura(eventoActualId);
-            sel.innerHTML = contactos.map(c => `<option value="${esc(c.id)}">Pagar a: ${esc(c.nombre)}</option>`).join('');
-            sel.value = actual ? actual.id : contactos[0].id;
-            if (det && actual) {
-                det.innerHTML = `<span>Alias: <strong>${esc(actual.alias)}</strong></span><button type="button" onclick="copiarAliasPago('${escJs(actual.alias)}')" title="Copiar el alias">Copiar</button>`;
-            }
+            const money = n => '$ ' + Number(n || 0).toLocaleString('es-AR');
+            res.itemsCobertura.forEach(it => {
+                const tr = it.clave === 'fotos' ? trF : trV;
+                const listaResp = SOCIOS_GASTOS.slice();
+                if (!listaResp.includes(it.responsable)) listaResp.push(it.responsable);
+                const sel = contactos.find(c => c.id === it.contactoId) || contactos[0] || null;
+                const contactoHtml = sel
+                    ? `<div class="gasto-contacto-linea"><select class="installment-select" onchange="actualizarPagoCoberturaItem('${it.clave}', 'contacto', this.value)" title="A quién se le paga esta parte de la cobertura (datos de pago de la productora)">${contactos.map(c => `<option value="${esc(c.id)}" ${c.id === sel.id ? 'selected' : ''}>Pagar a: ${esc(c.nombre)}</option>`).join('')}</select>
+                       <span class="gasto-contacto-det"><span>Alias: <strong>${esc(sel.alias)}</strong></span><button type="button" onclick="copiarAliasPago('${escJs(sel.alias)}')" title="Copiar el alias">Copiar</button></span></div>`
+                    : '<div class="gasto-contacto-det"><span>Sin datos de pago (cargalos en Productoras)</span></div>';
+                const etq = it.pagada ? 'Pagó' : 'Paga';
+                const estado = it.diferencia <= 0 ? 'Sin saldo' : (it.pagada ? 'Pagado' : 'Pendiente');
+                const accion = it.diferencia <= 0 ? '' : (it.pagada
+                    ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoPagoCoberturaItem('${it.clave}', false)">Deshacer</button>`
+                    : `<button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoPagoCoberturaItem('${it.clave}', true)">Marcar pagado</button>`);
+                tr.innerHTML = `
+                    <td><input type="text" class="spreadsheet-inp" readonly tabindex="-1" style="font-family:'Geist Mono'; font-size:12px; cursor:default;" value="${esc(fechaEvento)}"></td>
+                    <td style="padding-left:10px;"><strong>Cobertura audiovisual · ${it.nombre}</strong> <span class="pill-status pill-info" style="font-size:10.5px;" title="Se calcula desde la solapa Servicios / Cobertura">Automático</span>
+                        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">Costo <span class="sec-mono">${money(it.costo)}</span> · Cubierto por bandas
+                            <input type="text" class="spreadsheet-inp" style="width:104px; font-family:'Geist Mono'; font-size:12px; text-align:right;" value="${money(it.aporte)}" onfocus="this.value=String(Math.round(parseFloat(this.value.replace(/[^0-9]/g,'')||0)));this.select();" onchange="actualizarAporteCoberturaItem('${it.clave}', this.value)" title="Cuánto de lo aportado por las bandas cubre este ítem">
+                        </div>
+                        ${it.aporte > it.costo ? `<div style="font-size:11.5px; color:var(--text-muted);">El aporte supera el costo en ${money(it.aporte - it.costo)}</div>` : ''}
+                    </td>
+                    <td>${esc(nomProductora)}</td>
+                    <td class="r sec-mono"><div style="font-size:10.5px; color:var(--text-muted); font-family:inherit;">A pagar</div>${money(it.diferencia)}</td>
+                    <td>
+                        <span class="srv-det-pago">
+                            <select class="installment-select" onchange="actualizarPagoCoberturaItem('${it.clave}', 'metodo', this.value)">${['Transferencia', 'Efectivo'].map(m => `<option value="${m}" ${it.metodo === m ? 'selected' : ''}>${m}</option>`).join('')}</select>
+                            <select class="installment-select" onchange="actualizarPagoCoberturaItem('${it.clave}', 'responsable', this.value)">${listaResp.map(n => `<option value="${esc(n)}" ${n === it.responsable ? 'selected' : ''}>${etq}: ${esc(n)}</option>`).join('')}</select>
+                        </span>
+                        ${contactoHtml}
+                    </td>
+                    <td><span class="pill-status ${it.pagada ? 'pill-success' : 'pill-warning'}">${estado}</span></td>
+                    <td class="r" style="white-space:nowrap;">${accion}<span style="display:inline-block; width:28px;"></span></td>`;
+            });
+            const sinAsignar = Math.max(0, res.totalBandas - res.aporteAsignado);
+            trR.innerHTML = `<td></td><td colspan="6" style="font-size:11.5px; color:var(--text-muted);">Aportado por bandas <span class="sec-mono">${money(res.totalBandas)}</span> · Asignado a los ítems <span class="sec-mono">${money(res.aporteAsignado)}</span>`
+                + (sinAsignar > 0 ? ` · <strong style="color:var(--warn);">Sin asignar ${money(sinAsignar)}</strong>` : '')
+                + (res.aporteAsignado > res.totalBandas ? ` · <strong style="color:var(--warn);">Asignaste ${money(res.aporteAsignado - res.totalBandas)} más de lo aportado</strong>` : '')
+                + (res.aporteManual ? ' · <a href="#" onclick="restablecerAporteCobertura(); return false;">Repartir según el plan de cada banda</a>' : ' · Repartido según el plan de cada banda')
+                + '</td>';
         }
-        window.renderizarContactoPagoCobertura = renderizarContactoPagoCobertura;
+        window.renderizarFilasCoberturaGastos = renderizarFilasCoberturaGastos;
 
         // Renderizar los Gastos Operativos + la fila de Cobertura Audiovisual dentro de Gastos del Evento en Finanzas
         function renderizarGastosFestival(reconstruirTablaOperativos = true) {
@@ -17154,42 +17316,7 @@
             const fechaEvento = (fInfo && fInfo.fecha && fInfo.fecha !== 'A definir') ? fInfo.fecha.split(' ')[0] : '24/09/2026';
             const nomProductora = (fInfo && fInfo.productora) ? fInfo.productora : (document.getElementById('det-ev-productora')?.textContent?.trim() || nombreProductoraDefecto());
 
-            const fEl = document.getElementById('gasto-prod-fecha');
-            if (fEl) fEl.textContent = fechaEvento;
-
-            const elProvCob = document.getElementById('txt-proveedor-cobertura-escuela');
-            if (elProvCob) elProvCob.textContent = nomProductora;
-
-            const elTitCob = document.getElementById('txt-titulo-cobertura-escuela-gastos');
-            if (elTitCob) elTitCob.textContent = 'Cobertura audiovisual de la escuela';
-
-            const elReal = document.getElementById('gasto-prod-real-txt');
-            const elPart = document.getElementById('gasto-prod-participantes-txt');
-            const elDif = document.getElementById('gasto-prod-diferencia-txt');
-            const elNeto = document.getElementById('gasto-prod-monto-neto-txt');
-
-            if (elReal) elReal.textContent = `$ ${presupuestoProductora.toLocaleString('es-AR')}`;
-            if (elPart) elPart.textContent = `$ ${totalBandas.toLocaleString('es-AR')}`;
-            if (elDif) elDif.textContent = `$ ${saldoEscuela.toLocaleString('es-AR')}`;
-            if (elNeto) elNeto.textContent = `$ ${saldoEscuela.toLocaleString('es-AR')}`;
-
-            const selMet = document.getElementById('sel-gasto-prod-metodo');
-            if (selMet) selMet.value = datos.coberturaEscuelaMetodo || 'Transferencia';
-            const selResp = document.getElementById('sel-gasto-prod-responsable');
-            if (selResp) llenarSelectResponsableEstatico('sel-gasto-prod-responsable', datos.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO);
-            renderizarContactoPagoCobertura();
-
-            const btnCobPagado = document.getElementById('btn-gasto-prod-pagado');
-            const pillCobEstado = document.getElementById('pill-gasto-prod-estado');
-            const cobPagada = Boolean(datos.coberturaEscuelaPagada);
-            if (btnCobPagado) {
-                btnCobPagado.className = cobPagada ? 'btn-app btn-secondary' : 'btn-app btn-primary';
-                btnCobPagado.textContent = cobPagada ? 'Deshacer' : 'Marcar pagado';
-            }
-            if (pillCobEstado) {
-                pillCobEstado.className = 'pill-status ' + (cobPagada ? 'pill-success' : 'pill-warning');
-                pillCobEstado.textContent = cobPagada ? 'Pagado' : 'Pendiente';
-            }
+            renderizarFilasCoberturaGastos(res, fechaEvento, nomProductora);
 
             // Total real de gastos operativos cargados por el usuario (sin ficticios)
             let totalOperativos = 0;
@@ -17215,7 +17342,7 @@
                 const elEst = document.getElementById('gasto-serv-adelantado-estado');
                 if (elEst) { elEst.textContent = recup > 0 ? 'A recuperar' : 'Absorbido'; elEst.className = 'pill-status ' + (recup > 0 ? 'pill-warning' : 'pill-neutral'); }
             }
-            const totalPendientePagarEscuela = totalOperativosPendientes + (datos.coberturaEscuelaPagada ? 0 : saldoEscuela);
+            const totalPendientePagarEscuela = totalOperativosPendientes + res.pendienteCobertura;
 
             // Pastillas de la cabecera y tarjetas de cierre (Egresos / Estado de pago)
             const chipGTotal = document.getElementById('chip-gastos-total');
@@ -17226,7 +17353,7 @@
             const contCierreGastos = document.getElementById('cierre-gastos');
             if (contCierreGastos) {
                 // Pagado = gastos operativos pagados + cobertura pagada + servicios que la escuela ya le adelantó al proveedor
-                const pagadoTotal = (totalOperativos - totalOperativosPendientes) + (cobPagada ? saldoEscuela : 0) + serv.adelantado;
+                const pagadoTotal = (totalOperativos - totalOperativosPendientes) + (saldoEscuela - res.pendienteCobertura) + serv.adelantado;
                 const pctPagado = totalEgresos > 0 ? Math.round((pagadoTotal / totalEgresos) * 100) : 100;
                 const filaG = (rotulo, valor, extra) => '<div class="fin-r' + (extra || '') + '"><em>' + rotulo + '</em><strong>' + valor + '</strong></div>';
                 contCierreGastos.innerHTML = '<div class="fin-g fin-g-egr"><h4>Egresos</h4>'
@@ -17235,10 +17362,11 @@
                     + filaG('Servicios adelantados', htmlMonto(serv.adelantado))
                     + filaG('Total egresos', htmlMonto(totalEgresos), ' fin-tot') + '</div>'
                     + '<div class="fin-g fin-g-res"><h4>Estado de pago</h4>'
+                    + '<div class="fin-barra-pago" title="' + pctPagado + '% pagado"><div class="fin-barra-pagado" style="width:' + pctPagado + '%"></div></div>'
+                    + '<div class="fin-barra-leyenda"><span><i class="fin-pto-ok"></i>Pagado ' + pctPagado + '%</span><span><i class="fin-pto-pend"></i>Pendiente ' + (100 - pctPagado) + '%</span></div>'
                     + filaG('Pagado', htmlMonto(pagadoTotal))
                     + filaG('Pendiente de pago', htmlMonto(totalPendientePagarEscuela))
-                    + filaG('A recuperar de alumnos', htmlMonto(Math.max(0, serv.adelantado - serv.absorbido)))
-                    + filaG('Pagado', pctPagado + '%', ' fin-tot') + '</div>';
+                    + filaG('A recuperar de alumnos', htmlMonto(Math.max(0, serv.adelantado - serv.absorbido))) + '</div>';
             }
 
             // Sincronizar tarjetas de Resumen Financiero
@@ -17973,6 +18101,10 @@
                     coberturaEscuelaPagada: Boolean(datos.coberturaEscuelaPagada),
                     coberturaEscuelaMetodo: datos.coberturaEscuelaMetodo || 'Transferencia',
                     coberturaEscuelaResponsable: datos.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO,
+                    coberturaEscuelaContactoId: datos.coberturaEscuelaContactoId || '',
+                    coberturaItems: datos.coberturaItems || null,
+                    coberturaAportes: datos.coberturaAportes || null,
+                    sonidoOmitido: Boolean(datos.sonidoOmitido),
                     cantTaquilla,
                     cantVentasEspeciales,
                     totalGeneralEntradas,
@@ -19796,8 +19928,8 @@
                                 tipo: 'escuela_gasto',
                                 tipoCat: 'escuela',
                                 tipoBadge: '<span class="pill-status pill-danger" style="font-size:10.5px;">🔴 Gasto Escuela</span>',
-                                concepto: `📦 ${g.nombre || 'Gasto Operativo'}`,
-                                categoria: g.categoria || 'Gasto Operativo',
+                                concepto: `📦 ${g.concepto || g.nombre || 'Gasto operativo sin concepto'}`,
+                                categoria: 'Destinatario: ' + (destinoGasto(g).nombre || 'sin elegir'),
                                 monto: Number(g.monto),
                                 esPasivoEscuela: true,
                                 medio: g.metodo || 'Transferencia',
@@ -19812,8 +19944,8 @@
                     // 2. Cobertura Escuela (Proveedor asignado) (No pagada) - Solo eventos En Curso y Finalizados
                     const resProd = calcularResumenPresupuestoProductora(festId);
                     const saldoEscuela = resProd.saldoEscuela;
-                    const cobPagada = Boolean(datosIng.coberturaEscuelaPagada);
-                    if (saldoEscuela > 0 && !cobPagada) {
+                    const pendienteCob = resProd.pendienteCobertura;
+                    if (pendienteCob > 0) {
                         deudas.push({
                             id: `cob-esc-${festId}`,
                             festId,
@@ -19822,10 +19954,10 @@
                             tipo: 'escuela_cobertura',
                             tipoCat: 'escuela',
                             tipoBadge: '<span class="pill-status" style="font-size:11px; font-weight:500; background:var(--bad-bg); color:var(--bad); border:1px solid color-mix(in srgb, var(--bad) 25%, white); border-radius:12px; padding:2px 8px;">● Cobertura Escuela</span>',
-                            concepto: '🎬 Saldo Cobertura Escuela',
-                            categoria: 'Cobertura Audiovisual',
+                            concepto: '🎬 Cobertura audiovisual · ' + resProd.itemsCobertura.filter(i => !i.pagada && i.diferencia > 0).map(i => i.nombre).join(' y '),
+                            categoria: 'Destinatario: ' + (productoraDeFestival(festId) || 'productora'),
                             banda: 'Mandala House',
-                            monto: saldoEscuela,
+                            monto: pendienteCob,
                             esPasivoEscuela: true,
                             medio: datosIng.coberturaEscuelaMetodo || 'Transferencia',
                             responsable: datosIng.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO,
@@ -20294,9 +20426,11 @@
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:11.5px;">
                             ${esTraspasoItem ? `<span style="color:var(--ink-2);">${esc(item.obs || '')}</span>` : `
                             <label style="display:inline-flex; align-items:center; gap:4px;">Medio ${selMedio(item)}</label>
-                            <label style="display:inline-flex; align-items:center; gap:4px;">Responsable
-                                <select class="installment-select" style="font-size:11.5px; padding:3px 6px; border-radius:6px;" onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'responsable', this.value)">${opcionesResponsablesHTML(item.responsable)}</select></label>
-                            <input type="text" class="spreadsheet-inp text-left" style="flex:1; min-width:200px; font-size:11.5px; padding:3px 8px; border-radius:6px;" value="${esc(item.obs || '')}" placeholder="Observaciones..." onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'obs', this.value)">`}
+                            <label style="display:inline-flex; align-items:center; gap:4px;">${item.esPasivoEscuela ? 'Quién paga' : 'Responsable'}
+                                <select class="installment-select" style="font-size:11.5px; padding:3px 6px; border-radius:6px;" onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'responsable', this.value)">${item.esPasivoEscuela
+                                    ? (SOCIOS_GASTOS.includes(item.responsable) ? SOCIOS_GASTOS : SOCIOS_GASTOS.concat(item.responsable ? [item.responsable] : [])).map(n => `<option value="${esc(n)}" ${n === item.responsable ? 'selected' : ''}>${esc(n)}</option>`).join('')
+                                    : opcionesResponsablesHTML(item.responsable)}</select></label>
+                            ${item.tipo === 'escuela_cobertura' ? '' : `<input type="text" class="spreadsheet-inp text-left" style="flex:1; min-width:200px; font-size:11.5px; padding:3px 8px; border-radius:6px;" value="${esc(item.obs || '')}" placeholder="Observaciones..." onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'obs', this.value)">`}`}
                         </div>
                     </td>`;
                 tbody.appendChild(det);
@@ -20562,6 +20696,7 @@
             } else if (tipo === 'escuela_cobertura') {
                 const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) ? ingresosFestivalesDB[festId] : { gastosOperativos: [] };
                 datos.coberturaEscuelaPagada = true;
+                if (typeof asegurarItemsCobertura === 'function') { const its = asegurarItemsCobertura(datos); its.fotos.pagada = true; its.video.pagada = true; }
                 await persistirCambiosFestivalDirecto(festId, { finanzas: datos });
             } else if (tipo === 'alumno_entrada') {
                 const cache = obtenerListaParticipantesContratoFestival(festId);
@@ -20660,6 +20795,7 @@
                 } else if (tipo === 'escuela_cobertura') {
                     const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) ? ingresosFestivalesDB[festId] : { gastosOperativos: [] };
                     datos.coberturaEscuelaPagada = true;
+                if (typeof asegurarItemsCobertura === 'function') { const its = asegurarItemsCobertura(datos); its.fotos.pagada = true; its.video.pagada = true; }
                     patchesPorFestival[festId].finanzas = datos;
                 } else if (tipo === 'alumno_entrada') {
                     const cache = obtenerListaParticipantesContratoFestival(festId);
@@ -20745,6 +20881,7 @@
                 if (datos) {
                     if (campo === 'medio') datos.coberturaEscuelaMetodo = valor;
                     else if (campo === 'responsable') datos.coberturaEscuelaResponsable = valor;
+                    if (typeof asegurarItemsCobertura === 'function' && (campo === 'medio' || campo === 'responsable')) { const its = asegurarItemsCobertura(datos); its.fotos[campo === 'medio' ? 'metodo' : 'responsable'] = valor; its.video[campo === 'medio' ? 'metodo' : 'responsable'] = valor; }
                     await persistirCambiosFestivalDirecto(festId, { finanzas: datos });
                 }
             } else if (tipo === 'alumno_entrada') {
@@ -21418,6 +21555,14 @@
             card.classList.toggle('collapsed');
         }
         window.toggleBloqueNumerado = toggleBloqueNumerado;
+
+        // Gastos del evento: colapsa solo la tabla; las pastillas, Egresos y Estado de pago siguen a la vista
+        function toggleBloqueGastosEvento(ev) {
+            if (ev && ev.target && ev.target.closest('button, input, select, a')) return;
+            const card = document.getElementById('card-gastos-evento');
+            if (card) card.classList.toggle('gastos-colapsado');
+        }
+        window.toggleBloqueGastosEvento = toggleBloqueGastosEvento;
 
         function toggleTodosBloquesNumerados(containerId, expandir) {
             const container = document.getElementById(containerId);

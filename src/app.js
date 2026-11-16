@@ -263,15 +263,56 @@ function detenerListenersTiempoReal() {
     listenersActivos = [];
 }
 
+/**
+ * Carga la configuración general (productoras, tarifas, precios, plantilla del checklist de producción y categorías del checklist
+ * de equipamiento). Se piden en paralelo y se aplican antes que el resto de los datos, que tardan más en llegar.
+ */
+async function cargarConfiguracionInicial() {
+    const seguro = (promesa, que) => promesa.catch(e => { console.warn(`[Mandala Festivales] Error al cargar ${que}:`, e); return undefined; });
+    const [tarifasProd, preciosEnt, listadoProductoras, plantillaChk, resCat] = await Promise.all([
+        seguro(obtenerTarifasProductoraFirestore(), 'las tarifas de la productora'),
+        seguro(obtenerPreciosEntradasFirestore(), 'los precios de entradas'),
+        seguro(obtenerProductorasFirestore(), 'las productoras'),
+        seguro(obtenerChecklistProduccionPlantillaFirestore(), 'la plantilla del checklist de producción'),
+        seguro(obtenerCategoriasEquipamientoFirestore(), 'las categorías del checklist de equipamiento')
+    ]);
+
+    try {
+        if (typeof window.poblarConfiguracionDesdeFirestore === 'function') {
+            window.poblarConfiguracionDesdeFirestore(tarifasProd, preciosEnt, listadoProductoras);
+        }
+    } catch (e) {
+        console.warn("[Mandala Festivales] Error al aplicar la configuración general:", e);
+    }
+    // Si no llegó nada de productoras, la pantalla avisa en vez de quedar en blanco
+    if (typeof window.marcarProductorasNoCargadas === 'function') window.marcarProductorasNoCargadas();
+
+    try {
+        if (typeof window.poblarChecklistProduccionPlantilla === 'function') window.poblarChecklistProduccionPlantilla(plantillaChk);
+    } catch (e) {
+        console.warn("[Mandala Festivales] Error al aplicar la plantilla del checklist de producción:", e);
+    }
+    try {
+        if (typeof window.poblarCategoriasEquipamiento === 'function') window.poblarCategoriasEquipamiento(resCat);
+    } catch (e) {
+        console.warn("[Mandala Festivales] Error al aplicar las categorías del checklist de equipamiento:", e);
+    }
+}
+
 async function sincronizarDatosTrasLogin() {
     detenerListenersTiempoReal();
     try {
+        // Configuración primero: es chica y la usan todas las pantallas (productoras, tarifas, precios, plantilla y categorías)
+        await cargarConfiguracionInicial();
+
         // Sincronización continua en tiempo real de Festivales desde Firestore (Multi-Ventana / Multi-Operador)
         listenersActivos.push(escucharFestivalesEnTiempoReal((festivalesActualizados) => {
             console.log(`[Mandala Festivales] Sincronizados ${festivalesActualizados.length} festivales en tiempo real desde Firestore.`);
             if (typeof window.poblarFestivalesDesdeFirestore === 'function') {
                 window.poblarFestivalesDesdeFirestore(festivalesActualizados);
             }
+            // La lista de Productoras cuenta en cuántos festivales se usa cada una
+            if (typeof window.renderizarListaProductoras === 'function') window.renderizarListaProductoras();
             // Una vez por sesión se asegura la copia de lectura de los eventos en curso para los sonidistas
             if (typeof window.espejarEnCursoParaSonidistas === 'function') window.espejarEnCursoParaSonidistas(festivalesActualizados);
         }));
@@ -324,37 +365,6 @@ async function sincronizarDatosTrasLogin() {
             window.poblarSesionistasDesdeFirestore(sesionistas);
         }
 
-        // Sincronizar Tarifas de Productora y Precios por Defecto desde Firestore
-        try {
-            const tarifasProd = await obtenerTarifasProductoraFirestore();
-            const preciosEnt = await obtenerPreciosEntradasFirestore();
-            const listadoProductoras = await obtenerProductorasFirestore();
-            if (typeof window.poblarConfiguracionDesdeFirestore === 'function') {
-                window.poblarConfiguracionDesdeFirestore(tarifasProd, preciosEnt, listadoProductoras);
-            }
-        } catch (e) {
-            console.warn("[Mandala Festivales] Error al cargar configuración general:", e);
-        }
-
-        // Plantilla del checklist de producción (se copia a cada festival nuevo)
-        try {
-            const plantillaChk = await obtenerChecklistProduccionPlantillaFirestore();
-            if (typeof window.poblarChecklistProduccionPlantilla === 'function') {
-                window.poblarChecklistProduccionPlantilla(plantillaChk);
-            }
-        } catch (e) {
-            console.warn("[Mandala Festivales] Error al cargar la plantilla del checklist de producción:", e);
-        }
-
-        // Categorías del checklist de equipamiento
-        try {
-            const resCat = await obtenerCategoriasEquipamientoFirestore();
-            if (typeof window.poblarCategoriasEquipamiento === 'function') {
-                window.poblarCategoriasEquipamiento(resCat);
-            }
-        } catch (e) {
-            console.warn("[Mandala Festivales] Error al cargar las categorías del checklist de equipamiento:", e);
-        }
     } catch (err) {
         console.warn("[Mandala Festivales] Error durante sincronización tras login:", err);
         if (typeof window.ocultarIndicadorCarga === 'function') {

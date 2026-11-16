@@ -2,7 +2,7 @@
 // src/config/constants.js — Constantes y Configuración de Firebase Mandala
 // =======================================================================
 
-export const APP_VERSION = "v2.11";
+export const APP_VERSION = "v2.13";
 
 // Clave inicial de las cuentas nuevas (la misma que usa Mandala Admisión). La persona debe cambiarla en su primer ingreso.
 export const CLAVE_INICIAL_DEFECTO = "mandala333";

@@ -131,7 +131,7 @@
     function cuerpoGastos(fId) {
         var info = infoDe(fId);
         var fin = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[fId]) ? ingresosFestivalesDB[fId] : {};
-        var gastos = (Array.isArray(fin.gastosOperativos) ? fin.gastosOperativos : []).filter(function (g) { return g; });
+        var gastos = (Array.isArray(fin.gastosOperativos) ? fin.gastosOperativos : []).filter(function (g) { return g && !(g.esSonido && !(parseFloat(g.monto || 0) > 0)); }); // Sonido en $ 0 = servicio no usado
         var totOp = 0, pendOp = 0;
         gastos.forEach(function (g) {
             var m = Math.max(0, parseFloat(g.monto || 0) || 0);
@@ -146,8 +146,11 @@
 
         var filasGastos = gastos.length ? gastos.map(function (g) {
             var m = Math.max(0, parseFloat(g.monto || 0) || 0);
-            var pago = [g.metodo || 'Transferencia', g.responsable || ''].filter(Boolean).join(' · ');
-            return '<tr><td>' + esc(g.fecha || '-') + '</td><td>' + esc(g.concepto || '-') + '</td><td>' + esc(g.proveedor || '-') + '</td><td>' + esc(pago) +
+            var esProv = !!(g.proveedorId || (typeof buscarProductora === 'function' && buscarProductora(g.proveedor)));
+            var prov = esProv ? (g.proveedor || '-') : ('Gasto de la escuela' + (g.proveedor ? ' (' + g.proveedor + ')' : ''));
+            var quien = g.responsable ? ((esProv ? (g.pagado ? 'Pagó: ' : 'Paga: ') : (g.pagado ? 'Pagó: ' : 'Paga: ')) + g.responsable) : '';
+            var pago = [g.metodo || 'Transferencia', quien].filter(Boolean).join(' · ');
+            return '<tr><td>' + esc(g.fecha || '-') + '</td><td>' + esc(g.concepto || '-') + '</td><td>' + esc(prov) + '</td><td>' + esc(pago) +
                 '</td><td class="' + (g.pagado ? 'est-ok' : 'est-pend') + '">' + (g.pagado ? 'Pagado' : 'Pendiente') + '</td><td class="r">' + ars(m) + '</td></tr>';
         }).join('') : '<tr><td colspan="6" style="color:#8a9097">No hay gastos operativos cargados en este evento</td></tr>';
 
@@ -161,6 +164,8 @@
         filasCob += '<tr><td><b>Total a pagar a la productora' + (productora ? ' (' + esc(productora) + ')' : '') + '</b></td><td class="r"><b>' + ars(cob.presupuestoProductora) + '</b></td></tr>';
         filasCob += '<tr class="resta"><td>Aporte de las bandas (cuando paguen toda su cobertura)</td><td class="r">- ' + ars(cob.totalBandas) + '</td></tr>';
         filasCob += '<tr class="total"><td>A cargo de Mandala</td><td class="r">' + ars(cob.saldoEscuela) + '</td></tr>';
+        var contactoPago = (typeof obtenerContactoPagoCobertura === 'function') ? obtenerContactoPagoCobertura(fId) : null;
+        if (contactoPago) filasCob += '<tr><td colspan="2" style="color:#4b5159">Pagar a: <b>' + esc(contactoPago.nombre) + '</b> · Alias: <b>' + esc(contactoPago.alias) + '</b></td></tr>';
         var notaCob = '<p class="aviso">El aporte de las bandas se cuenta completo, hayan pagado ya o no su cobertura.' +
             (cob.excedenteCobertura > 0 ? ' Las bandas aportan ' + ars(cob.excedenteCobertura) + ' más que el costo: ese excedente queda para la escuela.' : '') + '</p>';
 

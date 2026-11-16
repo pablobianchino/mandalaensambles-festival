@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.11">
-    <script src="src/ui/iconos.js?v=v2.11"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.13">
+    <script src="src/ui/iconos.js?v=v2.13"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.11" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.13" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1260,7 +1260,7 @@
                                 <button class="btn-app btn-primary" onclick="abrirModalProductora(null)">+ Productora</button>
                             </div>
                         </div>
-                        <div id="lista-productoras"></div>
+                        <div id="lista-productoras"><p style="color:var(--text-muted); padding:12px;">Cargando productoras…</p></div>
                     </div>
 
                     <!-- PESTAÑA: PLANTILLA DEL CHECKLIST DE PRODUCCIÓN -->
@@ -2095,6 +2095,10 @@
                                                             <option value="Ariel">Ariel</option>
                                                         </select>
                                                     </span>
+                                                    <div class="srv-det-pago" style="margin-top:6px;">
+                                                        <select id="sel-gasto-prod-contacto" class="installment-select" onchange="actualizarPagoCoberturaEscuela('contacto', this.value)" title="A quién se le paga la cobertura (datos de pago de la productora, en Productoras)"></select>
+                                                    </div>
+                                                    <div class="gasto-contacto-det" id="gasto-prod-contacto-det"></div>
                                                 </td>
                                                 <td><span class="pill-status pill-warning" id="pill-gasto-prod-estado">Pendiente</span></td>
                                                 <td class="r" id="td-accion-cobertura-escuela">
@@ -2302,7 +2306,7 @@
                         </div>
 
                         <!-- 3 INDICADORES -->
-                        <div class="deudas-kpi-grid no-print" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+                        <div class="deudas-kpi-grid no-print" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; margin-bottom:16px;">
                             <div class="deuda-kpi">
                                 <span class="deuda-kpi-tit">La escuela debe pagar</span>
                                 <div class="deuda-kpi-num" id="kpi-deudas-escuela-txt">$ 0</div>
@@ -2312,11 +2316,6 @@
                                 <span class="deuda-kpi-tit">Le deben a la escuela</span>
                                 <div class="deuda-kpi-num" id="kpi-deudas-cobros-txt">$ 0</div>
                                 <span class="deuda-kpi-sub" id="kpi-deudas-cobros-sub">Sin cobros pendientes</span>
-                            </div>
-                            <div class="deuda-kpi">
-                                <span class="deuda-kpi-tit">Saldo si se cobra todo</span>
-                                <div class="deuda-kpi-num" id="kpi-deudas-balance-txt">$ 0</div>
-                                <span class="deuda-kpi-sub" id="kpi-deudas-balance-sub">Cobros menos pagos</span>
                             </div>
                         </div>
 
@@ -2370,14 +2369,6 @@
                                 <tbody id="tbody-deudas-filas">
                                     <!-- Filas generadas dinámicamente agrupadas por evento -->
                                 </tbody>
-                                <tfoot>
-                                    <tr style="background:var(--surface-2); font-weight:800; border-top:2px solid var(--line-2);">
-                                        <td class="col-chk-deudas"></td>
-                                        <td style="text-align:right; padding:10px 14px; font-size:12.5px;">SALDO DE LO VISIBLE:</td>
-                                        <td style="text-align:right; font-family:'Geist Mono'; font-size:13.5px;" id="td-tot-visibles-deudas">$ 0</td>
-                                        <td colspan="2" id="td-tot-visibles-detalle"></td>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -2570,6 +2561,10 @@
                     <div class="form-group"><label>Fotos + Reel Combo ($)</label><input type="number" id="pf-aluAmbas" class="form-control"></div>
                     <div class="form-group"><label>Costo Edición por Reel ($)</label><input type="number" id="pf-aluEdicionReel" class="form-control"></div>
                 </div>
+                <h4 style="margin:12px 0 4px 0; font-size:13.5px; font-weight:800; color:var(--ink);">💸 4. Datos de pago</h4>
+                <p style="font-size:12px; color:var(--text-muted); margin:0 0 8px;">Personas a las que se les paga. Podés cargar más de una; al pagar la cobertura de un evento se elige a quién.</p>
+                <div id="pf-contactos-lista"></div>
+                <button type="button" class="btn-app btn-secondary btn-sm" onclick="agregarContactoPagoModal()">＋ Agregar contacto de pago</button>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-app btn-secondary" onclick="cerrarModales()">Cancelar</button>
@@ -4046,6 +4041,55 @@
         function productoraPorDefecto() {
             return productorasDB.find(p => p.porDefecto) || productorasDB[0] || null;
         }
+
+        // ---- Datos de pago de la productora: varios contactos { id, nombre, alias } ----
+        function normalizarContactosPago(lista) {
+            return (Array.isArray(lista) ? lista : [])
+                .filter(c => c && typeof c === 'object' && (String(c.nombre || '').trim() || String(c.alias || '').trim()))
+                .map(c => ({ id: c.id || ('cp-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)), nombre: String(c.nombre || '').trim(), alias: String(c.alias || '').trim() }));
+        }
+        // Contacto con el que se paga la cobertura de un evento: el elegido en su fila de Gastos; si no eligió, el primero de la productora
+        function obtenerContactoPagoCobertura(festId) {
+            const prod = buscarProductora(productoraDeFestival(festId));
+            const contactos = prod ? normalizarContactosPago(prod.contactosPago) : [];
+            if (!contactos.length) return null;
+            const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) || {};
+            return contactos.find(c => c.id === datos.coberturaEscuelaContactoId) || contactos[0];
+        }
+        window.obtenerContactoPagoCobertura = obtenerContactoPagoCobertura;
+        function copiarAliasPago(alias) {
+            const txt = String(alias || '');
+            if (!txt) return;
+            const ok = () => mostrarToast('Alias copiado: ' + txt, 'success');
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok).catch(() => mostrarToast('No se pudo copiar. Alias: ' + txt, 'warning'));
+            else mostrarToast('Alias: ' + txt, 'info');
+        }
+        window.copiarAliasPago = copiarAliasPago;
+
+        // Contactos del modal de productora (copia de trabajo hasta que se guarda)
+        let contactosPagoEdicion = [];
+        function renderizarContactosPagoModal() {
+            const cont = document.getElementById('pf-contactos-lista');
+            if (!cont) return;
+            cont.innerHTML = contactosPagoEdicion.length
+                ? contactosPagoEdicion.map((c, i) => `<div class="pf-contacto-fila">
+                        <input type="text" class="form-control" placeholder="Nombre (ej.: Dolores Reinwich)" value="${esc(c.nombre)}" oninput="contactosPagoEdicion[${i}].nombre = this.value">
+                        <input type="text" class="form-control" placeholder="Alias (ej.: ahora.jalea.chino)" value="${esc(c.alias)}" oninput="contactosPagoEdicion[${i}].alias = this.value">
+                        <button type="button" class="btn-row-del" onclick="quitarContactoPagoModal(${i})" title="Quitar contacto" aria-label="Quitar contacto"></button>
+                    </div>`).join('')
+                : '<p style="font-size:12.5px; color:var(--text-muted); margin:0 0 8px;">Todavía no hay contactos de pago.</p>';
+        }
+        function agregarContactoPagoModal() {
+            contactosPagoEdicion.push({ id: 'cp-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), nombre: '', alias: '' });
+            renderizarContactosPagoModal();
+            setTimeout(() => { const f = document.querySelectorAll('#pf-contactos-lista .pf-contacto-fila'); const u = f[f.length - 1]; if (u) u.querySelector('input').focus(); }, 30);
+        }
+        function quitarContactoPagoModal(i) {
+            contactosPagoEdicion.splice(i, 1);
+            renderizarContactosPagoModal();
+        }
+        window.agregarContactoPagoModal = agregarContactoPagoModal;
+        window.quitarContactoPagoModal = quitarContactoPagoModal;
         function nombreProductoraDefecto() {
             const p = productoraPorDefecto();
             return p ? p.nombre : PRODUCTORA_DEFECTO;
@@ -4095,8 +4139,21 @@
                 sembrar = true;
             }
             if (!items.some(p => p.porDefecto)) items[0].porDefecto = true;
-            items.forEach(p => { p.tarifas = normalizarTarifasProductora(p.tarifas); });
+            items.forEach(p => {
+                p.tarifas = normalizarTarifasProductora(p.tarifas);
+                if (!Array.isArray(p.contactosPago)) {
+                    // Primera vez con datos de pago: a Jodida Productora se le carga el contacto que antes estaba escrito en el mensaje de cobertura
+                    p.contactosPago = String(p.nombre).trim().toLowerCase() === String(PRODUCTORA_DEFECTO).trim().toLowerCase()
+                        ? [{ id: 'cp-dolores', nombre: 'Dolores Reinwich', alias: 'ahora.jalea.chino' }]
+                        : [];
+                    sembrar = true;
+                } else {
+                    p.contactosPago = normalizarContactosPago(p.contactosPago);
+                }
+            });
             productorasDB = items;
+            productorasCargadas = true;
+            productorasError = false;
             if (sembrar) guardarProductorasEnFirestore();
             llenarSelectsProductoras();
             renderizarListaProductoras();
@@ -4116,11 +4173,27 @@
             llenar('new-ev-productora');
             llenar('edit-ev-productora', valorEdicion);
         }
+        // Mientras no llegan de la base se muestra "Cargando…"; si la carga terminó sin datos, se avisa en vez de dejar la pantalla en blanco
+        let productorasCargadas = false;
+        let productorasError = false;
+        function marcarProductorasNoCargadas() {
+            if (productorasCargadas) return;
+            productorasError = true;
+            renderizarListaProductoras();
+        }
+        window.marcarProductorasNoCargadas = marcarProductorasNoCargadas;
+
         function renderizarListaProductoras() {
             const badgeProd = document.getElementById('badge-total-productoras');
-            if (badgeProd) badgeProd.textContent = productorasDB.length;
+            if (badgeProd && productorasCargadas) badgeProd.textContent = productorasDB.length;
             const cont = document.getElementById('lista-productoras');
             if (!cont) return;
+            if (!productorasCargadas) {
+                cont.innerHTML = '<p style="color:var(--text-muted); padding:12px;">' + (productorasError
+                    ? 'No se pudieron cargar las productoras. Recargá la página para reintentar; no se perdió nada.'
+                    : 'Cargando productoras…') + '</p>';
+                return;
+            }
             if (!productorasDB.length) { cont.innerHTML = '<p style="color:var(--text-muted); padding:12px;">Todavía no hay productoras cargadas.</p>'; return; }
             const fmt = (n) => (typeof formatearMonedaAr === 'function' ? formatearMonedaAr(n) : '$ ' + n);
             const iniciales = (n) => (String(n || '?').replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9 ]/g, '').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?');
@@ -4128,14 +4201,18 @@
                 const t = p.tarifas;
                 const usos = contarFestivalesDeProductora(p);
                 const idJs = esc(p.id).replace(/'/g, "\\'");
+                const contactos = normalizarContactosPago(p.contactosPago);
+                const lineaPago = contactos.length
+                    ? '<span class="prod-pago-linea">Pago: ' + esc(contactos[0].nombre || 'Sin nombre') + ' · ' + esc(contactos[0].alias || 'sin alias') + (contactos.length > 1 ? ' (+' + (contactos.length - 1) + ' más)' : '') + '</span>'
+                    : '<span class="prod-pago-linea">Sin datos de pago cargados</span>';
                 return '<div class="ds-row ds-row-prod">'
                     + '<span class="ds-avatar">' + esc(iniciales(p.nombre)) + '</span>'
                     + '<div class="nm"><b>' + esc(p.nombre) + (p.porDefecto ? ' <span class="ds-chip ok" style="margin-left:6px;">Por defecto</span>' : '') + '</b>'
-                    + '<span>Usada en ' + usos + ' festival' + (usos === 1 ? '' : 'es') + '</span></div>'
+                    + '<span>Usada en ' + usos + ' festival' + (usos === 1 ? '' : 'es') + '</span>' + lineaPago + '</div>'
                     + '<div class="ds-meta"><b>Base</b>Video ' + fmt(t.baseVideo) + ' · Fotos ' + fmt(t.baseFotos) + ' · Reel ' + fmt(t.baseReel) + '</div>'
                     + '<div class="ds-meta"><b>Combos</b>Alumnos ' + fmt(t.aluAmbas) + ' · Invitados ' + fmt(t.artAmbas) + '</div>'
                     + '<div class="ds-row-acc">'
-                    + '<button class="ds-btn ds-btn-secondary sm" onclick="abrirModalProductora(\'' + idJs + '\')">Editar tarifas</button>'
+                    + '<button class="ds-btn ds-btn-secondary sm" onclick="abrirModalProductora(\'' + idJs + '\')">Editar</button>'
                     + (p.porDefecto ? '' : '<button class="ds-btn ds-btn-ghost sm" onclick="marcarProductoraPorDefecto(\'' + idJs + '\')">Usar por defecto</button>')
                     + (p.porDefecto || usos > 0 ? '' : '<button class="ds-btn ds-btn-ghost sm" style="color:var(--bad);" onclick="eliminarProductora(\'' + idJs + '\')">Eliminar</button>')
                     + '</div></div>';
@@ -4144,7 +4221,9 @@
         function abrirModalProductora(id) {
             const p = id ? productorasDB.find(x => x.id === id) : null;
             productoraEditandoId = p ? p.id : null;
-            document.getElementById('modal-productora-titulo').textContent = p ? '🎬 Editar tarifas: ' + p.nombre : '🎬 Nueva Productora';
+            document.getElementById('modal-productora-titulo').textContent = p ? '🎬 Editar productora: ' + p.nombre : '🎬 Nueva Productora';
+            contactosPagoEdicion = p ? normalizarContactosPago(p.contactosPago).map(c => ({ ...c })) : [];
+            renderizarContactosPagoModal();
             const inpNom = document.getElementById('pf-nombre');
             inpNom.value = p ? p.nombre : '';
             inpNom.disabled = false;
@@ -4162,10 +4241,18 @@
                 if (!Number.isFinite(n) || n < 0) { mostrarToast('Todas las tarifas deben ser números iguales o mayores a 0.', 'warning'); return; }
                 tarifas[k] = n;
             }
+            // Datos de pago: cada contacto lleva nombre y alias (las filas vacías se descartan)
+            const conTexto = contactosPagoEdicion.filter(c => String(c.nombre || '').trim() || String(c.alias || '').trim());
+            if (conTexto.some(c => !String(c.nombre || '').trim() || !String(c.alias || '').trim())) {
+                mostrarToast('Cada contacto de pago necesita nombre y alias.', 'warning');
+                return;
+            }
+            const contactosPago = normalizarContactosPago(conTexto);
             if (productoraEditandoId) {
                 const p = productorasDB.find(x => x.id === productoraEditandoId);
                 if (p) {
                     p.tarifas = tarifas;
+                    p.contactosPago = contactosPago;
                     if (nombre !== p.nombre) {
                         const otra = buscarProductora(nombre);
                         if (otra && otra.id !== p.id) { mostrarToast('Ya existe una productora con ese nombre.', 'warning'); return; }
@@ -4183,7 +4270,7 @@
                 }
             } else {
                 if (buscarProductora(nombre)) { mostrarToast('Ya existe una productora con ese nombre.', 'warning'); return; }
-                productorasDB.push({ id: 'prod-' + Date.now(), nombre, tarifas, porDefecto: productorasDB.length === 0 });
+                productorasDB.push({ id: 'prod-' + Date.now(), nombre, tarifas, contactosPago, porDefecto: productorasDB.length === 0 });
             }
             const ok = await guardarProductorasEnFirestore();
             if (!ok) { mostrarToast('No se pudo guardar en la base de datos. Reintentá.', 'error'); return; }
@@ -6060,7 +6147,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.11";
+        const APP_VERSION = "v2.13";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6296,8 +6383,11 @@
 
         function navegarPanel(panelId, registrar = true) {
             if (panelId === 'productoras') {
+                // Productoras comparte pantalla con Configuración General, pero se ve sola: sin las otras pestañas
                 navegarPanel('configuracion', registrar);
+                modoPanelConfiguracion('productoras');
                 cambiarTabConfiguracion('productora');
+                vistaActual = { tipo: 'panel', id: 'productoras' };
                 document.querySelectorAll('#sidebar .nav-item').forEach(it => it.classList.remove('active'));
                 const navProd = document.querySelector('#sidebar .nav-item[data-view="productoras"]');
                 if (navProd) navProd.classList.add('active');
@@ -6335,6 +6425,12 @@
             document.getElementById('topbar-titulo').textContent = titulos[panelId] || 'Eventos';
             actualizarBotonVolverTopbar();
 
+            if (panelId === 'configuracion') {
+                // Configuración General no muestra Productoras (tiene su propio lugar en el menú)
+                modoPanelConfiguracion('config');
+                const tabVisible = Array.from(document.querySelectorAll('.tab-cfg-content')).find(c => c.style.display === 'block' || (c.style.display === '' && c.id === 'tab-cfg-entradas'));
+                if (!tabVisible || tabVisible.id === 'tab-cfg-productora') cambiarTabConfiguracion('entradas');
+            }
             if (panelId === 'finanzas') {
                 switchFinanzasSubtab('festivales');
                 renderizarCajaFestivales();
@@ -6346,7 +6442,16 @@
         }
 
         // Alternar pestañas dentro de Configuración General
+        // El mismo panel sirve a dos pantallas: 'config' (Configuración General, sin Productoras) y 'productoras' (solo Productoras)
+        function modoPanelConfiguracion(modo) {
+            const panel = document.getElementById('panel-configuracion');
+            if (panel) panel.dataset.modo = modo;
+        }
+
         function cambiarTabConfiguracion(tabId) {
+            const modoCfg = (document.getElementById('panel-configuracion') || {}).dataset ? document.getElementById('panel-configuracion').dataset.modo : '';
+            if (modoCfg === 'productoras') tabId = 'productora';
+            else if (modoCfg === 'config' && tabId === 'productora') tabId = 'entradas';
             document.querySelectorAll('.tab-cfg-content').forEach(c => c.style.display = 'none');
             document.querySelectorAll('#panel-configuracion > .segmented-tabs-bar .segmented-tab-btn').forEach(b => b.classList.remove('active'));
             const target = document.getElementById('tab-cfg-' + tabId);
@@ -16529,7 +16634,13 @@
                 });
                 const listado = lineas.length > 0 ? lineas.join('\n') : '(Aún no hay bandas con cobertura contratada confirmada)';
 
-                return `Buenas buenas!! Felicitaciones a tod@s por el hermoso despliegue que se mandaron en el festi!\n\nTema cobertura de show, les paso la info de a quién tienen que abonar. En lo posible porfi que uno solo haga la transferencia del total (uno de cada banda) así es más simple la vida je 🙏\n\n💸TRANSFERIR A:\nAlias: ahora.jalea.chino\nDolores Reinwich\n\n📷COBERTURA DE BANDAS\n${listado}`;
+                // A quién transferir: el contacto de pago elegido para la cobertura del evento (datos de la productora, en Productoras)
+                const contactoPago = (typeof obtenerContactoPagoCobertura === 'function') ? obtenerContactoPagoCobertura(festId) : null;
+                const datosPago = contactoPago
+                    ? `Alias: ${contactoPago.alias}\n${contactoPago.nombre}`
+                    : '(Falta cargar los datos de pago de la productora en Productoras)';
+
+                return `Buenas buenas!! Felicitaciones a tod@s por el hermoso despliegue que se mandaron en el festi!\n\nTema cobertura de show, les paso la info de a quién tienen que abonar. En lo posible porfi que uno solo haga la transferencia del total (uno de cada banda) así es más simple la vida je 🙏\n\n💸TRANSFERIR A:\n${datosPago}\n\n📷COBERTURA DE BANDAS\n${listado}`;
             }
 
             if (tplKey === 'cobertura_productora') {
@@ -16776,7 +16887,15 @@
             tbody.innerHTML = '';
 
             const datos = obtenerDatosIngresosEventoActual();
-            const gastos = datos.gastosOperativos || [];
+            if (!Array.isArray(datos.gastosOperativos)) datos.gastosOperativos = [];
+            // Fila de Sonido por defecto: el operador le pone el monto; en $ 0 es que no se usa el servicio
+            if (!datos.sonidoOmitido && !datos.gastosOperativos.some(x => x && x.esSonido)) {
+                datos.gastosOperativos.unshift({
+                    id: 'gasto-op-sonido', fecha: '', concepto: 'Sonido', proveedor: '', proveedorId: '', contactoPagoId: '',
+                    monto: 0, metodo: 'Transferencia', responsable: RESPONSABLE_COBRO_DEFECTO, pagado: false, esSonido: true
+                });
+            }
+            const gastos = datos.gastosOperativos;
             const tieneOperativos = gastos.length > 0;
 
             if (!tieneOperativos) {
@@ -16796,6 +16915,23 @@
                 const resp = g.responsable || RESPONSABLE_COBRO_DEFECTO;
                 const montoNum = Math.max(0, parseFloat(g.monto || 0) || 0);
                 const montoDisplay = montoNum > 0 ? `$ ${montoNum.toLocaleString('es-AR')}` : '$ 0';
+                // Proveedor de la lista (productoras) o gasto de la escuela. Un texto viejo que coincide con una productora se toma como ese proveedor.
+                const prodSel = (g.proveedorId ? buscarProductoraPorId(g.proveedorId) : null) || buscarProductora(g.proveedor);
+                const contactosProv = prodSel ? normalizarContactosPago(prodSel.contactosPago) : [];
+                const contactoSel = contactosProv.find(c => c.id === g.contactoPagoId) || contactosProv[0] || null;
+                const listaResp = obtenerResponsablesCobro().slice();
+                if (resp && !listaResp.includes(resp)) listaResp.push(resp);
+                const etqResp = pagado ? 'Pagó' : 'Paga';
+                const opcionesProv = '<option value="">Gasto de la escuela</option>' + productorasDB.map(p => `<option value="${esc(p.id)}" ${prodSel && prodSel.id === p.id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('');
+                const celdaProveedor = `
+                        <select class="installment-select" style="width:100%;" onchange="cambiarProveedorGasto(${idx}, this.value)" title="Elegí el proveedor de la lista. Si no es un proveedor, es un gasto de la escuela y en el detalle del pago se indica quién pagó.">${opcionesProv}</select>
+                        ${!prodSel && g.proveedor ? `<input type="text" class="spreadsheet-inp text-left" style="margin-top:4px; font-size:11.5px;" value="${esc(g.proveedor)}" placeholder="Detalle (opcional)" oninput="actualizarGastoOperativoFestival(${idx}, 'proveedor', this.value)">` : ''}`;
+                const celdaContacto = prodSel
+                    ? (contactoSel
+                        ? `<span class="srv-det-pago" style="margin-top:6px;"><select class="installment-select" onchange="cambiarContactoPagoGasto(${idx}, this.value)" title="A quién se le paga (datos de pago del proveedor)">${contactosProv.map(c => `<option value="${esc(c.id)}" ${c.id === contactoSel.id ? 'selected' : ''}>Pagar a: ${esc(c.nombre)}</option>`).join('')}</select></span>
+                           <div class="gasto-contacto-det"><span>Alias: <strong>${esc(contactoSel.alias)}</strong></span><button type="button" onclick="copiarAliasPago('${escJs(contactoSel.alias)}')" title="Copiar el alias">Copiar</button></div>`
+                        : `<div class="gasto-contacto-det"><span>Sin datos de pago (cargalos en Productoras)</span></div>`)
+                    : '';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
@@ -16804,8 +16940,7 @@
                     <td>
                         <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${esc(g.concepto || '')}" placeholder="Ej: Flete / Alquiler sonido / Staff..." oninput="actualizarGastoOperativoFestival(${idx}, 'concepto', this.value)">
                     </td>
-                    <td>
-                        <input type="text" class="spreadsheet-inp text-left" value="${esc(g.proveedor || '')}" placeholder="Proveedor o destinatario..." oninput="actualizarGastoOperativoFestival(${idx}, 'proveedor', this.value)">
+                    <td>${celdaProveedor}
                     </td>
                     <td>
                         <input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:800; font-size:13.5px; text-align:right; padding-right:4px;" value="${montoDisplay}" onfocus="enfocarInputMontoGasto(this, ${idx})" onblur="formatearInputMontoGasto(this, ${idx})" oninput="actualizarGastoOperativoFestival(${idx}, 'monto', this.value)">
@@ -16816,10 +16951,11 @@
                                 <option value="Transferencia" ${metodo === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
                                 <option value="Efectivo" ${metodo === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
                             </select>
-                            <select class="installment-select" onchange="actualizarGastoOperativoFestival(${idx}, 'responsable', this.value)">
-                                ${opcionesResponsablesHTML(resp)}
+                            <select class="installment-select" onchange="actualizarGastoOperativoFestival(${idx}, 'responsable', this.value)" title="${prodSel ? 'Quién de Mandala hace el pago al proveedor' : 'Quién pagó este gasto de la escuela'}">
+                                ${listaResp.map(n => `<option value="${esc(n)}" ${n === resp ? 'selected' : ''}>${etqResp}: ${esc(n)}</option>`).join('')}
                             </select>
                         </span>
+                        ${celdaContacto}
                     </td>
                     <td><span class="pill-status ${pagado ? 'pill-success' : 'pill-warning'}">${pagado ? 'Pagado' : 'Pendiente'}</span></td>
                     <td class="r" style="white-space:nowrap;">
@@ -16860,6 +16996,8 @@
                 fecha: fechaDef,
                 concepto: '',
                 proveedor: '',
+                proveedorId: '',
+                contactoPagoId: '',
                 monto: 0,
                 metodo: 'Transferencia',
                 responsable: RESPONSABLE_COBRO_DEFECTO,
@@ -16882,6 +17020,37 @@
             recalcularIngresosFestival(true);
         }
         window.actualizarGastoOperativoFestival = actualizarGastoOperativoFestival;
+
+        // Proveedor de un gasto: uno de la lista (productoras) o, vacío, un gasto de la escuela
+        function cambiarProveedorGasto(idx, provId) {
+            const datos = obtenerDatosIngresosEventoActual();
+            const g = datos.gastosOperativos && datos.gastosOperativos[idx];
+            if (!g) return;
+            const previo = (g.proveedorId ? buscarProductoraPorId(g.proveedorId) : null) || buscarProductora(g.proveedor);
+            const nuevo = provId ? buscarProductoraPorId(provId) : null;
+            if (nuevo) {
+                g.proveedorId = nuevo.id;
+                g.proveedor = nuevo.nombre;
+            } else {
+                g.proveedorId = '';
+                if (previo) g.proveedor = ''; // al pasar a gasto de la escuela no queda el nombre del proveedor anterior
+            }
+            g.contactoPagoId = '';
+            renderizarTablaGastosOperativosFestival();
+            renderizarGastosFestival(false);
+            recalcularIngresosFestival(true);
+        }
+        window.cambiarProveedorGasto = cambiarProveedorGasto;
+
+        function cambiarContactoPagoGasto(idx, contactoId) {
+            const datos = obtenerDatosIngresosEventoActual();
+            const g = datos.gastosOperativos && datos.gastosOperativos[idx];
+            if (!g) return;
+            g.contactoPagoId = contactoId;
+            renderizarTablaGastosOperativosFestival();
+            recalcularIngresosFestival(true);
+        }
+        window.cambiarContactoPagoGasto = cambiarContactoPagoGasto;
 
         function cambiarEstadoGastoOperativoFestival(idx, estadoPagado) {
             const datos = obtenerDatosIngresosEventoActual();
@@ -16907,6 +17076,7 @@
                 esPeligroso: true
             });
             if (conf) {
+                if (datos.gastosOperativos[idx].esSonido) datos.sonidoOmitido = true; // no se vuelve a crear solo
                 datos.gastosOperativos.splice(idx, 1);
                 renderizarTablaGastosOperativosFestival();
                 recalcularIngresosFestival(true);
@@ -16940,9 +17110,33 @@
             const datos = obtenerDatosIngresosEventoActual();
             if (campo === 'metodo') datos.coberturaEscuelaMetodo = valor;
             if (campo === 'responsable') datos.coberturaEscuelaResponsable = valor;
+            if (campo === 'contacto') datos.coberturaEscuelaContactoId = valor;
             recalcularIngresosFestival(true);
         }
         window.actualizarPagoCoberturaEscuela = actualizarPagoCoberturaEscuela;
+
+        // "Pagar a": contactos de pago de la productora del evento; muestra el alias con botón para copiarlo
+        function renderizarContactoPagoCobertura() {
+            const sel = document.getElementById('sel-gasto-prod-contacto');
+            const det = document.getElementById('gasto-prod-contacto-det');
+            if (!sel) return;
+            const prod = buscarProductora(productoraDeFestival(eventoActualId));
+            const contactos = prod ? normalizarContactosPago(prod.contactosPago) : [];
+            if (!contactos.length) {
+                sel.innerHTML = '<option value="">Sin datos de pago (cargalos en Productoras)</option>';
+                sel.disabled = true;
+                if (det) det.innerHTML = '';
+                return;
+            }
+            sel.disabled = false;
+            const actual = obtenerContactoPagoCobertura(eventoActualId);
+            sel.innerHTML = contactos.map(c => `<option value="${esc(c.id)}">Pagar a: ${esc(c.nombre)}</option>`).join('');
+            sel.value = actual ? actual.id : contactos[0].id;
+            if (det && actual) {
+                det.innerHTML = `<span>Alias: <strong>${esc(actual.alias)}</strong></span><button type="button" onclick="copiarAliasPago('${escJs(actual.alias)}')" title="Copiar el alias">Copiar</button>`;
+            }
+        }
+        window.renderizarContactoPagoCobertura = renderizarContactoPagoCobertura;
 
         // Renderizar los Gastos Operativos + la fila de Cobertura Audiovisual dentro de Gastos del Evento en Finanzas
         function renderizarGastosFestival(reconstruirTablaOperativos = true) {
@@ -16983,6 +17177,7 @@
             if (selMet) selMet.value = datos.coberturaEscuelaMetodo || 'Transferencia';
             const selResp = document.getElementById('sel-gasto-prod-responsable');
             if (selResp) llenarSelectResponsableEstatico('sel-gasto-prod-responsable', datos.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO);
+            renderizarContactoPagoCobertura();
 
             const btnCobPagado = document.getElementById('btn-gasto-prod-pagado');
             const pillCobEstado = document.getElementById('pill-gasto-prod-estado');
@@ -19903,11 +20098,10 @@
             let countEscuela = 0;
             let countCobros = 0;
 
-            let totalServProv = 0;
             deudas.forEach(d => {
                 if (d.soloSeguimiento || d.esTraspaso) return;
                 if (d.tipo === 'servicio_proveedor') {
-                    totalServProv += d.monto; // los paga la escuela pero los financian los alumnos: no es un gasto propio
+                    return; // los paga la escuela pero los financian los alumnos: no es un gasto propio, no entra en ninguna de las dos tarjetas
                 } else if (d.esPasivoEscuela) {
                     totalEscuela += d.monto;
                     countEscuela++;
@@ -19917,25 +20111,16 @@
                 }
             });
 
-            const balanceNeto = totalCobros - totalEscuela - totalServProv;
-
             const elEscuelaTxt = document.getElementById('kpi-deudas-escuela-txt');
             const elEscuelaSub = document.getElementById('kpi-deudas-escuela-sub');
             const elCobrosTxt = document.getElementById('kpi-deudas-cobros-txt');
             const elCobrosSub = document.getElementById('kpi-deudas-cobros-sub');
-            const elBalTxt = document.getElementById('kpi-deudas-balance-txt');
-            const elBalSub = document.getElementById('kpi-deudas-balance-sub');
             const elCountBadge = document.getElementById('pill-deudas-count-badge');
 
             if (elEscuelaTxt) elEscuelaTxt.textContent = `$ ${totalEscuela.toLocaleString('es-AR')}`;
             if (elEscuelaSub) elEscuelaSub.textContent = countEscuela === 0 ? 'Sin pagos pendientes' : `${countEscuela} ${countEscuela === 1 ? 'pago pendiente' : 'pagos pendientes'}`;
             if (elCobrosTxt) elCobrosTxt.textContent = `$ ${totalCobros.toLocaleString('es-AR')}`;
             if (elCobrosSub) elCobrosSub.textContent = countCobros === 0 ? 'Sin cobros pendientes' : `${countCobros} ${countCobros === 1 ? 'cobro pendiente' : 'cobros pendientes'}`;
-            if (elBalTxt) {
-                elBalTxt.textContent = `${balanceNeto < 0 ? '-$ ' : (balanceNeto > 0 ? '+$ ' : '$ ')}${Math.abs(balanceNeto).toLocaleString('es-AR')}`;
-                elBalTxt.style.color = balanceNeto === 0 ? '' : (balanceNeto > 0 ? 'var(--accent-green)' : 'var(--accent-red)');
-            }
-            if (elBalSub) elBalSub.textContent = balanceNeto >= 0 ? 'A favor de la escuela' : 'En contra de la escuela';
             const cantPend = deudas.filter(d => !d.soloSeguimiento).length;
             if (elCountBadge) elCountBadge.textContent = `${cantPend} ${cantPend === 1 ? 'pendiente' : 'pendientes'}`;
 
@@ -20025,7 +20210,6 @@
                         </td>
                     </tr>
                 `;
-                actualizarTotalesVisiblesDeudas(0, 0);
                 actualizarEstadoBotonSeleccionadosDeudas();
                 return;
             }
@@ -20199,7 +20383,6 @@
                 });
             });
 
-            actualizarTotalesVisiblesDeudas(sumVisiblesEscuela, sumVisiblesCobros);
             actualizarEstadoBotonSeleccionadosDeudas();
             actualizarTextoBotonToggleTodasDeudas();
         }
@@ -20290,22 +20473,6 @@
             }
         }
         window.abrirModalGestionarDeudaDesdeTablaDeudas = abrirModalGestionarDeudaDesdeTablaDeudas;
-
-        function actualizarTotalesVisiblesDeudas(sumEscuela, sumCobros) {
-            const elTot = document.getElementById('td-tot-visibles-deudas');
-            const elDet = document.getElementById('td-tot-visibles-detalle');
-            const bal = sumCobros - sumEscuela;
-            const balColor = bal === 0 ? '' : (bal > 0 ? 'var(--accent-green)' : 'var(--accent-red)');
-            const balSigno = bal < 0 ? '-$ ' : (bal > 0 ? '+$ ' : '$ ');
-
-            if (elTot) {
-                elTot.textContent = `${balSigno}${Math.abs(bal).toLocaleString('es-AR')}`;
-                elTot.style.color = balColor;
-            }
-            if (elDet) {
-                elDet.innerHTML = '';
-            }
-        }
 
         function toggleSeleccionTodasDeudas(checked) {
             document.querySelectorAll('.chk-item-deuda').forEach(c => c.checked = checked);

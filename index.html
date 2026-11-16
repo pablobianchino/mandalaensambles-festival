@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.10">
-    <script src="src/ui/iconos.js?v=v2.10"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.11">
+    <script src="src/ui/iconos.js?v=v2.11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.10" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.11" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1772,9 +1772,21 @@
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <button type="button" class="btn-app btn-secondary" onclick="generarReporteVentasImagen(eventoActualId)" title="Descargar el reporte de ventas de este evento (sin gastos ni cobertura)">
-                                    <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg> Reporte de ventas
+                                <button type="button" class="btn-app btn-secondary btn-reportes" id="btn-reportes" onclick="toggleMenuReportes(event)" title="Descargar reportes de este evento (imagen)" aria-haspopup="true">
+                                    <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg> Reportes <span aria-hidden="true">▾</span>
                                 </button>
+                                <div class="dropdown-menu-popover" id="menu-reportes" style="min-width:280px;">
+                                    <button type="button" class="dropdown-item" onclick="descargarReporte('ventas')">
+                                        <span class="rep-item"><strong>Reporte de ventas</strong><small>Entradas vendidas e ingreso neto</small></span>
+                                    </button>
+                                    <button type="button" class="dropdown-item" onclick="descargarReporte('gastos')">
+                                        <span class="rep-item"><strong>Reporte de gastos</strong><small>Gastos del evento y cobertura audiovisual</small></span>
+                                    </button>
+                                    <button type="button" class="dropdown-item" onclick="descargarReporte('completo')">
+                                        <span class="rep-item"><strong>Reporte completo</strong><small>Ventas y gastos en una sola imagen</small></span>
+                                    </button>
+                                    <div class="rep-nota">Se descarga como imagen (PNG)</div>
+                                </div>
                                 <div class="mode-switch-pill">
                                     <button type="button" class="mode-switch-btn" onclick="abrirDetalleEvento(eventoActualId, true)">
                                         <span>Producción</span>
@@ -6048,7 +6060,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.10";
+        const APP_VERSION = "v2.11";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -9994,30 +10006,52 @@
             menu.style.position = 'fixed';
             menu.style.zIndex = '999999';
 
-            if (btn) {
-                const rect = btn.getBoundingClientRect();
-                const margen = 8;
-                // El menú nunca es más alto que la ventana: si no entra entero, se desplaza adentro
-                menu.style.maxHeight = (window.innerHeight - margen * 2) + 'px';
-                menu.style.overflowY = 'auto';
-                const menuHeight = menu.offsetHeight || 140;
-                const hayLugarAbajo = window.innerHeight - rect.bottom - 4 >= menuHeight + margen;
-                const hayLugarArriba = rect.top - 4 >= menuHeight + margen;
-
-                // Abre hacia abajo si entra; si no, hacia arriba; si no entra en ninguno, se acomoda dentro de la pantalla
-                if (hayLugarAbajo) {
-                    menu.style.top = (rect.bottom + 4) + 'px';
-                } else if (hayLugarArriba) {
-                    menu.style.top = (rect.top - menuHeight - 4) + 'px';
-                } else {
-                    menu.style.top = Math.max(margen, Math.min(rect.bottom + 4, window.innerHeight - menuHeight - margen)) + 'px';
-                }
-
-                // Alinear a la derecha del botón
-                menu.style.left = 'auto';
-                menu.style.right = (window.innerWidth - rect.right) + 'px';
-            }
+            if (btn) posicionarPopoverCercaDeBoton(menu, btn);
         }
+
+        // Ubica un menú desplegable (ya visible y con position:fixed) junto a su botón: abajo si entra, arriba si no,
+        // y si no entra en ninguno se acomoda dentro de la pantalla con scroll propio. Alineado a la derecha del botón.
+        function posicionarPopoverCercaDeBoton(menu, btn) {
+            const rect = btn.getBoundingClientRect();
+            const margen = 8;
+            menu.style.maxHeight = (window.innerHeight - margen * 2) + 'px';
+            menu.style.overflowY = 'auto';
+            const menuHeight = menu.offsetHeight || 140;
+            const hayLugarAbajo = window.innerHeight - rect.bottom - 4 >= menuHeight + margen;
+            const hayLugarArriba = rect.top - 4 >= menuHeight + margen;
+            if (hayLugarAbajo) {
+                menu.style.top = (rect.bottom + 4) + 'px';
+            } else if (hayLugarArriba) {
+                menu.style.top = (rect.top - menuHeight - 4) + 'px';
+            } else {
+                menu.style.top = Math.max(margen, Math.min(rect.bottom + 4, window.innerHeight - menuHeight - margen)) + 'px';
+            }
+            menu.style.left = 'auto';
+            menu.style.right = Math.max(margen, window.innerWidth - rect.right) + 'px';
+        }
+
+        // Botón "Reportes" de Finanzas: abre el menú de reportes (siempre en imagen)
+        function toggleMenuReportes(e) {
+            if (e) { e.stopPropagation(); e.preventDefault(); }
+            const btn = document.getElementById('btn-reportes');
+            const menu = document.getElementById('menu-reportes');
+            if (!btn || !menu) return;
+            const estabaAbierto = menu.style.display === 'flex';
+            cerrarTodosLosDropdownsAcciones();
+            if (estabaAbierto) return;
+            menu.style.display = 'flex';
+            menu.style.position = 'fixed';
+            menu.style.zIndex = '999999';
+            posicionarPopoverCercaDeBoton(menu, btn);
+        }
+        window.toggleMenuReportes = toggleMenuReportes;
+
+        function descargarReporte(tipo) {
+            cerrarTodosLosDropdownsAcciones();
+            if (typeof window.generarReporteImagen === 'function') window.generarReporteImagen(eventoActualId, tipo);
+            else mostrarToast('Los reportes todavía se están cargando. Reintentá en unos segundos.', 'info');
+        }
+        window.descargarReporte = descargarReporte;
         window.toggleMenuAccionesEvento = toggleMenuAccionesEvento;
 
         function cerrarTodosLosDropdownsAcciones() {

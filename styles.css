@@ -3978,6 +3978,12 @@ tr.cierre-banda-h:hover td { background: var(--surface-2); }
 .tecnico-hoja-totales td { font-family: 'Geist Mono', monospace; min-width: 70px; }
 .tecnico-hoja-rep { font-weight: 500; font-size: 11px; }
 
+/* Menú del botón "Reportes" de Finanzas */
+.dropdown-menu-popover .rep-item { display: flex; flex-direction: column; gap: 1px; text-align: left; }
+.dropdown-menu-popover .rep-item strong { font-size: 13px; font-weight: 700; color: var(--ink); }
+.dropdown-menu-popover .rep-item small { font-size: 11.5px; font-weight: 500; color: var(--ink-3); }
+.dropdown-menu-popover .rep-nota { margin-top: 2px; padding: 6px 12px 4px; border-top: 1px solid var(--line); font-size: 11px; color: var(--ink-3); }
+
 /* Botón "＋ REC" de la barra de Sonido: discreto, hasta que se activa la pestaña */
 .segmented-tab-btn.rec-agregar-btn { border: 1px dashed var(--line-2); background: transparent; color: var(--ink-3); }
 .segmented-tab-btn.rec-agregar-btn:hover { color: var(--teal-700); border-color: var(--teal); }

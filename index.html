@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.9">
-    <script src="src/ui/iconos.js?v=v2.9"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.10">
+    <script src="src/ui/iconos.js?v=v2.10"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.9" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.10" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -978,54 +978,14 @@
 
                     </div>
 
-                    <!-- Pestaña: Cierre de Entradas (Subsecciones: 1. Registro de Entradas + 2. Cumplimiento de Contrato) -->
+                    <!-- Pestaña: Cierre de Entradas (solo Cumplimiento de contrato: el registro de entradas vendidas se carga en la Liquidación de entradas, en Finanzas) -->
                     <div id="tab-ev-cierre-entradas" class="tab-ev-content" style="display:none;">
                         
-                        <!-- Subsección 1: Registro de Entradas Vendidas -->
-                        <div class="content-card collapsible-numbered-card" id="card-cierre-taquilla" style="margin-bottom:16px;">
-                            <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
+                        <!-- Cumplimiento de contrato -->
+                        <div class="content-card" id="card-cierre-cumplimiento">
+                            <div class="card-header-flex">
                                 <div>
-                                    <h3 class="card-title"><span class="collapsible-chevron">▼</span><span class="sec-ltr">A</span>Registro de entradas vendidas</h3>
-                                    <span style="font-size:12px; color:var(--text-muted);">
-                                        Cantidad vendida por tipo de entrada. Se sincroniza con la liquidación de entradas en Finanzas.
-                                    </span>
-                                </div>
-                                <div class="sec-chips" onclick="event.stopPropagation()">
-                                    <span class="sec-chip" id="badge-total-taquilla-cierre">
-                                        Total 0 entradas
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="collapsible-card-body" style="padding-top:10px;">
-                                <div class="table-responsive">
-                                    <table class="sec-tabla" id="tabla-cierre-taquilla-cantidades">
-                                        <thead>
-                                            <tr>
-                                                <th>Tipo de entrada</th>
-                                                <th class="r" style="width:150px;">Valor</th>
-                                                <th class="c" style="width:170px;">Cantidad vendida</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tbody-cierre-taquilla-cantidades">
-                                            <!-- Se renderiza reactivamente con Preventa, General, Puerta + Categorías Extra -->
-                                        </tbody>
-                                        <tfoot>
-                                            <tr class="sec-tot">
-                                                <td colspan="2">Total de entradas</td>
-                                                <td class="c sec-mono" id="txt-cierre-taquilla-cant-total">0</td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Subsección 2: Estado de Cumplimiento de Contrato -->
-                        <div class="content-card collapsible-numbered-card" id="card-cierre-cumplimiento">
-                            <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
-                                <div>
-                                    <h3 class="card-title"><span class="collapsible-chevron">▼</span><span class="sec-ltr">B</span>Cumplimiento de contrato</h3>
+                                    <h3 class="card-title">Cumplimiento de contrato</h3>
                                     <span style="font-size:12px; color:var(--text-muted);">
                                         Cargá las entradas vendidas de cada integrante. Si no llega al cupo, la diferencia pasa a Cobros &amp; Cuotas en Finanzas.
                                     </span>
@@ -1042,7 +1002,7 @@
                                 </div>
                             </div>
 
-                            <div class="collapsible-card-body" style="padding-top:10px;">
+                            <div style="padding-top:10px;">
                                 <div class="table-responsive">
                                     <table class="sec-tabla cierre-tabla" id="tabla-cumplimiento-contrato">
                                         <thead>
@@ -6088,7 +6048,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.9";
+        const APP_VERSION = "v2.10";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {

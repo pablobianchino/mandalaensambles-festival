@@ -46,6 +46,26 @@ export async function espejarSonidoEvento(eventoId, partes) {
 }
 
 /**
+ * Indica si el evento graba el show: la pestaña REC solo aparece cuando está activa.
+ * Se guarda en sonido.recActivo; al apagarla los datos del REC quedan guardados.
+ */
+export async function guardarRecActivoEvento(eventoId, activo, usuarioEmail = '') {
+    try {
+        await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, eventoId), {
+            eventoId,
+            sonido: { recActivo: !!activo },
+            actualizadoEn: new Date().toISOString(),
+            actualizadoPor: usuarioEmail || ''
+        }, { merge: true });
+        return true;
+    } catch (err) {
+        console.error(`[Mandala Festivales] Error al guardar si el evento ${eventoId} graba:`, err);
+        notificarErrorPersistencia("la activación del REC", err);
+        return false;
+    }
+}
+
+/**
  * Al duplicar un evento: copia su Rider técnico y su REC al evento nuevo, para editarlos después.
  * Devuelve { ok, copiado } (copiado = qué partes había para copiar).
  */
@@ -56,6 +76,7 @@ export async function copiarSonidoEvento(origenId, destinoId) {
         const aCopiar = {};
         if (sonido.riderTecnico) aCopiar.riderTecnico = sonido.riderTecnico;
         if (sonido.rec) aCopiar.rec = sonido.rec;
+        if (sonido.recActivo !== undefined) aCopiar.recActivo = sonido.recActivo;
         const copiado = Object.keys(aCopiar);
         if (!copiado.length) return { ok: true, copiado };
         await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, destinoId), {

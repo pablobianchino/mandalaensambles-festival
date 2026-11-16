@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.7">
-    <script src="src/ui/iconos.js?v=v2.7"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.8">
+    <script src="src/ui/iconos.js?v=v2.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.7" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.8" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -579,11 +579,15 @@
                             <button class="segmented-tab-btn" id="btn-subtab-tecnico" onclick="switchRiderSubTab('tecnico')">
                                 Rider técnico
                             </button>
-                            <button class="segmented-tab-btn" id="btn-subtab-rec" onclick="switchRiderSubTab('rec')">
-                                REC
-                            </button>
                             <button class="segmented-tab-btn" id="btn-subtab-checklist" onclick="switchRiderSubTab('checklist')">
                                 Checklist de equipamiento
+                            </button>
+                            <!-- REC: solo aparece (al final) cuando el evento graba el show. Mientras no, un botón "＋ REC" lo activa -->
+                            <button class="segmented-tab-btn" id="btn-subtab-rec" style="display:none;" onclick="switchRiderSubTab('rec')">
+                                REC
+                            </button>
+                            <button class="segmented-tab-btn rec-agregar-btn" id="btn-subtab-rec-agregar" style="display:none;" onclick="activarRecEvento()" title="Activar la pestaña REC si este show se graba">
+                                ＋ REC
                             </button>
                         </div>
 
@@ -722,6 +726,9 @@
                                         </button>
                                         <button class="btn-app btn-secondary" onclick="imprimirRec()" title="Imprimir el REC (vertical u horizontal según el ancho)" aria-label="Imprimir REC">
                                             🖨️
+                                        </button>
+                                        <button class="btn-app btn-secondary" id="btn-rec-quitar" onclick="quitarRecEvento()" title="Este show no se graba: oculta la pestaña REC (los datos quedan guardados)">
+                                            Quitar REC
                                         </button>
                                         <button class="btn-app btn-primary" id="btn-rec-add-equipo" onclick="agregarEquipoRec()" title="Agregar un equipo de grabación">
                                             ＋ Equipo de grabación
@@ -6081,7 +6088,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.7";
+        const APP_VERSION = "v2.8";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6618,6 +6625,7 @@
             if (tabId === 'info') renderizarArtistasFestival();
             if (tabId === 'rider') {
                 switchRiderSubTab('bandas');
+                if (typeof cargarRecActivoEvento === 'function') cargarRecActivoEvento();
                 renderizarRiderTecnicoFestival();
                 if (typeof renderizarChecklistFestival === 'function') {
                     renderizarChecklistFestival(checklistFestivalesDB[eventoActualId] || null);
@@ -11811,6 +11819,15 @@
         }
         window.setRiderModo = setRiderModo;
 
+        // Nota de la banda en el Rider general (ej.: "BELU COROS"): va con la banda y se imprime junto a su nombre
+        function guardarNotaBandaRider(bIdx, valor) {
+            const lista = participantesFestivalesDB[eventoActualId];
+            if (!lista || !lista[bIdx]) return;
+            lista[bIdx].notaRider = String(valor || '').trim();
+            if (typeof autoguardarDetalleFestivalFirestore === 'function') autoguardarDetalleFestivalFirestore('participantes', lista);
+        }
+        window.guardarNotaBandaRider = guardarNotaBandaRider;
+
         function toggleRiderBandaGrupo(bIdx) {
             const expandido = estadoExpansionRider[bIdx] !== undefined ? estadoExpansionRider[bIdx] : todosRiderBandasExpandidas;
             estadoExpansionRider[bIdx] = !expandido;
@@ -12096,6 +12113,7 @@
                                 <span class="group-arrow" id="arrow-rider-${bIdx}" onclick="toggleRiderBandaGrupo(${bIdx})" title="${expandidoRider ? 'Comprimir' : 'Expandir'}">${expandidoRider ? '▼' : '▶'}</span>
                                 <input type="text" class="spreadsheet-inp text-left" style="font-weight:800; font-size:13px; color:var(--accent-blue); background:#ffffff; border:1px solid var(--border-color); border-radius:6px; padding:3px 8px; width:auto; min-width:180px; max-width:300px; text-transform:uppercase;" value="${esc(banda.nombre || '')}" ${modoVista ? 'readonly tabindex="-1"' : ''} placeholder="Nombre Banda / Artista..." onchange="actualizarNombreArtistaEnTabla(${bIdx}, this.value)">
                                 <span class="group-count-badge">🎵 ${canciones.length} canción(es)</span>
+                                <input type="text" class="spreadsheet-inp text-left rider-banda-nota" value="${esc(banda.notaRider || '')}" ${modoVista ? 'readonly tabindex="-1"' : ''} placeholder="Nota de la banda (ej.: BELU COROS)" title="Nota de la banda: se muestra junto a su nombre y se imprime" onchange="guardarNotaBandaRider(${bIdx}, this.value)">
                                 <button type="button" class="btn-table-pill" onclick="agregarCancionABanda(${bIdx})" title="Agregar una nueva canción">＋ Canción</button>
                             </div>
                         </div>
@@ -12603,6 +12621,7 @@
                 id: p.id || '',
                 tipo: p.tipo || '',
                 nombre: p.nombre || '',
+                notaRider: p.notaRider || '',
                 canciones: Array.isArray(p.canciones) ? p.canciones : [],
                 alumnos: (Array.isArray(p.alumnos) ? p.alumnos : []).map(a => ({
                     nombre: a.nombre || '',
@@ -12783,9 +12802,10 @@
         let tecnicoModo = 'edicion';
         try { if (localStorage.getItem('mandala_tecnico_modo') === 'vista') tecnicoModo = 'vista'; } catch (e) { /* sin storage: queda en edición */ }
 
-        const TECNICO_OPCIONES_MIC = ['58', '57', '52', 'C02', 'KIT (52)', 'KIT (57)', 'DI', 'DI PRE', 'LÍNEA'];
+        const TECNICO_OPCIONES_MIC = ['58', '57', '52', 'C02', 'KIT (52)', 'KIT (57)', 'DI', 'DI PRE'];
         const TECNICO_OPCIONES_PIE = ['PIE', 'CLAMP', '—'];
-        const TECNICO_REPUESTOS_DEFECTO = { pie: 1, clamp: 1, xlr: 0 };
+        // Repuestos: se muestran como "(+1)" junto al total (como "(PIE = +1)" en la planilla); NO se suman al total
+        const TECNICO_REPUESTOS_DEFECTO = { pie: 1, clamp: 1, di: 1, xlr: 0 };
 
         function nuevoIdCanalTecnico() {
             return 'ch-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -12942,12 +12962,23 @@
             }, 650);
         }
 
+        // Clasifica lo que se escribe en MIC O DI, con el mismo criterio que las fórmulas de la planilla:
+        //  'di'    = exactamente "DI" (caja DI)
+        //  'dipre' = "DI PRE" (preamp con salida balanceada: no es micrófono ni lleva caja DI)
+        //  'mic'   = cualquier otra cosa no vacía (58, 57, KIT (52), C02…)
         function tipoEntradaTecnico(micDi) {
             const s = normTecnico(micDi);
             if (!s || s === '—' || s === '-') return '';
-            if (s.startsWith('DI')) return 'di';
-            if (s.startsWith('LINEA') || s.startsWith('LINE')) return 'linea';
+            if (s === 'DI') return 'di';
+            if (s === 'DI PRE' || s === 'DIPRE' || s.startsWith('DI PRE ')) return 'dipre';
             return 'mic';
+        }
+
+        // Caja DI: se cuenta sola (canales con "DI" exacto). Si se escribe un número a mano, ese número manda.
+        function resolverCajasDi(canalesHabilitados, manual) {
+            const auto = canalesHabilitados.filter(c => tipoEntradaTecnico(c.micDi) === 'di').length;
+            const m = String(manual === undefined || manual === null ? '' : manual).trim();
+            return { auto, valor: m !== '' ? m : String(auto), manual: m !== '' };
         }
 
         // Canal que sale solo de una columna del Rider general: no se borra (se apaga con ✓ o se quita la columna del rider general).
@@ -12960,37 +12991,52 @@
             return tec.canales.filter(c => !c.descartado);
         }
 
+        // Totales del REC (un equipo). Mismo criterio que las fórmulas de la planilla, sobre los canales habilitados:
+        //  MIC       = MIC O DI no vacío y distinto de "DI" y "DI PRE"
+        //  PIE/CLAMP = canales con ese valor en la columna PIE
+        //  CABLE XLR = MIC O DI no vacío (micrófonos + DI + DI PRE)
+        //  CAJA DI   = canales con "DI" exacto (o el número escrito a mano)
         function calcularTotalesTecnico(tec) {
             const hab = tec.canales.filter(c => c.habilitado);
-            const r = tec.repuestos || {};
             const contar = f => hab.filter(f).length;
             const mic = contar(c => tipoEntradaTecnico(c.micDi) === 'mic');
             const di = contar(c => tipoEntradaTecnico(c.micDi) === 'di');
-            const pie = contar(c => normTecnico(c.pie) === 'PIE');
-            const clamp = contar(c => normTecnico(c.pie) === 'CLAMP');
+            const dipre = contar(c => tipoEntradaTecnico(c.micDi) === 'dipre');
+            const caja = resolverCajasDi(hab, tec.cajasDi);
             return {
                 canales: hab.length,
                 apagados: canalesVisiblesTecnico(tec).length - hab.length,
                 mic,
-                pie: pie + numTecnico(r.pie),
-                clamp: clamp + numTecnico(r.clamp),
-                xlr: mic + di + numTecnico(r.xlr),
-                cajasDi: String(tec.cajasDi || '').trim()
+                pie: contar(c => normTecnico(c.pie) === 'PIE'),
+                clamp: contar(c => normTecnico(c.pie) === 'CLAMP'),
+                xlr: mic + di + dipre,
+                cajasDi: caja.valor,
+                cajasDiAuto: caja.auto,
+                cajasDiManual: caja.manual
             };
         }
 
-        // Totales del Rider técnico: PIE / MIC (un pie por micrófono), CABLE XLR (micrófonos + DI) y CAJA DI (a mano)
+        // Totales del Rider técnico: PIE / MIC (un pie por micrófono), CABLE XLR (micrófonos + DI + DI PRE) y CAJA DI (automática)
         function calcularTotalesRiderTecnico(tec) {
             const hab = tec.canales.filter(c => c.habilitado);
             const mic = hab.filter(c => tipoEntradaTecnico(c.micDi) === 'mic').length;
             const di = hab.filter(c => tipoEntradaTecnico(c.micDi) === 'di').length;
+            const dipre = hab.filter(c => tipoEntradaTecnico(c.micDi) === 'dipre').length;
+            const caja = resolverCajasDi(hab, tec.cajasDi);
             return {
                 canales: hab.length,
                 apagados: canalesVisiblesTecnico(tec).length - hab.length,
                 pieMic: mic,
-                xlr: mic + di,
-                cajasDi: String(tec.cajasDi || '').trim()
+                xlr: mic + di + dipre,
+                cajasDi: caja.valor,
+                cajasDiAuto: caja.auto,
+                cajasDiManual: caja.manual
             };
+        }
+
+        // Fila "CAJA DI" de los cuadros de totales: muestra el valor y permite fijarlo a mano (vacío = automático)
+        function htmlFilaCajaDi(t, manual, handler) {
+            return `<div class="tecnico-tot-fila"><span>CAJA DI <small>(${t.cajasDiManual ? 'a mano' : 'automático'})</small></span><span class="tecnico-caja-wrap"><b>${esc(t.cajasDi)}</b><input type="text" class="tecnico-inp-num tecnico-inp-cajadi" value="${esc(manual)}" onchange="${handler}" placeholder="auto" title="Se cuenta sola: canales con DI exacto (DI PRE no cuenta). Escribí un número para fijarlo a mano; dejalo vacío para que vuelva a ser automático"></span></div>`;
         }
 
         // Número de entrada (IN): correlativo de los canales habilitados, salvo que se haya fijado a mano
@@ -13070,7 +13116,7 @@
                 <div class="tecnico-totales-h">Totales <span>(canales habilitados)</span></div>
                 <div class="tecnico-tot-fila"><span>PIE / MIC</span><b>${t.pieMic}</b></div>
                 <div class="tecnico-tot-fila"><span>CABLE XLR</span><b>${t.xlr}</b></div>
-                <div class="tecnico-tot-fila"><span>CAJA DI <small>(a mano)</small></span><input type="text" class="tecnico-inp-num tecnico-inp-cajadi" value="${esc(tec.cajasDi)}" onchange="editarCampoTecnico('cajasDi', this.value)" placeholder="0" title="Cantidad de cajas DI (la carga el sonidista)"></div>`;
+                ${htmlFilaCajaDi(t, tec.cajasDi, "editarCampoTecnico('cajasDi', this.value)")}`;
         }
 
         function htmlFilaTecnico(c, idx, total, nums) {
@@ -13324,6 +13370,73 @@
         // - festivales_sonido/{eventoId}.sonido.rec = { equipos: [{ id, nombre, destino, canales, cajasDi, repuestos }], nota }
         // - Todo a mano (no se trae nada del Rider técnico). Los totales usan el mismo cálculo que el Rider técnico.
         // =========================================================
+        // ¿Este evento graba el show? La pestaña REC (al final de las de Sonido) solo se ve cuando sí.
+        // Se guarda en festivales_sonido/{id}.sonido.recActivo; si el evento ya tiene equipos de REC cargados, cuenta como activo.
+        const recActivoDB = {};   // festId -> true | false (ausente = todavía no se leyó)
+
+        function actualizarPestanaRec() {
+            const id = eventoActualId;
+            const activo = !!recActivoDB[id];
+            const leido = recActivoDB[id] !== undefined;
+            const btnRec = document.getElementById('btn-subtab-rec');
+            const btnAgregar = document.getElementById('btn-subtab-rec-agregar');
+            if (btnRec) btnRec.style.display = activo ? '' : 'none';
+            if (btnAgregar) btnAgregar.style.display = (leido && !activo) ? '' : 'none';
+            // Si se apagó mientras se estaba viendo, se vuelve a la primera pestaña
+            const panelRec = document.getElementById('rider-subtab-rec');
+            if (!activo && panelRec && panelRec.style.display !== 'none') switchRiderSubTab('bandas');
+        }
+
+        async function cargarRecActivoEvento() {
+            const festId = eventoActualId;
+            if (!festId) return;
+            actualizarPestanaRec();
+            const svc = window.MandalaApp && window.MandalaApp.sonido;
+            if (!svc || typeof svc.obtener !== 'function') return;
+            try {
+                const res = await svc.obtener(festId);
+                const sonido = (res && res.datos && res.datos.sonido) || {};
+                const tieneDatos = !!(sonido.rec && Array.isArray(sonido.rec.equipos) && sonido.rec.equipos.length > 0);
+                recActivoDB[festId] = sonido.recActivo === true || (sonido.recActivo === undefined && tieneDatos);
+            } catch (e) {
+                console.warn('[Mandala Festivales] No se pudo leer si el evento graba (REC):', e);
+            }
+            if (festId === eventoActualId) actualizarPestanaRec();
+        }
+        window.cargarRecActivoEvento = cargarRecActivoEvento;
+
+        async function activarRecEvento() {
+            const festId = eventoActualId;
+            const svc = window.MandalaApp && window.MandalaApp.sonido;
+            if (!festId || !svc) return;
+            recActivoDB[festId] = true;
+            actualizarPestanaRec();
+            switchRiderSubTab('rec');
+            const email = (window.MandalaApp.auth && window.MandalaApp.auth.instance && window.MandalaApp.auth.instance.currentUser && window.MandalaApp.auth.instance.currentUser.email) || '';
+            const ok = await svc.guardarRecActivo(festId, true, email);
+            if (!ok) { recActivoDB[festId] = false; actualizarPestanaRec(); }
+        }
+        window.activarRecEvento = activarRecEvento;
+
+        async function quitarRecEvento() {
+            const festId = eventoActualId;
+            const svc = window.MandalaApp && window.MandalaApp.sonido;
+            if (!festId || !svc) return;
+            const conf = await mostrarModalConfirmacion({
+                titulo: 'Quitar la pestaña REC',
+                mensaje: 'Este show no se graba: la pestaña REC se oculta en este evento.<br><br>Lo que cargaste queda guardado: si volvés a activarla con <strong>＋ REC</strong>, está todo como lo dejaste.',
+                icono: '🎙️',
+                textoConfirmar: 'Quitar REC'
+            });
+            if (!conf) return;
+            recActivoDB[festId] = false;
+            actualizarPestanaRec();
+            const email = (window.MandalaApp.auth && window.MandalaApp.auth.instance && window.MandalaApp.auth.instance.currentUser && window.MandalaApp.auth.instance.currentUser.email) || '';
+            const ok = await svc.guardarRecActivo(festId, false, email);
+            if (!ok) { recActivoDB[festId] = true; actualizarPestanaRec(); }
+        }
+        window.quitarRecEvento = quitarRecEvento;
+
         const sonidoRecDB = {};
         const sonidoRecEstado = {};   // festId -> 'cargando' | 'listo' | 'error'
         const _timersGuardadoRec = {};
@@ -13430,14 +13543,16 @@
         }
 
         function htmlHojaRec(rec) {
-            const rep = (v) => numTecnico(v) ? ` <span class="tecnico-hoja-rep">(+${numTecnico(v)})</span>` : '';
+            // El repuesto "(+1)" solo se anota si hay algo de ese elemento (0 pies no necesitan un pie de repuesto)
+            const rep = (v, total) => (numTecnico(v) && Number(total) > 0) ? ` <span class="tecnico-hoja-rep">(+${numTecnico(v)})</span>` : '';
             const bloques = rec.equipos.map((eq, idx) => {
                 const t = calcularTotalesTecnico(eq);
                 const r = eq.repuestos || {};
                 const hab = eq.canales.filter(c => c.habilitado);
+                const nums = numerarCanalesTecnico(eq);
                 const filas = hab.length ? hab.map(c => `
                     <tr>
-                        <td>${esc(c.inManual)}</td>
+                        <td>${esc(nums[c.id])}</td>
                         <td class="izq">${esc(c.canal)}</td>
                         <td>${esc(c.micDi)}</td>
                         <td>${c.phantom ? 'SI' : ''}</td>
@@ -13453,7 +13568,7 @@
                         </table>
                         <table class="tecnico-hoja-tabla tecnico-hoja-totales">
                             <thead><tr><th>MIC</th><th>PIE</th><th>CLAMP</th><th>CABLE XLR</th><th>CAJA DI</th></tr></thead>
-                            <tbody><tr><td>${t.mic}</td><td>${t.pie}${rep(r.pie)}</td><td>${t.clamp}${rep(r.clamp)}</td><td>${t.xlr}${rep(r.xlr)}</td><td>${esc(t.cajasDi)}</td></tr></tbody>
+                            <tbody><tr><td>${t.mic}</td><td>${t.pie}${rep(r.pie, t.pie)}</td><td>${t.clamp}${rep(r.clamp, t.clamp)}</td><td>${t.xlr}${rep(r.xlr, t.xlr)}</td><td>${esc(t.cajasDi)}${rep(r.di, t.cajasDi)}</td></tr></tbody>
                         </table>
                     </div>`;
             }).join('');
@@ -13465,19 +13580,19 @@
             const t = calcularTotalesTecnico(eq);
             const r = eq.repuestos || {};
             const e = escJs(eq.id);
-            const inpRep = (k) => `<input type="number" min="0" class="tecnico-inp-num" value="${numTecnico(r[k])}" onchange="editarRepuestoRec('${e}', '${k}', this.value)" title="Repuestos que se suman al total">`;
+            const inpRep = (k) => `<input type="number" min="0" class="tecnico-inp-num" value="${numTecnico(r[k])}" onchange="editarRepuestoRec('${e}', '${k}', this.value)" title="Repuestos: se anotan como (+n) junto al total, no se suman">`;
             return `
                 <div class="tecnico-totales-h">Totales <span>(canales habilitados)</span></div>
                 <div class="tecnico-tot-fila"><span>MIC</span><b>${t.mic}</b></div>
-                <div class="tecnico-tot-fila"><span>PIE <small>(+${numTecnico(r.pie)})</small></span><b>${t.pie}</b></div>
-                <div class="tecnico-tot-fila"><span>CLAMP <small>(+${numTecnico(r.clamp)})</small></span><b>${t.clamp}</b></div>
-                <div class="tecnico-tot-fila"><span>CABLE XLR <small>(+${numTecnico(r.xlr)})</small></span><b>${t.xlr}</b></div>
-                <div class="tecnico-tot-fila"><span>CAJA DI <small>(a mano)</small></span><input type="text" class="tecnico-inp-num tecnico-inp-cajadi" value="${esc(eq.cajasDi)}" onchange="editarEquipoRec('${e}', 'cajasDi', this.value)" placeholder="0" title="Cantidad de cajas DI"></div>
-                <div class="tecnico-totales-sub">Repuestos</div>
-                <div class="tecnico-repuestos">PIE + ${inpRep('pie')} CLAMP + ${inpRep('clamp')} XLR + ${inpRep('xlr')}</div>`;
+                <div class="tecnico-tot-fila"><span>PIE ${t.pie > 0 ? `<small>(+${numTecnico(r.pie)})</small>` : ''}</span><b>${t.pie}</b></div>
+                <div class="tecnico-tot-fila"><span>CLAMP ${t.clamp > 0 ? `<small>(+${numTecnico(r.clamp)})</small>` : ''}</span><b>${t.clamp}</b></div>
+                <div class="tecnico-tot-fila"><span>CABLE XLR ${t.xlr > 0 && numTecnico(r.xlr) ? `<small>(+${numTecnico(r.xlr)})</small>` : ''}</span><b>${t.xlr}</b></div>
+                ${htmlFilaCajaDi(t, eq.cajasDi, `editarEquipoRec('${e}', 'cajasDi', this.value)`)}
+                <div class="tecnico-totales-sub">Repuestos (se anotan, no se suman)</div>
+                <div class="tecnico-repuestos">PIE + ${inpRep('pie')} CLAMP + ${inpRep('clamp')} DI + ${inpRep('di')} XLR + ${inpRep('xlr')}</div>`;
         }
 
-        function htmlFilaRec(eqId, c) {
+        function htmlFilaRec(eqId, c, nums) {
             const e = escJs(eqId);
             const id = escJs(c.id);
             const opcionesPie = ['', ...TECNICO_OPCIONES_PIE];
@@ -13486,7 +13601,7 @@
                 <tr class="${c.habilitado ? '' : 'tecnico-apagado'}" ondragstart="recDragStart(event, '${e}', '${id}')" ondragover="recDragOver(event, '${e}')" ondragleave="this.classList.remove('drag-over')" ondrop="recDrop(event, '${e}', '${id}')" ondragend="recDragEnd(event)">
                     <td class="drag-handle tecnico-handle" title="Arrastrar para mover el canal" onmousedown="this.parentNode.draggable = true" onmouseup="this.parentNode.draggable = false">⠿</td>
                     <td class="tecnico-c"><input type="checkbox" ${c.habilitado ? 'checked' : ''} onchange="editarCanalRec('${e}', '${id}', 'habilitado', this.checked)" title="${c.habilitado ? 'Apagar este canal (queda sombreado y no se imprime)' : 'Volver a usar este canal'}"></td>
-                    <td class="tecnico-c"><input type="text" class="spreadsheet-inp tecnico-inp-in" value="${esc(c.inManual)}" placeholder="IN" onchange="editarCanalRec('${e}', '${id}', 'inManual', this.value)" title="Entrada del equipo de grabación (texto libre, ej.: 3 (LÍNEA))"></td>
+                    <td class="tecnico-c"><input type="text" class="spreadsheet-inp tecnico-inp-in" value="${esc(c.inManual)}" placeholder="${c.habilitado ? esc((nums || {})[c.id] || 'IN') : '—'}" onchange="editarCanalRec('${e}', '${id}', 'inManual', this.value)" title="Entrada del equipo de grabación. Vacío = número corrido automático; si escribís algo (ej.: 3 (LÍNEA)) se usa eso"></td>
                     <td><input type="text" class="spreadsheet-inp text-left tecnico-inp-canal" value="${esc(c.canal)}" placeholder="Canal" onchange="editarCanalRec('${e}', '${id}', 'canal', this.value)"></td>
                     <td><input type="text" class="spreadsheet-inp text-left" list="dl-rec-mic" value="${esc(c.micDi)}" placeholder="—" onchange="editarCanalRec('${e}', '${id}', 'micDi', this.value)"></td>
                     <td class="tecnico-c"><input type="checkbox" ${c.phantom ? 'checked' : ''} onchange="editarCanalRec('${e}', '${id}', 'phantom', this.checked)" title="Phantom 48V"></td>
@@ -13521,7 +13636,7 @@
                                     <th class="tecnico-c" style="width:40px;"></th>
                                 </tr></thead>
                                 <tbody>
-                                    ${eq.canales.length ? eq.canales.map(c => htmlFilaRec(eq.id, c)).join('') : `<tr><td colspan="9" class="tecnico-vacio">Este equipo todavía no tiene canales.</td></tr>`}
+                                    ${eq.canales.length ? (() => { const nums = numerarCanalesTecnico(eq); return eq.canales.map(c => htmlFilaRec(eq.id, c, nums)).join(''); })() : `<tr><td colspan="9" class="tecnico-vacio">Este equipo todavía no tiene canales.</td></tr>`}
                                     <tr><td colspan="9" class="rec-fila-add"><button type="button" class="btn-app btn-secondary btn-sm" onclick="agregarCanalRec('${e}')">＋ Canal</button></td></tr>
                                 </tbody>
                             </table>

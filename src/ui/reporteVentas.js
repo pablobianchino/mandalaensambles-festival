@@ -533,6 +533,82 @@
         }
     };
 
+    // ---------------------------------------------------------------
+    // VISTA PREVIA: se muestra el reporte tal como saldrá y desde ahí se descarga
+    // ---------------------------------------------------------------
+    function htmlHoja(fId, tipo, hojas, i) {
+        return '<style>' + CSS + '</style><div class="rv" style="height:' + ALTO_HOJA + 'px;display:flex;flex-direction:column">' + cabecera(fId, tipo) +
+            '<div style="flex:1 1 auto">' + hojas[i].join('') + '</div>' + piePagina(fId, tipo, 'Hoja ' + (i + 1) + ' de ' + hojas.length) + '</div>';
+    }
+
+    window.cerrarVistaPreviaReporte = function () {
+        var m = document.getElementById('rv-preview-overlay');
+        if (m) m.remove();
+        document.removeEventListener('keydown', teclaVistaPrevia);
+    };
+    function teclaVistaPrevia(e) { if (e.key === 'Escape') window.cerrarVistaPreviaReporte(); }
+
+    window.vistaPreviaReporte = async function (festId, tipo) {
+        var fId = festId || (typeof eventoActualId !== 'undefined' ? eventoActualId : null);
+        tipo = TITULOS[tipo] ? tipo : 'ventas';
+        if (!fId) { mostrarToast('Elegí un evento para generar el reporte.', 'warning'); return; }
+        window.cerrarVistaPreviaReporte();
+
+        var esPdf = tipo === 'completo';
+        var btnBase = 'font:600 13px Inter,system-ui,sans-serif;padding:9px 16px;border-radius:8px;cursor:pointer;';
+        var ov = document.createElement('div');
+        ov.id = 'rv-preview-overlay';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:1000000;background:rgba(28,31,34,.55);display:flex;align-items:center;justify-content:center;padding:20px';
+        ov.innerHTML =
+            '<div style="background:#f7f5f0;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:min(920px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden">' +
+              '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:#fff;border-bottom:1px solid #e4e0d6">' +
+                '<h3 style="margin:0;font:700 17px Inter,system-ui,sans-serif;color:#1c1f22">Vista previa · ' + esc(TITULOS[tipo]) + '</h3>' +
+                '<button type="button" data-rv="cerrar" style="' + btnBase + 'background:#fff;border:1px solid #d8d3c6;color:#1c1f22">✕ Cerrar</button>' +
+              '</div>' +
+              '<div id="rv-preview-cuerpo" style="flex:1 1 auto;overflow:auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:18px">' +
+                '<div style="color:#6b6f73;font:500 13px Inter,system-ui,sans-serif;padding:40px 0">Preparando la vista previa…</div>' +
+              '</div>' +
+              '<div style="display:flex;justify-content:flex-end;gap:10px;padding:12px 20px;background:#fff;border-top:1px solid #e4e0d6">' +
+                '<button type="button" data-rv="cerrar" style="' + btnBase + 'background:#fff;border:1px solid #d8d3c6;color:#1c1f22">Cerrar</button>' +
+                '<button type="button" data-rv="descargar" style="' + btnBase + 'background:#0b6e7f;border:1px solid #0b6e7f;color:#fff">Descargar ' + (esPdf ? 'PDF' : 'imagen (PNG)') + '</button>' +
+              '</div>' +
+            '</div>';
+        document.body.appendChild(ov);
+        document.addEventListener('keydown', teclaVistaPrevia);
+        ov.addEventListener('click', function (e) {
+            if (e.target === ov) return window.cerrarVistaPreviaReporte();
+            var b = e.target.closest && e.target.closest('[data-rv]');
+            if (!b) return;
+            if (b.getAttribute('data-rv') === 'cerrar') window.cerrarVistaPreviaReporte();
+            else {
+                window.cerrarVistaPreviaReporte();
+                if (esPdf) window.generarReportePDF(fId); else window.generarReporteImagen(fId, tipo);
+            }
+        });
+
+        try {
+            var cuerpo = ov.querySelector('#rv-preview-cuerpo');
+            var paginas = [];
+            if (esPdf) {
+                var hojas = await paginar(fId, tipo);
+                for (var i = 0; i < hojas.length; i++) paginas.push(htmlHoja(fId, tipo, hojas, i));
+            } else {
+                paginas.push(armarHtml(fId, tipo));
+            }
+            if (!document.getElementById('rv-preview-overlay')) return; // se cerró mientras se preparaba
+            // Ajusta el zoom al ancho disponible
+            var disponible = cuerpo.clientWidth - 40;
+            var zoom = Math.min(1, disponible / ANCHO);
+            cuerpo.innerHTML = paginas.map(function (p) {
+                return '<div style="zoom:' + zoom + ';background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.18);border:1px solid #e4e0d6;flex:0 0 auto">' + p + '</div>';
+            }).join('');
+        } catch (e) {
+            console.error('[Mandala] Error armando la vista previa', e);
+            window.cerrarVistaPreviaReporte();
+            mostrarToast('No se pudo armar la vista previa.', 'error');
+        }
+    };
+
     // Para pruebas y para Estadísticas
     window.armarHtmlReporte = armarHtml;
     window.datosGraficosEvento = datosGraficosEvento;

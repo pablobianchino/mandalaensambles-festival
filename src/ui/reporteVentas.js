@@ -1,11 +1,12 @@
 // =======================================================================
-// src/ui/reporteVentas.js — Reportes de un evento como IMAGEN (PNG), script clásico
-//   · Reporte de ventas:   ventas comunes, ventas especiales e ingreso neto de la escuela.
-//   · Reporte de gastos:   gastos del evento, cobertura audiovisual (total, aporte de las bandas y lo que paga Mandala)
-//                          y servicios adelantados.
-//   · Reporte completo:    ventas + gastos en una sola imagen.
-// Usa html2canvas (se carga desde cdnjs en index.html) y los mismos cálculos que Finanzas
-// (calcularTaquillaFestival, calcularResumenPresupuestoProductora, calcularServiciosFestival) para que los números coincidan.
+// src/ui/reporteVentas.js — Reportes de un evento (script clásico)
+//   · Reporte de ventas:   imagen PNG. Entradas por tipo, ventas especiales y cómo se llega al ingreso neto.
+//   · Reporte de gastos:   imagen PNG. Gastos del evento, cobertura audiovisual (Fotos / Video) y servicios adelantados.
+//   · Reporte completo:    PDF. Primero el resumen (ingresos, egresos y ganancia), después ventas y gastos.
+// Todos comparten el mismo diseño: cabecera, tarjetas de resumen, un gráfico circular y tablas cortas.
+// Usa html2canvas (cdnjs) y, para el PDF, jsPDF (se carga desde cdnjs la primera vez que se pide).
+// Los números salen de los mismos cálculos que Finanzas (calcularBalanceGeneralFestival, calcularTaquillaFestival,
+// calcularResumenPresupuestoProductora, calcularServiciosFestival) para que siempre coincidan.
 // =======================================================================
 (function () {
     'use strict';
@@ -20,289 +21,521 @@
     function limpiarNombreArchivo(t) {
         return String(t || 'evento').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
     }
+    function num(v) { return Math.max(0, parseFloat(v || 0) || 0); }
 
     var TITULOS = { ventas: 'Reporte de ventas', gastos: 'Reporte de gastos', completo: 'Reporte completo' };
 
+    // Paleta única de los gráficos (misma en todos los reportes y en Estadísticas)
+    var PALETA = ['#007b8f', '#e0a43a', '#6d5bd0', '#2e9e6a', '#d9467a', '#5b8def', '#c2410c', '#8a9097'];
+    var COLOR = { escuela: '#2e9e6a', venue: '#5b8def', sadaic: '#e0a43a', gastos: '#c2410c' };
+
+    // Ancho fijo = A4 a 96 dpi; el alto de una hoja A4 es 1123 px
+    var ANCHO = 794, ALTO_HOJA = 1123;
+
     var CSS = '' +
-        '.rv{width:794px;box-sizing:border-box;background:#fff;color:#1c1f22;font-family:Inter,"Segoe UI",system-ui,sans-serif;font-size:13px;padding:40px 44px 34px}' +
+        '.rv{width:' + ANCHO + 'px;box-sizing:border-box;background:#fff;color:#1c1f22;font-family:Inter,"Segoe UI",system-ui,sans-serif;font-size:12.5px;line-height:1.35;padding:36px 40px 28px}' +
         '.rv *{box-sizing:border-box}' +
-        '.rv .cab{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #007b8f;padding-bottom:12px;margin-bottom:18px}' +
-        '.rv .marca{font-size:21px;font-weight:800;color:#006173}.rv .sub{font-size:11.5px;color:#8a9097}.rv .der{text-align:right}.rv .tit{font-size:19px;font-weight:800}' +
-        '.rv h2{margin:0 0 8px;font-size:24px}.rv .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}' +
-        '.rv .meta span{background:#faf8f3;border:1px solid #ece6dc;border-radius:99px;padding:3px 11px;font-size:12px;color:#4b5159}' +
-        '.rv .bloque{font-size:15px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#006173;border-bottom:2px solid #007b8f;padding-bottom:6px;margin:30px 0 14px}' +
-        '.rv .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:6px}' +
-        '.rv .kpi{border:1px solid #ece6dc;border-radius:10px;padding:12px 14px;background:#faf8f3}' +
-        '.rv .kpi small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a9097}' +
-        '.rv .kpi b{display:block;font-size:23px;margin:5px 0 3px;font-family:"Geist Mono",ui-monospace,Consolas,monospace}' +
-        '.rv .kpi em{font-style:normal;font-size:11px;color:#8a9097}' +
+        '.rv .cab{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #007b8f;padding-bottom:10px;margin-bottom:14px}' +
+        '.rv .marca{font-size:19px;font-weight:800;color:#006173}.rv .sub{font-size:11px;color:#8a9097}.rv .der{text-align:right}.rv .tit{font-size:17px;font-weight:800}' +
+        '.rv h2{margin:0 0 8px;font-size:22px;line-height:1.2}.rv .meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}' +
+        '.rv .meta span{background:#faf8f3;border:1px solid #ece6dc;border-radius:99px;padding:2px 10px;font-size:11.5px;color:#4b5159;white-space:nowrap}' +
+        '.rv .bloque{font-size:14px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#006173;border-bottom:2px solid #007b8f;padding-bottom:5px;margin:4px 0 12px}' +
+        '.rv .sec{margin-bottom:18px}' +
+        '.rv .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}' +
+        '.rv .kpi{border:1px solid #ece6dc;border-radius:10px;padding:10px 12px;background:#faf8f3;min-width:0}' +
+        '.rv .kpi small{display:block;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a9097;white-space:nowrap}' +
+        '.rv .kpi b{display:block;font-size:20px;margin:4px 0 2px;font-family:"Geist Mono",ui-monospace,Consolas,monospace;white-space:nowrap}' +
+        '.rv .kpi em{display:block;font-style:normal;font-size:10.5px;color:#8a9097;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
         '.rv .kpi.neto{background:#e8f4f6;border-color:#007b8f}.rv .kpi.neto b{color:#006173}' +
-        '.rv h3{font-size:12.5px;margin:22px 0 8px;text-transform:uppercase;letter-spacing:.05em;color:#4b5159}' +
+        '.rv .kpi.neg b{color:#b2402b}' +
+        '.rv h3{font-size:11.5px;margin:0 0 7px;text-transform:uppercase;letter-spacing:.06em;color:#4b5159}' +
         '.rv table{width:100%;border-collapse:collapse}' +
-        '.rv th{background:#faf8f3;color:#8a9097;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:8px 10px;border-bottom:1px solid #ddd5c8}' +
-        '.rv td{padding:8px 10px;border-bottom:1px solid #ece6dc}' +
-        '.rv .r{text-align:right;white-space:nowrap;font-family:"Geist Mono",ui-monospace,Consolas,monospace}.rv .c{text-align:center}' +
+        '.rv th{background:#faf8f3;color:#8a9097;font-size:10px;letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:7px 9px;border-bottom:1px solid #ddd5c8;white-space:nowrap}' +
+        '.rv td{padding:6px 9px;border-bottom:1px solid #ece6dc;vertical-align:middle}' +
+        '.rv .r{text-align:right;white-space:nowrap;font-family:"Geist Mono",ui-monospace,Consolas,monospace}.rv .c{text-align:center;white-space:nowrap}' +
+        '.rv .nw{white-space:nowrap}.rv .gris{color:#8a9097}.rv .chico{font-size:10.5px;color:#8a9097}' +
         '.rv tfoot td{font-weight:800;background:#faf8f3;border-bottom:0}' +
         '.rv .resta .r{color:#b2402b}' +
-        '.rv .total td{font-size:15px;font-weight:800;background:#e8f4f6;color:#006173;border-top:2px solid #007b8f;border-bottom:0}' +
-        '.rv .est-pend{color:#b45309;font-weight:700}.rv .est-ok{color:#1d7a4a;font-weight:700}' +
-        '.rv .aviso{margin:14px 0 0;font-size:11px;color:#8a9097;font-style:italic;line-height:1.5}' +
-        '.rv .pie{display:flex;justify-content:space-between;font-size:10.5px;color:#8a9097;border-top:1px solid #ece6dc;padding-top:8px;margin-top:26px}';
+        '.rv .total td{font-size:14px;font-weight:800;background:#e8f4f6;color:#006173;border-top:2px solid #007b8f;border-bottom:0}' +
+        '.rv .est-pend{color:#b45309;font-weight:700;white-space:nowrap}.rv .est-ok{color:#1d7a4a;font-weight:700;white-space:nowrap}.rv .est-neu{color:#8a9097;font-weight:700;white-space:nowrap}' +
+        '.rv .aviso{margin:8px 0 0;font-size:10.5px;color:#8a9097;font-style:italic}' +
+        '.rv .graf{display:flex;align-items:center;gap:22px;border:1px solid #ece6dc;border-radius:10px;padding:12px 16px}' +
+        '.rv .graf img{width:150px;height:150px;flex:0 0 150px}' +
+        '.rv .graf table td{border-bottom:1px solid #f1ece4;padding:4px 6px}' +
+        '.rv .pto{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}' +
+        '.rv .dos{display:grid;grid-template-columns:1fr 1fr;gap:14px}' +
+        '.rv .pie{display:flex;justify-content:space-between;font-size:10px;color:#8a9097;border-top:1px solid #ece6dc;padding-top:7px;margin-top:18px}';
 
     function infoDe(fId) {
         return (typeof infoFestivales !== 'undefined' && infoFestivales[fId]) ? infoFestivales[fId] : {};
     }
+    function finDe(fId) {
+        return (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[fId]) ? ingresosFestivalesDB[fId] : {};
+    }
+    function entDe(fId) {
+        return (typeof entradasFestivales !== 'undefined' && entradasFestivales[fId]) ? entradasFestivales[fId] : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : {});
+    }
+    function kpi(rot, valor, sub, clase) {
+        return '<div class="kpi' + (clase ? ' ' + clase : '') + '"><small>' + rot + '</small><b>' + valor + '</b><em>' + (sub || '&nbsp;') + '</em></div>';
+    }
+    function seccion(contenido) { return '<div class="sec">' + contenido + '</div>'; }
 
     // ---------------------------------------------------------------
-    // Cuerpo del reporte de VENTAS (sin cabecera ni aviso final)
+    // Gráfico circular (SVG como imagen, así html2canvas lo dibuja igual en todos lados) + leyenda con monto y %
+    // partes: [{ nombre, valor, color }]
+    // ---------------------------------------------------------------
+    function svgDonut(partes, centro, subCentro) {
+        var total = partes.reduce(function (a, p) { return a + p.valor; }, 0);
+        var R = 60, C = 2 * Math.PI * R, acum = 0, arcos = '';
+        partes.forEach(function (p) {
+            var largo = total > 0 ? (p.valor / total) * C : 0;
+            if (largo <= 0) return;
+            arcos += '<circle cx="80" cy="80" r="' + R + '" fill="none" stroke="' + p.color + '" stroke-width="28" stroke-dasharray="' + largo.toFixed(2) + ' ' + (C - largo).toFixed(2) + '" stroke-dashoffset="' + (-acum).toFixed(2) + '" transform="rotate(-90 80 80)"/>';
+            acum += largo;
+        });
+        if (!arcos) arcos = '<circle cx="80" cy="80" r="' + R + '" fill="none" stroke="#ece6dc" stroke-width="28"/>';
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">' + arcos +
+            '<text x="80" y="' + (subCentro ? 78 : 85) + '" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" fill="#1c1f22">' + esc(centro || '') + '</text>' +
+            (subCentro ? '<text x="80" y="96" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#8a9097">' + esc(subCentro) + '</text>' : '') +
+            '</svg>';
+        return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+    function htmlGrafico(titulo, partes, centro, subCentro) {
+        partes = (partes || []).filter(function (p) { return p.valor > 0; });
+        if (!partes.length) return '';
+        var total = partes.reduce(function (a, p) { return a + p.valor; }, 0);
+        var filas = partes.map(function (p) {
+            var pc = total > 0 ? Math.round((p.valor / total) * 100) : 0;
+            return '<tr><td><span class="pto" style="background:' + p.color + '"></span>' + esc(p.nombre) + '</td><td class="r">' + ars(p.valor) + '</td><td class="r gris" style="width:46px">' + pc + '%</td></tr>';
+        }).join('');
+        return seccion('<h3>' + titulo + '</h3><div class="graf"><img src="' + svgDonut(partes, centro, subCentro) + '" alt=""><table><tbody>' + filas + '</tbody></table></div>');
+    }
+    // Agrupa partes chicas en "Otros" para que el gráfico se lea
+    function agruparPartes(lista, maximo, nombreOtros) {
+        lista = lista.filter(function (p) { return p.valor > 0; }).sort(function (a, b) { return b.valor - a.valor; });
+        if (lista.length <= maximo) return lista;
+        var principales = lista.slice(0, maximo - 1);
+        var resto = lista.slice(maximo - 1).reduce(function (a, p) { return a + p.valor; }, 0);
+        principales.push({ nombre: nombreOtros || 'Otros', valor: resto });
+        return principales;
+    }
+    function colorear(lista) { return lista.map(function (p, i) { return { nombre: p.nombre, valor: p.valor, color: p.color || PALETA[i % PALETA.length] }; }); }
+
+    // ---------------------------------------------------------------
+    // Datos de los gráficos de un evento (también los usa Estadísticas)
+    // ---------------------------------------------------------------
+    function datosGraficosEvento(fId) {
+        var info = infoDe(fId), fin = finDe(fId), ent = entDe(fId);
+        var res = { destino: [], ventas: [], gastos: [] };
+
+        // Ventas por tipo de entrada
+        var taq = calcularTaquillaFestival(fId, fin, ent);
+        if (taq.usaBrutoHistorico) {
+            res.ventas.push({ nombre: 'Taquilla', valor: taq.brutoTaquilla });
+        } else {
+            var pGen = Number(ent.general) || (typeof precioGeneralVigente === 'function' ? precioGeneralVigente() : 0);
+            res.ventas.push({ nombre: 'Preventa', valor: taq.cantPreventa * (Number(ent.preventa) || 0) });
+            res.ventas.push({ nombre: 'General', valor: taq.cantGeneral * pGen });
+            res.ventas.push({ nombre: 'Puerta', valor: taq.cantPuerta * (Number(ent.puerta) || 0) });
+            (fin.categoriasExtra || []).forEach(function (c) {
+                res.ventas.push({ nombre: c.nombre || 'Entrada especial', valor: num(c.cantidad) * num(c.precio) });
+            });
+        }
+        res.ventas.push({ nombre: 'Ventas especiales', valor: taq.totVentasEspeciales });
+        res.ventas = colorear(agruparPartes(res.ventas, 7, 'Otras entradas'));
+
+        // Gastos por concepto (los gastos con el mismo concepto se suman)
+        var porConcepto = {};
+        (Array.isArray(fin.gastosOperativos) ? fin.gastosOperativos : []).forEach(function (g) {
+            if (!g) return;
+            var m = num(g.monto);
+            if (m <= 0) return;
+            var k = String(g.concepto || 'Sin concepto').trim() || 'Sin concepto';
+            porConcepto[k] = (porConcepto[k] || 0) + m;
+        });
+        // Los conceptos de menos de $ 10.000 van juntos en "Otros gastos"
+        var MINIMO_CONCEPTO = 10000, otros = 0, lg = [];
+        Object.keys(porConcepto).forEach(function (k) {
+            if (porConcepto[k] < MINIMO_CONCEPTO) otros += porConcepto[k];
+            else lg.push({ nombre: k, valor: porConcepto[k] });
+        });
+        if (otros > 0) lg.push({ nombre: 'Otros gastos', valor: otros });
+        var cob = calcularResumenPresupuestoProductora(fId);
+        var serv = calcularServiciosFestival(fId, info);
+        if (cob.saldoEscuela > 0) lg.push({ nombre: 'Cobertura audiovisual', valor: cob.saldoEscuela });
+        if (serv.adelantado > 0) lg.push({ nombre: 'Servicios adelantados', valor: serv.adelantado });
+        // De mayor a menor, con "Otros gastos" siempre al final
+        lg.sort(function (a, b) { return (a.nombre === 'Otros gastos') - (b.nombre === 'Otros gastos') || b.valor - a.valor; });
+        res.gastos = colorear(lg);
+
+        // A dónde fue la plata: escuela, venue, SADAIC (solo si hubo) y gastos
+        var m = calcularBalanceGeneralFestival(fId, info);
+        res.destino = [
+            { nombre: 'Ganancia de la escuela', valor: Math.max(0, m.gananciaEscuela || 0), color: COLOR.escuela },
+            { nombre: m.venueMontoFijo ? 'Venue (monto fijo)' : 'Venue', valor: Math.max(0, m.montoVenue || 0), color: COLOR.venue },
+            { nombre: 'SADAIC', valor: Math.max(0, Number(m.montoSadaic) || 0), color: COLOR.sadaic },
+            { nombre: 'Gastos de la escuela', valor: Math.max(0, m.egresosTotales || 0), color: COLOR.gastos }
+        ].filter(function (p) { return p.valor > 0; });
+        res.metricas = m;
+        return res;
+    }
+
+    // ---------------------------------------------------------------
+    // RESUMEN (primera parte del reporte completo)
+    // ---------------------------------------------------------------
+    function cuerpoResumen(fId) {
+        var d = datosGraficosEvento(fId), m = d.metricas;
+        var fila = function (rot, v, clase) { return '<tr' + (clase ? ' class="' + clase + '"' : '') + '><td>' + rot + '</td><td class="r">' + ars(v) + '</td></tr>'; };
+        var ing = fila('Ventas netas de entradas', m.recaudacionEntradas || 0)
+            + ((m.ingresosIncumplimientos || 0) > 0 ? fila('Cobros por incumplimiento', m.ingresosIncumplimientos) : '')
+            + ((m.ingresosSalasPropias || 0) > 0 ? fila('Uso de salas de la escuela', m.ingresosSalasPropias) : '')
+            + ((m.excedenteCobertura || 0) > 0 ? fila('Excedente de cobertura', m.excedenteCobertura) : '');
+        var egr = fila('Gastos operativos', m.gastosOperativos || 0)
+            + fila('Cobertura audiovisual', m.gastosCobertura || 0)
+            + ((m.tercerosAdelantado || 0) > 0 ? fila('Servicios adelantados', m.tercerosAdelantado) : '');
+        var tablaIng = '<h3>Ingresos</h3><table><tbody>' + ing + '</tbody><tfoot><tr><td>Total ingresos</td><td class="r">' + ars(m.ingresosTotales) + '</td></tr></tfoot></table>';
+        var tablaEgr = '<h3>Egresos</h3><table><tbody>' + egr + '</tbody><tfoot><tr><td>Total egresos</td><td class="r">' + ars(m.egresosTotales) + '</td></tr></tfoot></table>';
+        var pend = '<h3>Pendientes</h3><table><tbody>' + fila('Por cobrar', m.deudasPorCobrar || 0) + fila('Pendiente de pago', m.deudasPorPagar || 0) + '</tbody></table>';
+        var terceros = '';
+        if ((m.tercerosCobrado || 0) > 0 || (m.tercerosPagado || 0) > 0) {
+            var saldo = (m.tercerosCobrado || 0) - (m.tercerosPagado || 0);
+            terceros = '<h3>Servicios de terceros</h3><table><tbody>' + fila('Cobrado a los alumnos', m.tercerosCobrado || 0) + fila('Pagado a salas y proveedores', m.tercerosPagado || 0)
+                + fila(saldo >= 0 ? 'Saldo a pagar a proveedores' : 'Adelantado por la escuela', Math.abs(saldo)) + '</tbody></table>'
+                + '<p class="aviso">No es ingreso ni egreso: es plata de los alumnos que pasa por la escuela.</p>';
+        }
+        var g = m.gananciaEscuela || 0;
+        return seccion('<div class="kpis">' +
+                kpi('Ingresos', ars(m.ingresosTotales), 'lo que entró a la escuela') +
+                kpi('Egresos', ars(m.egresosTotales), 'lo que pagó la escuela') +
+                kpi('Ganancia real', ars(g), 'ingresos − egresos', g < 0 ? 'neto neg' : 'neto') + '</div>') +
+            htmlGrafico('A dónde fue la plata del evento', d.destino, ars(d.destino.reduce(function (a, p) { return a + p.valor; }, 0)), 'entró en total') +
+            seccion('<div class="dos"><div>' + tablaIng + '</div><div>' + tablaEgr + '</div></div>') +
+            seccion('<div class="dos"><div>' + pend + '</div><div>' + terceros + '</div></div>');
+    }
+
+    // ---------------------------------------------------------------
+    // VENTAS
     // ---------------------------------------------------------------
     function cuerpoVentas(fId) {
-        var fin = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[fId]) ? ingresosFestivalesDB[fId] : {};
-        var ent = (typeof entradasFestivales !== 'undefined' && entradasFestivales[fId]) ? entradasFestivales[fId] : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : {});
+        var fin = finDe(fId), ent = entDe(fId);
         var taq = calcularTaquillaFestival(fId, fin, ent);
         var nombrePF = window.NOMBRE_PAGO_FIJO || 'Monto fijo';
+        var d = datosGraficosEvento(fId);
 
         var pPrev = Number(ent.preventa) || 0, pGen = Number(ent.general) || precioGeneralVigente(), pPue = Number(ent.puerta) || 0;
         var comunes = [
-            ['Preventa', ars(pPrev), taq.cantPreventa, ars(taq.cantPreventa * pPrev)],
-            ['General', ars(pGen), taq.cantGeneral, ars(taq.cantGeneral * pGen)],
-            ['Puerta', ars(pPue), taq.cantPuerta, ars(taq.cantPuerta * pPue)]
+            ['Preventa', pPrev, taq.cantPreventa],
+            ['General', pGen, taq.cantGeneral],
+            ['Puerta', pPue, taq.cantPuerta]
         ];
         (fin.categoriasExtra || []).forEach(function (c) {
-            var cant = Math.max(0, parseInt(c.cantidad || 0, 10) || 0), pr = Math.max(0, parseFloat(c.precio || 0) || 0);
-            if (cant > 0) comunes.push([c.nombre || 'Entrada especial', ars(pr), cant, ars(cant * pr)]);
+            var cant = Math.max(0, parseInt(c.cantidad || 0, 10) || 0);
+            if (cant > 0) comunes.push([c.nombre || 'Entrada especial', num(c.precio), cant]);
         });
-        if (taq.usaBrutoHistorico) comunes = [['Taquilla (total cargado)', '-', '-', ars(taq.brutoTaquilla)]];
+        var filasComunes = taq.usaBrutoHistorico
+            ? '<tr><td>Taquilla (total cargado)</td><td class="r">-</td><td class="c">-</td><td class="r">' + ars(taq.brutoTaquilla) + '</td></tr>'
+            : comunes.map(function (c) { return '<tr><td>' + esc(c[0]) + '</td><td class="r">' + ars(c[1]) + '</td><td class="c">' + c[2] + '</td><td class="r">' + ars(c[1] * c[2]) + '</td></tr>'; }).join('');
 
         var especiales = (fin.ventasEspeciales || []).map(function (v) {
             var tipo = v.tipoVenta || 'Promo 2x1';
             var cant = v.cantEntradas !== undefined ? v.cantEntradas : (tipo === 'Promo 2x1' ? 2 : 1);
-            var monto = Math.max(0, parseFloat(v.monto || 0) || 0);
-            return [v.comprador || '-', tipo, cant, v.metodo || '-', v.cobradoPor || '-', monto ? ars(monto) : 'Sin cargo'];
+            var monto = num(v.monto);
+            var pago = [v.cobradoPor, v.metodo === 'Transferencia' ? 'Transf.' : v.metodo].filter(Boolean).join(' · ');
+            return '<tr><td>' + esc(v.comprador || '-') + '</td><td class="nw">' + esc(tipo) + '</td><td class="c">' + cant + '</td><td class="nw">' + esc(pago || '-') + '</td><td class="r">' + (monto ? ars(monto) : '<span class="gris">Sin cargo</span>') + '</td></tr>';
         });
 
-        var neto = taq.recaudacionEntradas;
-        var cantTotal = taq.cantTaquilla + taq.cantVentasEspeciales;
-
-        // Cómo se llega al ingreso neto
+        // Del bruto al neto
         var s = taq.sadaicRes || {};
         var calc = '<tr><td>Taquilla bruta</td><td class="r">' + ars(taq.brutoTaquilla) + '</td></tr>';
-        if (!s.omitido) calc += '<tr class="resta"><td>SADAIC (' + esc(s.descripcion || '') + ')</td><td class="r">- ' + ars(taq.montoSadaic) + '</td></tr>';
-        if (taq.esAlquiler) calc += '<tr class="resta"><td>' + esc(nombrePF) + ' acordado con el venue</td><td class="r">- ' + ars(taq.alquilerSala) + '</td></tr>';
-        else calc += '<tr class="resta"><td>Parte del venue (' + Math.max(0, 100 - taq.porcEscuela) + '% de ' + ars(taq.basePostSadaic) + ')</td><td class="r">- ' + ars(taq.basePostSadaic - taq.netoEscuelaOnline) + '</td></tr>';
-        calc += '<tr><td>Ventas especiales (100% de la escuela)</td><td class="r">+ ' + ars(taq.totVentasEspeciales) + '</td></tr>';
+        if (!s.omitido && taq.montoSadaic > 0) calc += '<tr class="resta"><td>SADAIC</td><td class="r">- ' + ars(taq.montoSadaic) + '</td></tr>';
+        if (taq.esAlquiler) calc += '<tr class="resta"><td>Venue (' + esc(nombrePF.toLowerCase()) + ')</td><td class="r">- ' + ars(taq.alquilerSala) + '</td></tr>';
+        else calc += '<tr class="resta"><td>Venue (' + Math.max(0, 100 - taq.porcEscuela) + '%)</td><td class="r">- ' + ars(taq.basePostSadaic - taq.netoEscuelaOnline) + '</td></tr>';
+        if (taq.totVentasEspeciales > 0) calc += '<tr><td>Ventas especiales</td><td class="r">+ ' + ars(taq.totVentasEspeciales) + '</td></tr>';
 
-        // Pago al venue (monto fijo): seña y entradas cobradas en efectivo por el venue
+        // Pago al venue (monto fijo)
         var bloquePago = '';
         if (taq.esAlquiler && (taq.senaVenue > 0 || taq.efectivoVenue > 0)) {
             var f = '<tr><td>' + esc(nombrePF) + ' acordado</td><td class="r">' + ars(taq.alquilerSala) + '</td></tr>';
-            if (taq.senaVenue > 0) f += '<tr class="resta"><td>Seña ya pagada para reservar</td><td class="r">- ' + ars(taq.senaVenue) + '</td></tr>';
-            if (taq.efectivoVenue > 0) f += '<tr class="resta"><td>Entradas cobradas en efectivo por el venue (' + taq.efectivoVenueCant + ' × ' + ars(taq.efectivoVenueValor) + ')</td><td class="r">- ' + ars(taq.efectivoVenue) + '</td></tr>';
-            bloquePago = '<h3>Pago al venue (' + esc(nombrePF.toLowerCase()) + ')</h3><table><tbody>' + f + '</tbody><tfoot><tr><td>' +
-                (taq.saldoVenue < 0 ? 'A favor de la escuela (el venue retuvo de más)' : 'Saldo pagado al venue el día del festival') +
+            if (taq.senaVenue > 0) f += '<tr class="resta"><td>Seña ya pagada</td><td class="r">- ' + ars(taq.senaVenue) + '</td></tr>';
+            if (taq.efectivoVenue > 0) f += '<tr class="resta"><td>Cobrado en efectivo por el venue (' + taq.efectivoVenueCant + ')</td><td class="r">- ' + ars(taq.efectivoVenue) + '</td></tr>';
+            bloquePago = '<h3>Pago al venue</h3><table><tbody>' + f + '</tbody><tfoot><tr><td>' +
+                (taq.saldoVenue < 0 ? 'A favor de la escuela' : 'Saldo pagado el día') +
                 '</td><td class="r">' + ars(Math.abs(taq.saldoVenue)) + '</td></tr></tfoot></table>';
         }
-        var notaEfectivo = (taq.esAlquiler && taq.efectivoVenue > 0)
-            ? '<p class="aviso">Las ' + taq.efectivoVenueCant + ' entradas cobradas por el venue en efectivo están incluidas en las ventas de puerta; se descuentan del pago al venue.</p>' : '';
+        var tablaNeto = '<h3>Del bruto al neto</h3><table><tbody>' + calc + '<tr class="total"><td>Ingreso neto</td><td class="r">' + ars(taq.recaudacionEntradas) + '</td></tr></tbody></table>';
 
-        return '<div class="kpis">' +
-            '<div class="kpi"><small>Entradas vendidas</small><b>' + cantTotal + '</b><em>' + taq.cantTaquilla + ' comunes · ' + taq.cantVentasEspeciales + ' especiales</em></div>' +
-            '<div class="kpi"><small>Ventas brutas</small><b>' + ars(taq.brutoTotal) + '</b><em>taquilla + especiales</em></div>' +
-            '<div class="kpi neto"><small>Ingreso neto del evento</small><b>' + ars(neto) + '</b><em>lo que le queda a la escuela</em></div></div>' +
-            '<h3>Ventas comunes</h3><table><thead><tr><th>Tipo de entrada</th><th class="r">Precio</th><th class="c">Cantidad</th><th class="r">Subtotal</th></tr></thead><tbody>' +
-            comunes.map(function (c) { return '<tr><td>' + esc(c[0]) + '</td><td class="r">' + c[1] + '</td><td class="c">' + c[2] + '</td><td class="r">' + c[3] + '</td></tr>'; }).join('') +
-            '</tbody><tfoot><tr><td colspan="2">Total taquilla</td><td class="c">' + taq.cantTaquilla + '</td><td class="r">' + ars(taq.brutoTaquilla) + '</td></tr></tfoot></table>' +
-            '<h3>Ventas especiales</h3><table><thead><tr><th>Comprador</th><th>Tipo de venta</th><th class="c">Entradas</th><th>Método de pago</th><th>Cobró</th><th class="r">Valor</th></tr></thead><tbody>' +
-            (especiales.length ? especiales.map(function (e) { return '<tr><td>' + esc(e[0]) + '</td><td>' + esc(e[1]) + '</td><td class="c">' + e[2] + '</td><td>' + esc(e[3]) + '</td><td>' + esc(e[4]) + '</td><td class="r">' + e[5] + '</td></tr>'; }).join('')
-                : '<tr><td colspan="6" style="color:#8a9097">No hay ventas especiales registradas</td></tr>') +
-            '</tbody><tfoot><tr><td colspan="2">Total ventas especiales</td><td class="c">' + taq.cantVentasEspeciales + '</td><td colspan="2"></td><td class="r">' + ars(taq.totVentasEspeciales) + '</td></tr></tfoot></table>' +
-            '<h3>Cómo se llega al ingreso neto</h3><table><tbody>' + calc + '<tr class="total"><td>Ingreso neto del evento</td><td class="r">' + ars(neto) + '</td></tr></tbody></table>' +
-            bloquePago + notaEfectivo;
+        return seccion('<div class="kpis">' +
+                kpi('Entradas vendidas', String(taq.cantTaquilla + taq.cantVentasEspeciales), taq.cantTaquilla + ' comunes · ' + taq.cantVentasEspeciales + ' especiales') +
+                kpi('Ventas brutas', ars(taq.brutoTotal), 'taquilla + especiales') +
+                kpi('Ingreso neto', ars(taq.recaudacionEntradas), 'lo que queda para la escuela', 'neto') + '</div>') +
+            htmlGrafico('Ventas por tipo de entrada', d.ventas, ars(taq.brutoTotal), 'ventas brutas') +
+            seccion('<h3>Entradas comunes</h3><table><thead><tr><th>Tipo</th><th class="r">Precio</th><th class="c">Cantidad</th><th class="r">Subtotal</th></tr></thead><tbody>' + filasComunes +
+                '</tbody><tfoot><tr><td colspan="2">Total taquilla</td><td class="c">' + taq.cantTaquilla + '</td><td class="r">' + ars(taq.brutoTaquilla) + '</td></tr></tfoot></table>') +
+            (especiales.length
+                ? seccion('<h3>Ventas especiales</h3><table><thead><tr><th>Comprador</th><th>Tipo</th><th class="c">Entradas</th><th>Cobró</th><th class="r">Valor</th></tr></thead><tbody>' + especiales.join('') +
+                    '</tbody><tfoot><tr><td colspan="2">Total ventas especiales</td><td class="c">' + taq.cantVentasEspeciales + '</td><td></td><td class="r">' + ars(taq.totVentasEspeciales) + '</td></tr></tfoot></table>')
+                : '') +
+            // El pago al venue va al lado del cálculo del neto, así no queda solo en otra hoja
+            seccion(bloquePago ? '<div class="dos"><div>' + tablaNeto + '</div><div>' + bloquePago + '</div></div>' : tablaNeto);
     }
 
     // ---------------------------------------------------------------
-    // Cuerpo del reporte de GASTOS
-    //  - Gastos operativos cargados en el evento (con su estado de pago).
-    //  - Cobertura audiovisual: total que se paga a la productora, lo que aportan las bandas y lo que paga Mandala.
-    //    El aporte de las bandas se cuenta completo (como si todas hubieran pagado), hayan pagado o no.
-    //  - Servicios adelantados a proveedores.
-    // Los totales son los mismos de la pestaña "Gastos del evento" de Finanzas.
+    // GASTOS
     // ---------------------------------------------------------------
     function cuerpoGastos(fId) {
-        var info = infoDe(fId);
-        var fin = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[fId]) ? ingresosFestivalesDB[fId] : {};
-        var gastos = (Array.isArray(fin.gastosOperativos) ? fin.gastosOperativos : []).filter(function (g) { return g && !(g.esSonido && !(parseFloat(g.monto || 0) > 0)); }); // Sonido en $ 0 = servicio no usado
-        // Orden del reporte: primero lo pendiente, después lo pagado; dentro de cada grupo, por fecha
+        var info = infoDe(fId), fin = finDe(fId);
+        var d = datosGraficosEvento(fId);
+        var gastos = (Array.isArray(fin.gastosOperativos) ? fin.gastosOperativos : []).filter(function (g) { return g && !(g.esSonido && !(num(g.monto) > 0)); }); // Sonido en $ 0 = no se usó
+        // Primero lo pendiente, después lo pagado; dentro de cada grupo por fecha
         var fechaNum = function (s) {
-            var m = String(s || '').match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
-            if (!m) return 9e9;
-            var a = m[3] ? (m[3].length === 2 ? 2000 + parseInt(m[3], 10) : parseInt(m[3], 10)) : 0;
-            return a * 10000 + parseInt(m[2], 10) * 100 + parseInt(m[1], 10);
+            var x = String(s || '').match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+            if (!x) return 9e9;
+            var a = x[3] ? (x[3].length === 2 ? 2000 + parseInt(x[3], 10) : parseInt(x[3], 10)) : 0;
+            return a * 10000 + parseInt(x[2], 10) * 100 + parseInt(x[1], 10);
         };
         gastos = gastos.map(function (g, i) { return { g: g, i: i }; }).sort(function (a, b) {
-            var pa = a.g.pagado ? 1 : 0, pb = b.g.pagado ? 1 : 0;
-            return (pa - pb) || (fechaNum(a.g.fecha) - fechaNum(b.g.fecha)) || (a.i - b.i);
+            return ((a.g.pagado ? 1 : 0) - (b.g.pagado ? 1 : 0)) || (fechaNum(a.g.fecha) - fechaNum(b.g.fecha)) || (a.i - b.i);
         }).map(function (x) { return x.g; });
         var totOp = 0, pendOp = 0;
-        gastos.forEach(function (g) {
-            var m = Math.max(0, parseFloat(g.monto || 0) || 0);
-            totOp += m;
-            if (!g.pagado) pendOp += m;
-        });
+        gastos.forEach(function (g) { var m = num(g.monto); totOp += m; if (!g.pagado) pendOp += m; });
 
         var cob = calcularResumenPresupuestoProductora(fId);
         var serv = calcularServiciosFestival(fId, info);
         var totalEgresos = totOp + serv.adelantado + cob.saldoEscuela;
-        var productora = info.productora || '';
+        var fechaCorta = function (f) { var x = String(f || '').match(/(\d{1,2})\/(\d{1,2})/); return x ? x[1].padStart(2, '0') + '/' + x[2].padStart(2, '0') : '-'; };
 
         var filasGastos = gastos.length ? gastos.map(function (g) {
-            var m = Math.max(0, parseFloat(g.monto || 0) || 0);
             var dest = (typeof destinoGasto === 'function') ? destinoGasto(g) : { nombre: g.proveedor || '' };
-            var prov = dest.nombre || g.proveedor || '-';
-            var quien = g.responsable ? ((g.pagado ? 'Pagó: ' : 'Paga: ') + g.responsable) : '';
-            var pago = [g.metodo || 'Transferencia', quien].filter(Boolean).join(' · ');
-            return '<tr><td>' + esc(g.fecha || '-') + '</td><td>' + esc(g.concepto || '-') + '</td><td>' + esc(prov) + '</td><td>' + esc(pago) +
-                '</td><td class="' + (g.pagado ? 'est-ok' : 'est-pend') + '">' + (g.pagado ? 'Pagado' : 'Pendiente') + '</td><td class="r">' + ars(m) + '</td></tr>';
-        }).join('') : '<tr><td colspan="6" style="color:#8a9097">No hay gastos operativos cargados en este evento</td></tr>';
-
+            var metodo = g.metodo === 'Efectivo' ? 'Efectivo' : 'Transf.';
+            return '<tr><td class="nw">' + fechaCorta(g.fecha) + '</td><td>' + esc(g.concepto || '-') + '</td><td class="nw">' + esc(dest.nombre || g.proveedor || '-') + '</td>' +
+                '<td class="nw">' + esc(g.responsable || '-') + ' <span class="chico">· ' + metodo + '</span></td>' +
+                '<td class="' + (g.pagado ? 'est-ok' : 'est-pend') + '">' + (g.pagado ? 'Pagado' : 'Pendiente') + '</td><td class="r">' + ars(num(g.monto)) + '</td></tr>';
+        }).join('') : '<tr><td colspan="6" class="gris">No hay gastos cargados</td></tr>';
         var pie = '<tr><td colspan="5">Total gastos operativos</td><td class="r">' + ars(totOp) + '</td></tr>';
         if (pendOp > 0) pie += '<tr><td colspan="5">Pendiente de pago</td><td class="r">' + ars(pendOp) + '</td></tr>';
 
-        // Cobertura audiovisual: Fotos y Video, cada uno con su costo, lo que cubren las bandas y lo que falta pagar
-        var filasCob = '';
-        var totCosto = 0, totAporte = 0, totPagar = 0, totPend = 0;
-        // Lo pendiente primero (Fotos antes que Video si empatan)
+        // Cobertura audiovisual: Fotos y Video
+        var filasCob = '', totCosto = 0, totAporte = 0, totPagar = 0, totPend = 0;
         (cob.itemsCobertura || []).slice().sort(function (a, b) {
-            var pa = (a.diferencia > 0 && !a.pagada) ? 0 : 1, pb = (b.diferencia > 0 && !b.pagada) ? 0 : 1;
-            return pa - pb;
+            return ((a.diferencia > 0 && !a.pagada) ? 0 : 1) - ((b.diferencia > 0 && !b.pagada) ? 0 : 1);
         }).forEach(function (it) {
             var detalle = '';
             if (it.clave === 'video') {
-                var partes = ['base ' + ars(cob.baseVideo)];
-                if (cob.cantReelsEscuela > 0) partes.push('reels de la escuela (' + cob.cantReelsEscuela + ' × ' + ars(cob.baseReel) + ') ' + ars(cob.costoReelsEscuela));
-                if (cob.costoEdicionReelsBandas > 0) partes.push('edición de reels de las bandas (' + cob.cantReelsBandas + ') ' + ars(cob.costoEdicionReelsBandas));
-                detalle = '<div style="font-size:11px;color:#8a9097;font-weight:400">' + partes.join(' · ') + '</div>';
+                var partes = ['base'];
+                if (cob.cantReelsEscuela > 0) partes.push(cob.cantReelsEscuela + ' reels escuela');
+                if (cob.cantReelsBandas > 0) partes.push(cob.cantReelsBandas + ' reels bandas');
+                detalle = '<div class="chico">' + partes.join(' + ') + '</div>';
             }
-            var aporteUsado = Math.min(it.aporte, it.costo);
-            var estado = it.diferencia <= 0
-                ? '<td class="est-ok">Cubierto</td>'
-                : '<td class="' + (it.pagada ? 'est-ok' : 'est-pend') + '">' + (it.pagada ? 'Pagado' : 'Pendiente') + '</td>';
-            filasCob += '<tr><td><b>' + it.nombre + '</b>' + detalle + '</td><td class="r">' + ars(it.costo) + '</td><td class="r">' + ars(aporteUsado) + '</td>' + estado + '<td class="r">' + ars(it.diferencia) + '</td></tr>';
-            totCosto += it.costo; totAporte += aporteUsado; totPagar += it.diferencia;
+            var aporte = Math.min(it.aporte, it.costo);
+            var estado = it.diferencia <= 0 ? '<td class="est-ok">Cubierto</td>' : '<td class="' + (it.pagada ? 'est-ok' : 'est-pend') + '">' + (it.pagada ? 'Pagado' : 'Pendiente') + '</td>';
+            filasCob += '<tr><td><b>' + it.nombre + '</b>' + detalle + '</td><td class="r">' + ars(it.costo) + '</td><td class="r">' + ars(aporte) + '</td>' + estado + '<td class="r">' + ars(it.diferencia) + '</td></tr>';
+            totCosto += it.costo; totAporte += aporte; totPagar += it.diferencia;
             if (!it.pagada) totPend += it.diferencia;
         });
-        if (!filasCob) filasCob = '<tr><td colspan="5" style="color:#8a9097">Sin cobertura audiovisual en este evento</td></tr>';
-        var pieCob = '<tr><td>Total cobertura audiovisual</td><td class="r">' + ars(totCosto) + '</td><td class="r">' + ars(totAporte) + '</td><td></td><td class="r">' + ars(totPagar) + '</td></tr>';
-        if (totPend > 0) pieCob += '<tr><td colspan="4">Pendiente de pago</td><td class="r">' + ars(totPend) + '</td></tr>';
-        var notaCob = '<p class="aviso">Lo que cubren las bandas se cuenta completo, hayan pagado ya o no su cobertura.' +
-            (cob.excedenteCobertura > 0 ? ' Las bandas aportan ' + ars(cob.excedenteCobertura) + ' más que el costo: ese excedente queda para la escuela.' : '') + '</p>';
+        var bloqueCob = '';
+        if (filasCob) {
+            var pieCob = '<tr><td>Total</td><td class="r">' + ars(totCosto) + '</td><td class="r">' + ars(totAporte) + '</td><td></td><td class="r">' + ars(totPagar) + '</td></tr>';
+            if (totPend > 0) pieCob += '<tr><td colspan="4">Pendiente de pago</td><td class="r">' + ars(totPend) + '</td></tr>';
+            bloqueCob = seccion('<h3>Cobertura audiovisual</h3><table><thead><tr><th>Concepto</th><th class="r">Costo</th><th class="r">Cubren bandas</th><th>Estado</th><th class="r">A pagar</th></tr></thead><tbody>' +
+                filasCob + '</tbody><tfoot>' + pieCob + '</tfoot></table>' +
+                '<p class="aviso">Lo que cubren las bandas se cuenta completo, hayan pagado o no.' + (cob.excedenteCobertura > 0 ? ' Excedente para la escuela: ' + ars(cob.excedenteCobertura) + '.' : '') + '</p>');
+        }
 
-        // Servicios adelantados
         var bloqueServ = '';
         if (serv.adelantado > 0) {
             var recup = Math.max(0, serv.adelantado - serv.absorbido);
-            bloqueServ = '<h3>Servicios adelantados a proveedores</h3><table><tbody>' +
-                '<tr><td>Servicios que la escuela ya pagó al proveedor (sesionistas y salas)</td><td class="r">' + ars(serv.adelantado) + '</td></tr>' +
+            bloqueServ = seccion('<h3>Servicios adelantados</h3><table><tbody>' +
+                '<tr><td>Pagado por la escuela a salas y sesionistas</td><td class="r">' + ars(serv.adelantado) + '</td></tr>' +
                 '<tr><td>A recuperar de los alumnos</td><td class="r">' + ars(recup) + '</td></tr>' +
                 (serv.absorbido > 0 ? '<tr><td>Absorbido por la escuela</td><td class="r">' + ars(serv.absorbido) + '</td></tr>' : '') +
-                '</tbody></table>';
+                '</tbody></table>');
         }
 
-        // Resumen final
         var resumen = '<tr><td>Gastos operativos</td><td class="r">' + ars(totOp) + '</td></tr>' +
-            '<tr><td>Cobertura audiovisual (sin lo que cubren las bandas)</td><td class="r">' + ars(cob.saldoEscuela) + '</td></tr>' +
+            '<tr><td>Cobertura audiovisual</td><td class="r">' + ars(cob.saldoEscuela) + '</td></tr>' +
             (serv.adelantado > 0 ? '<tr><td>Servicios adelantados</td><td class="r">' + ars(serv.adelantado) + '</td></tr>' : '') +
-            '<tr class="total"><td>Total de gastos del evento</td><td class="r">' + ars(totalEgresos) + '</td></tr>';
+            '<tr class="total"><td>Total de gastos</td><td class="r">' + ars(totalEgresos) + '</td></tr>';
+        var pendTotal = pendOp + totPend;
 
-        return '<div class="kpis">' +
-            '<div class="kpi"><small>Gastos operativos</small><b>' + ars(totOp) + '</b><em>' + gastos.length + (gastos.length === 1 ? ' gasto cargado' : ' gastos cargados') + '</em></div>' +
-            '<div class="kpi"><small>Cobertura audiovisual</small><b>' + ars(cob.saldoEscuela) + '</b><em>sin lo que cubren las bandas, de ' + ars(cob.presupuestoProductora) + ' en total</em></div>' +
-            '<div class="kpi neto"><small>Total de gastos</small><b>' + ars(totalEgresos) + '</b><em>lo que paga la escuela</em></div></div>' +
-            '<h3>Gastos del evento</h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Destinatario</th><th>Pago</th><th>Estado</th><th class="r">Monto</th></tr></thead><tbody>' +
-            filasGastos + '</tbody><tfoot>' + pie + '</tfoot></table>' +
-            '<h3>Cobertura audiovisual</h3><table><thead><tr><th>Concepto</th><th class="r">Costo</th><th class="r">Cubierto por bandas</th><th>Estado</th><th class="r">A pagar</th></tr></thead><tbody>' + filasCob + '</tbody><tfoot>' + pieCob + '</tfoot></table>' + notaCob +
-            bloqueServ +
-            '<h3>Total de gastos del evento</h3><table><tbody>' + resumen + '</tbody></table>';
+        return seccion('<div class="kpis">' +
+                kpi('Gastos operativos', ars(totOp), gastos.length + (gastos.length === 1 ? ' gasto' : ' gastos')) +
+                kpi('Cobertura audiovisual', ars(cob.saldoEscuela), 'de ' + ars(cob.presupuestoProductora) + ' en total') +
+                kpi('Total de gastos', ars(totalEgresos), pendTotal > 0 ? 'pendiente ' + ars(pendTotal) : 'todo pagado', 'neto') + '</div>') +
+            htmlGrafico('Gastos por concepto', d.gastos, ars(totalEgresos), 'total de gastos') +
+            seccion('<h3>Gastos del evento</h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Destinatario</th><th>Paga</th><th>Estado</th><th class="r">Monto</th></tr></thead><tbody>' +
+                filasGastos + '</tbody><tfoot>' + pie + '</tfoot></table>') +
+            bloqueCob + bloqueServ +
+            seccion('<h3>Total de gastos</h3><table><tbody>' + resumen + '</tbody></table>');
+    }
+
+    // ---------------------------------------------------------------
+    // Armado del reporte
+    // ---------------------------------------------------------------
+    function cabecera(fId, tipo) {
+        var info = infoDe(fId), fin = finDe(fId);
+        var chips = [info.fecha, info.venue];
+        if (tipo !== 'gastos') {
+            var taq = calcularTaquillaFestival(fId, fin, entDe(fId));
+            var ac = taq.acuerdo || {};
+            var nombrePF = window.NOMBRE_PAGO_FIJO || 'Monto fijo';
+            chips.push(ac.esAlquiler ? nombrePF + ' ' + ars(ac.alquilerMonto)
+                : (ac.porcFinal === 100 ? '100% escuela' : (ac.porcFinal != null ? ac.porcFinal + '% escuela · ' + (100 - ac.porcFinal) + '% venue' : '')));
+        }
+        return '<div class="cab"><div><div class="marca">Mandala Ensambles</div><div class="sub">Festivales &amp; Eventos</div></div>' +
+            '<div class="der"><div class="tit">' + TITULOS[tipo] + '</div><div class="sub">Emitido el ' + new Date().toLocaleDateString('es-AR') + '</div></div></div>' +
+            '<h2>' + esc(info.nombre || 'Evento') + '</h2>' +
+            '<div class="meta">' + chips.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
+    }
+    function piePagina(fId, tipo, extra) {
+        return '<div class="pie"><span>Mandala Festivales · ' + esc(infoDe(fId).nombre || 'Evento') + '</span><span>' + TITULOS[tipo] + (extra ? ' · ' + extra : '') + '</span></div>';
+    }
+
+    // Devuelve los bloques del cuerpo (cada uno es una unidad que no se corta al paginar)
+    function bloquesCuerpo(fId, tipo) {
+        var cont = document.createElement('div');
+        if (tipo === 'ventas') cont.innerHTML = cuerpoVentas(fId);
+        else if (tipo === 'gastos') cont.innerHTML = cuerpoGastos(fId);
+        else cont.innerHTML = '<div class="sec"><div class="bloque">Resumen del evento</div></div>' + cuerpoResumen(fId) +
+            '<div class="sec" data-hoja-nueva="1"><div class="bloque">Ventas</div></div>' + cuerpoVentas(fId) +
+            '<div class="sec" data-hoja-nueva="1"><div class="bloque">Gastos</div></div>' + cuerpoGastos(fId);
+        return Array.prototype.map.call(cont.children, function (n) { return n.outerHTML; });
     }
 
     function armarHtml(fId, tipo) {
         tipo = TITULOS[tipo] ? tipo : 'ventas';
-        var info = infoDe(fId);
-        var fin = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[fId]) ? ingresosFestivalesDB[fId] : {};
-        var chips = [info.fecha, info.venue ? 'Venue: ' + info.venue : ''];
-        if (tipo !== 'gastos') {
-            var ent = (typeof entradasFestivales !== 'undefined' && entradasFestivales[fId]) ? entradasFestivales[fId] : (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : {});
-            var taq = calcularTaquillaFestival(fId, fin, ent);
-            var acuerdo = taq.acuerdo || {};
-            var nombrePF = window.NOMBRE_PAGO_FIJO || 'Monto fijo';
-            chips.push('Acuerdo: ' + (acuerdo.esAlquiler ? nombrePF + ' (' + ars(acuerdo.alquilerMonto) + ')'
-                : (acuerdo.porcFinal === 100 ? '100% Escuela' : (acuerdo.porcFinal != null ? acuerdo.porcFinal + '% Escuela / ' + (100 - acuerdo.porcFinal) + '% Venue' : 'A definir'))));
-        }
-
-        var cuerpo, aviso;
-        if (tipo === 'ventas') {
-            cuerpo = cuerpoVentas(fId);
-            aviso = 'Este reporte muestra solo ingresos. No incluye gastos del evento ni la cobertura audiovisual.';
-        } else if (tipo === 'gastos') {
-            cuerpo = cuerpoGastos(fId);
-            aviso = 'Este reporte muestra solo egresos. La ganancia final del evento se ve en Finanzas.';
-        } else {
-            cuerpo = '<div class="bloque" style="margin-top:6px">Ventas</div>' + cuerpoVentas(fId) +
-                '<div class="bloque">Gastos</div>' + cuerpoGastos(fId);
-            aviso = 'Reporte con las ventas y los gastos del evento. La ganancia final se ve en Finanzas: incluye también los cobros por incumplimiento de contrato y los servicios.';
-        }
-
-        return '<style>' + CSS + '</style><div class="rv">' +
-            '<div class="cab"><div><div class="marca">Mandala Ensambles</div><div class="sub">Festivales &amp; Eventos</div></div>' +
-            '<div class="der"><div class="tit">' + TITULOS[tipo] + '</div><div class="sub">Emitido el ' + new Date().toLocaleDateString('es-AR') + '</div></div></div>' +
-            '<h2>' + esc(info.nombre || 'Evento') + '</h2>' +
-            '<div class="meta">' + chips.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div>' +
-            cuerpo +
-            '<p class="aviso">' + aviso + '</p>' +
-            '<div class="pie"><span>Mandala Festivales</span><span>' + esc(info.nombre || 'Evento') + ' · ' + TITULOS[tipo] + '</span></div></div>';
+        return '<style>' + CSS + '</style><div class="rv">' + cabecera(fId, tipo) + bloquesCuerpo(fId, tipo).join('') + piePagina(fId, tipo) + '</div>';
     }
 
-    // tipo: 'ventas' | 'gastos' | 'completo' · formato: 'png' (por defecto) o 'jpg'
+    async function renderizarNodo(html) {
+        var cont = document.createElement('div');
+        cont.style.cssText = 'position:fixed;left:-10000px;top:0;z-index:-1;background:#fff';
+        cont.innerHTML = html;
+        document.body.appendChild(cont);
+        // Esperar a que carguen las imágenes de los gráficos
+        await Promise.all(Array.prototype.map.call(cont.querySelectorAll('img'), function (img) {
+            return img.complete ? null : new Promise(function (r) { img.onload = img.onerror = r; });
+        }));
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        return cont;
+    }
+
+    // ---------------------------------------------------------------
+    // IMAGEN (ventas y gastos)
+    // ---------------------------------------------------------------
     window.generarReporteImagen = async function (festId, tipo, formato) {
         var fId = festId || (typeof eventoActualId !== 'undefined' ? eventoActualId : null);
         tipo = TITULOS[tipo] ? tipo : 'ventas';
+        if (tipo === 'completo' && typeof window.generarReportePDF === 'function') return window.generarReportePDF(fId);
         if (!fId) { mostrarToast('Elegí un evento para generar el reporte.', 'warning'); return; }
         if (typeof window.html2canvas !== 'function') { mostrarToast('No se pudo cargar la herramienta de imagen. Revisá la conexión y reintentá.', 'error'); return; }
-        var info = infoDe(fId);
         var esJpg = String(formato || 'png').toLowerCase() === 'jpg';
-
-        var cont = document.createElement('div');
-        cont.style.cssText = 'position:fixed;left:-10000px;top:0;z-index:-1;background:#fff';
+        var cont;
         try {
-            cont.innerHTML = armarHtml(fId, tipo);
-        } catch (e) {
-            console.error('[Mandala] Error armando el ' + TITULOS[tipo].toLowerCase(), e);
-            mostrarToast('No se pudo armar el ' + TITULOS[tipo].toLowerCase() + '.', 'error');
-            return;
-        }
-        document.body.appendChild(cont);
-        try {
-            if (document.fonts && document.fonts.ready) await document.fonts.ready;
-            var nodo = cont.querySelector('.rv');
-            var canvas = await window.html2canvas(nodo, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+            cont = await renderizarNodo(armarHtml(fId, tipo));
+            var canvas = await window.html2canvas(cont.querySelector('.rv'), { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
             var blob = await new Promise(function (res) { canvas.toBlob(res, esJpg ? 'image/jpeg' : 'image/png', 0.92); });
             if (!blob) throw new Error('No se pudo generar la imagen');
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'Reporte_' + tipo + '_' + limpiarNombreArchivo(info.nombre) + (esJpg ? '.jpg' : '.png');
-            document.body.appendChild(a); a.click(); a.remove();
-            setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+            descargarBlob(blob, 'Reporte_' + tipo + '_' + limpiarNombreArchivo(infoDe(fId).nombre) + (esJpg ? '.jpg' : '.png'));
             mostrarToast(TITULOS[tipo] + ' descargado (' + (esJpg ? 'JPG' : 'PNG') + ')', 'success');
         } catch (e) {
             console.error('[Mandala] Error generando el ' + TITULOS[tipo].toLowerCase(), e);
             mostrarToast('No se pudo generar el ' + TITULOS[tipo].toLowerCase() + '.', 'error');
         } finally {
-            cont.remove();
+            if (cont) cont.remove();
         }
     };
-    // Para pruebas: devuelve el HTML del reporte sin generar la imagen
+
+    function descargarBlob(blob, nombre) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = nombre;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    }
+
+    // ---------------------------------------------------------------
+    // PDF (reporte completo): hojas A4, sin cortar tablas ni gráficos entre hojas
+    // ---------------------------------------------------------------
+    var promesaJsPDF = null;
+    function cargarJsPDF() {
+        if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+        if (!promesaJsPDF) {
+            promesaJsPDF = new Promise(function (ok, mal) {
+                var s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                s.onload = function () { (window.jspdf && window.jspdf.jsPDF) ? ok(window.jspdf.jsPDF) : mal(new Error('jsPDF no disponible')); };
+                s.onerror = function () { promesaJsPDF = null; mal(new Error('No se pudo cargar jsPDF')); };
+                document.head.appendChild(s);
+            });
+        }
+        return promesaJsPDF;
+    }
+
+    // Reparte los bloques en hojas según su alto real
+    async function paginar(fId, tipo) {
+        var bloques = bloquesCuerpo(fId, tipo);
+        var medir = await renderizarNodo('<style>' + CSS + '</style><div class="rv">' + cabecera(fId, tipo) + '<div class="medir">' + bloques.join('') + '</div>' + piePagina(fId, tipo, 'Hoja 1 de 1') + '</div>');
+        var rv = medir.querySelector('.rv');
+        var altoCab = rv.querySelector('.medir').offsetTop;
+        var altoPie = rv.querySelector('.pie').offsetHeight + 18 + 28; // pie + margen + padding inferior
+        var nodos = rv.querySelector('.medir').children;
+        var altos = Array.prototype.map.call(nodos, function (n) {
+            var cs = getComputedStyle(n);
+            return n.offsetHeight + parseFloat(cs.marginTop || 0) + parseFloat(cs.marginBottom || 0);
+        });
+        var nuevas = Array.prototype.map.call(nodos, function (n) { return n.getAttribute('data-hoja-nueva') === '1'; });
+        medir.remove();
+
+        var disponible = ALTO_HOJA - altoCab - altoPie;
+        var hojas = [[]], usado = 0;
+        bloques.forEach(function (b, i) {
+            // Un título de sección va con el bloque siguiente; las secciones nuevas empiezan hoja
+            var alto = altos[i] + (nuevas[i] && altos[i + 1] ? altos[i + 1] : 0);
+            if ((nuevas[i] && hojas[hojas.length - 1].length) || (usado + alto > disponible && hojas[hojas.length - 1].length)) {
+                hojas.push([]); usado = 0;
+            }
+            hojas[hojas.length - 1].push(b);
+            usado += altos[i];
+        });
+        return hojas;
+    }
+
+    window.generarReportePDF = async function (festId) {
+        var fId = festId || (typeof eventoActualId !== 'undefined' ? eventoActualId : null);
+        var tipo = 'completo';
+        if (!fId) { mostrarToast('Elegí un evento para generar el reporte.', 'warning'); return; }
+        if (typeof window.html2canvas !== 'function') { mostrarToast('No se pudo cargar la herramienta de imagen. Revisá la conexión y reintentá.', 'error'); return; }
+        mostrarToast('Generando el reporte completo en PDF…', 'info');
+        var conts = [];
+        try {
+            var JsPDF = await cargarJsPDF();
+            var hojas = await paginar(fId, tipo);
+            var pdf = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+            for (var i = 0; i < hojas.length; i++) {
+                var html = '<style>' + CSS + '</style><div class="rv" style="height:' + ALTO_HOJA + 'px;display:flex;flex-direction:column">' + cabecera(fId, tipo) +
+                    '<div style="flex:1 1 auto">' + hojas[i].join('') + '</div>' + piePagina(fId, tipo, 'Hoja ' + (i + 1) + ' de ' + hojas.length) + '</div>';
+                var cont = await renderizarNodo(html);
+                conts.push(cont);
+                var canvas = await window.html2canvas(cont.querySelector('.rv'), { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false, height: ALTO_HOJA, windowHeight: ALTO_HOJA });
+                if (i > 0) pdf.addPage();
+                var ancho = 210, alto = Math.min(297, canvas.height * ancho / canvas.width);
+                pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, ancho, alto);
+                cont.remove();
+            }
+            pdf.save('Reporte_completo_' + limpiarNombreArchivo(infoDe(fId).nombre) + '.pdf');
+            mostrarToast('Reporte completo descargado (PDF, ' + hojas.length + (hojas.length === 1 ? ' hoja' : ' hojas') + ')', 'success');
+        } catch (e) {
+            console.error('[Mandala] Error generando el reporte completo en PDF', e);
+            mostrarToast('No se pudo generar el PDF. Revisá la conexión y reintentá.', 'error');
+        } finally {
+            conts.forEach(function (c) { if (c && c.parentNode) c.remove(); });
+        }
+    };
+
+    // Para pruebas y para Estadísticas
     window.armarHtmlReporte = armarHtml;
+    window.datosGraficosEvento = datosGraficosEvento;
+    window.paginarReporte = paginar;
 
     // Compatibilidad con los nombres anteriores
     window.generarReporteVentasImagen = function (festId, formato) { return window.generarReporteImagen(festId, 'ventas', formato); };

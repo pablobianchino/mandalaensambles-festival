@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.17">
-    <script src="src/ui/iconos.js?v=v2.17"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.18">
+    <script src="src/ui/iconos.js?v=v2.18"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.17" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.18" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -2332,7 +2332,7 @@
                                         <th style="text-align:left;">CONCEPTO / PARTICIPANTE</th>
                                         <th style="width:130px; text-align:right;">MONTO</th>
                                         <th style="width:120px; text-align:left;">VENCE</th>
-                                        <th class="col-accion-deudas col-accion-header" style="width:170px; text-align:center;">ACCIÓN</th>
+                                        <th class="col-accion-deudas col-accion-header" style="width:190px; text-align:center;">ACCIÓN</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-deudas-filas">
@@ -6175,7 +6175,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.17";
+        const APP_VERSION = "v2.18";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -20523,10 +20523,10 @@
                         : `<button type="button" class="btn-app btn-secondary btn-sm" title="Configurar el traspaso" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">Gestionar</button>`)
                     : `<button type="button" class="btn-marcar" onclick="saldarDeudaIndividual('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}')">${esPago ? 'Marcar pagado' : 'Marcar cobrado'}</button>`;
                 const botonAbsorber = (item.tipo === 'servicio_alumno')
-                    ? `<button type="button" class="btn-app btn-secondary btn-sm" title="Gestionar: la escuela absorbe esta cuota" onclick="confirmarAbsorberDesdeDeudas('${item.festId}', '${escJs(item.bandaServicio || item.itemId)}', '${item.idxCuota}', '${escJs(String(item.concepto || '').replace(/^\S+\s/, ''))}')">⚙️</button>` : '';
+                    ? `<button type="button" class="btn-cfg-chico" title="Gestionar: la escuela absorbe esta cuota" onclick="confirmarAbsorberDesdeDeudas('${item.festId}', '${escJs(item.bandaServicio || item.itemId)}', '${item.idxCuota}', '${escJs(String(item.concepto || '').replace(/^\S+\s/, ''))}')">⚙️</button>` : '';
                 const botonOmitir = '';
                 const botonCuotas = (!esPago && !esTraspasoItem && item.tipo !== 'servicio_alumno' && item.tipo !== 'banda_cobertura')
-                    ? `<button type="button" class="btn-app btn-secondary btn-sm" title="Plan de cuotas" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">⚙️</button>` : '';
+                    ? `<button type="button" class="btn-cfg-chico" title="Plan de cuotas" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">⚙️</button>` : '';
                 tr.innerHTML = `
                     <td class="col-chk-deudas" style="text-align:center;">
                         <button type="button" class="expand-btn-finanzas btn-detalle-deuda no-print" data-deuda-id="${idSeguro}" title="Ver medio de pago, ${esPago ? 'quién paga' : 'a quién paga'} y observaciones" onclick="alternarDetalleDeuda('${idSeguro}')">＋</button>

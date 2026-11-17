@@ -4198,3 +4198,8 @@ html.modo-sonidista #tabla-checklist-interactiva :is(input, select, textarea, bu
 #tabla-gastos-festival td:nth-child(2) { min-width: 250px; }
 #tabla-cobertura-gastos td:first-child { min-width: 170px; }
 #tabla-gastos-festival td:first-child { min-width: 96px; }
+/* Deudas: ⚙ chico a la derecha del botón de acción */
+.btn-cfg-chico { width: 26px; height: 26px; padding: 0; display: inline-grid; place-items: center; border-radius: var(--r-sm, 7px); border: 1px solid var(--line-2); background: var(--surface); color: var(--ink-3); font-size: 12px; line-height: 1; cursor: pointer; box-shadow: none; vertical-align: middle; flex: 0 0 26px; }
+.btn-cfg-chico:hover { border-color: var(--teal); color: var(--teal-700, #006173); }
+#tabla-deudas-consolidada td.col-accion-cell > div { display: inline-flex !important; flex-wrap: nowrap !important; flex-direction: row !important; align-items: center; gap: 6px; }
+@media print { .btn-cfg-chico { display: none !important; } }

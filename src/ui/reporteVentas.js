@@ -94,7 +94,7 @@
             acum += largo;
         });
         if (!arcos) arcos = '<circle cx="80" cy="80" r="' + R + '" fill="none" stroke="#ece6dc" stroke-width="28"/>';
-        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">' + arcos +
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 160 160">' + arcos +
             '<text x="80" y="' + (subCentro ? 78 : 85) + '" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" fill="#1c1f22">' + esc(centro || '') + '</text>' +
             (subCentro ? '<text x="80" y="96" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#8a9097">' + esc(subCentro) + '</text>' : '') +
             '</svg>';
@@ -433,7 +433,7 @@
         var cont;
         try {
             cont = await renderizarNodo(armarHtml(fId, tipo));
-            var canvas = await window.html2canvas(cont.querySelector('.rv'), { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+            var canvas = await window.html2canvas(cont.querySelector('.rv'), { scale: 3, backgroundColor: '#ffffff', useCORS: true, logging: false });
             var blob = await new Promise(function (res) { canvas.toBlob(res, esJpg ? 'image/jpeg' : 'image/png', 0.92); });
             if (!blob) throw new Error('No se pudo generar la imagen');
             descargarBlob(blob, 'Reporte_' + tipo + '_' + limpiarNombreArchivo(infoDe(fId).nombre) + (esJpg ? '.jpg' : '.png'));
@@ -517,10 +517,10 @@
                     '<div style="flex:1 1 auto">' + hojas[i].join('') + '</div>' + piePagina(fId, tipo, 'Hoja ' + (i + 1) + ' de ' + hojas.length) + '</div>';
                 var cont = await renderizarNodo(html);
                 conts.push(cont);
-                var canvas = await window.html2canvas(cont.querySelector('.rv'), { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false, height: ALTO_HOJA, windowHeight: ALTO_HOJA });
+                var canvas = await window.html2canvas(cont.querySelector('.rv'), { scale: 3, backgroundColor: '#ffffff', useCORS: true, logging: false, height: ALTO_HOJA, windowHeight: ALTO_HOJA });
                 if (i > 0) pdf.addPage();
                 var ancho = 210, alto = Math.min(297, canvas.height * ancho / canvas.width);
-                pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, ancho, alto);
+                pdf.addImage(canvas, 'PNG', 0, 0, ancho, alto, undefined, 'FAST'); // PNG a 3x: texto nítido, sin el desenfoque del JPEG
                 cont.remove();
             }
             pdf.save('Reporte_completo_' + limpiarNombreArchivo(infoDe(fId).nombre) + '.pdf');

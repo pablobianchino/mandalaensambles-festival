@@ -186,7 +186,8 @@
     function cuerpoResumen(fId) {
         var d = datosGraficosEvento(fId), m = d.metricas;
         var fila = function (rot, v, clase) { return '<tr' + (clase ? ' class="' + clase + '"' : '') + '><td>' + rot + '</td><td class="r">' + ars(v) + '</td></tr>'; };
-        var ing = fila('Ventas netas de entradas', m.recaudacionEntradas || 0)
+        var ing = fila('Ventas netas de entradas', m.ventasEntradasNetas !== undefined ? m.ventasEntradasNetas : (m.recaudacionEntradas || 0))
+            + ((m.ventasEspeciales || 0) > 0 ? fila('Ventas especiales', m.ventasEspeciales) : '')
             + ((m.ingresosIncumplimientos || 0) > 0 ? fila('Cobros por incumplimiento', m.ingresosIncumplimientos) : '')
             + ((m.ingresosSalasPropias || 0) > 0 ? fila('Uso de salas de la escuela', m.ingresosSalasPropias) : '')
             + ((m.excedenteCobertura || 0) > 0 ? fila('Excedente de cobertura', m.excedenteCobertura) : '');

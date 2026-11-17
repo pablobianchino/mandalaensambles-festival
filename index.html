@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.16">
-    <script src="src/ui/iconos.js?v=v2.16"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.17">
+    <script src="src/ui/iconos.js?v=v2.17"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.16" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.17" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -2010,42 +2010,16 @@
                                 </div>
                             </div>
 
-                            <!-- C. RESUMEN DE INGRESOS POR PAGO DE INCUMPLIMIENTOS DE ENTRADAS -->
-                            <div class="content-card collapsible-numbered-card collapsed" style="margin-top:20px;">
-                                <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
-                                    <div>
-                                        <h3 class="card-title"><span class="collapsible-chevron">▼</span><span class="sec-ltr">C</span>Cobros por incumplimiento de entradas</h3>
-                                        <span style="font-size:12px; color:var(--text-muted);">
-                                            Lo cobrado por cupos de entradas no cubiertos. Ingresa 100% a la escuela y se suma a la ganancia real del festival.
-                                        </span>
-                                    </div>
-                                    <div class="sec-chips" onclick="event.stopPropagation()">
-                                        <span class="sec-chip" id="chip-inc-pct">Cobrado 0%</span>
-                                        <button type="button" class="btn-app btn-secondary" onclick="switchFinanzasTab('cobros')">Ir a Cobros</button>
-                                    </div>
-                                </div>
-
-                                <div class="collapsible-card-body">
-                                    <div class="fin-grupos">
-                                        <div class="fin-g fin-g-ing"><h4>Cobro por incumplimiento</h4>
-                                            <div class="fin-r"><em>Deuda total</em><strong id="txt-inc-resumen-total-deuda">$ 0</strong></div>
-                                            <div class="fin-r"><em>Cobrado (ingresa a Caja)</em><strong id="txt-inc-resumen-cobrado">$ 0</strong></div>
-                                            <div class="fin-r fin-tot"><em>Por cobrar</em><strong id="txt-inc-resumen-pendiente">$ 0</strong></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- SUB-PESTAÑA 3: GASTOS DEL EVENTO -->
                         <div id="tab-fin-gastos" class="tab-fin-content" style="display:none;">
+                            <!-- 1. Gastos cargados (filas de una sola línea) -->
                             <div class="content-card" id="card-gastos-evento">
                                 <div class="card-header-flex" onclick="toggleBloqueGastosEvento(event)" style="cursor:pointer;" title="Click para colapsar o abrir la tabla de gastos">
                                     <div>
                                         <h3 class="card-title"><span class="collapsible-chevron" id="chevron-gastos-evento">▼</span>Gastos del evento</h3>
-                                        <span style="font-size:12px; color:var(--text-muted);">
-                                            Gastos reales de este festival (fletes, sonido extra, staff) con su estado de pago. La cobertura y los servicios adelantados se calculan solos.
-                                        </span>
+                                        <span style="font-size:12px; color:var(--text-muted);">Fletes, sonido, staff y demás gastos del festival.</span>
                                     </div>
                                     <div class="sec-chips">
                                         <span class="sec-chip" id="chip-gastos-total">Total $ 0</span>
@@ -2055,49 +2029,75 @@
                                 </div>
 
                                 <div class="table-responsive">
-                                    <table class="sec-tabla" id="tabla-gastos-festival">
+                                    <table class="sec-tabla tabla-gastos-ev" id="tabla-gastos-festival">
                                         <thead>
                                             <tr>
-                                                <th style="width:125px;">Fecha</th>
-                                                <th style="min-width:240px;">Concepto</th>
-                                                <th style="width:180px;">Destinatario</th>
-                                                <th class="r" style="width:130px;">Monto</th>
-                                                <th style="width:360px;">Detalle del pago</th>
+                                                <th style="width:104px;">Fecha</th>
+                                                <th>Concepto</th>
+                                                <th style="width:150px;">Destinatario</th>
+                                                <th class="r" style="width:112px;">Monto</th>
+                                                <th>Pago</th>
                                                 <th style="width:100px;">Estado</th>
-                                                <th class="r" style="width:150px;" id="th-accion-gastos-fest">Acción</th>
+                                                <th class="r" style="width:168px;" id="th-accion-gastos-fest">Acción</th>
                                             </tr>
                                         </thead>
                                         <tbody id="tbody-gastos-festival-operativos">
                                             <!-- Se renderiza dinámicamente sin gastos ficticios vía renderizarGastosFestival() -->
                                         </tbody>
                                         <tbody id="tbody-gasto-cobertura-escuela">
-                                            <!-- FILA AUTOMÁTICA: COBERTURA AUDIOVISUAL ESCUELA -->
-                                            <!-- FILAS AUTOMÁTICAS: COBERTURA AUDIOVISUAL (Fotos y Video por separado), se arman en renderizarFilasCoberturaGastos() -->
-                                            <tr id="tr-gasto-cob-fotos"></tr>
-                                            <tr id="tr-gasto-cob-video"></tr>
-                                            <tr id="tr-gasto-cob-resumen"></tr>
                                             <tr id="tr-gasto-servicios-adelantados" style="display:none;">
-                                                <td class="sec-mono m-cero" style="text-align:left;">—</td>
-                                                <td>
-                                                    <strong>Servicios adelantados</strong> <span class="pill-status pill-info" style="font-size:10.5px;" title="Se calcula desde la solapa Servicios">Automático</span>
-                                                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;" id="gasto-serv-adelantado-det">El proveedor ya cobró; falta cobrar a los alumnos. Se descuenta a medida que pagan.</div>
-                                                </td>
+                                                <td class="gasto-fecha-auto">—</td>
+                                                <td><strong>Servicios adelantados</strong> <span class="chico-gris" id="gasto-serv-adelantado-det">El proveedor ya cobró; falta cobrar a los alumnos.</span></td>
                                                 <td>Sesionistas y salas</td>
                                                 <td class="r sec-mono" id="gasto-serv-adelantado-monto">$ 0</td>
-                                                <td style="font-size:11.5px; color:var(--text-muted);">Se calcula en Servicios</td>
-                                                <td><span class="pill-status pill-warning" style="font-size:11px;" id="gasto-serv-adelantado-estado">A recuperar</span></td>
+                                                <td class="chico-gris">Se calcula en Servicios</td>
+                                                <td><span class="pill-status pill-warning" id="gasto-serv-adelantado-estado">A recuperar</span></td>
                                                 <td></td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
-
-                                <!-- Cierre: Egresos / Estado de pago (se dibuja en renderizarGastosFestival) -->
-                                <div id="cierre-gastos" class="fin-grupos dos sec-cierre"></div>
                             </div>
+
+                            <!-- 2. Cobertura audiovisual: Fotos y Video, cada una con su costo, lo que cubren las bandas y lo que falta pagar -->
+                            <div class="content-card" id="card-cobertura-gastos" style="margin-top:14px;">
+                                <div class="card-header-flex">
+                                    <div>
+                                        <h3 class="card-title">Cobertura audiovisual</h3>
+                                        <span style="font-size:12px; color:var(--text-muted);" id="sub-cobertura-gastos">Fotos y video se pagan por separado a la productora.</span>
+                                    </div>
+                                    <div class="sec-chips">
+                                        <span class="sec-chip" id="chip-cob-total">Total $ 0</span>
+                                        <span class="sec-chip" id="chip-cob-pendiente">Pendiente $ 0</span>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="sec-tabla tabla-gastos-ev" id="tabla-cobertura-gastos">
+                                        <thead>
+                                            <tr>
+                                                <th>Parte</th>
+                                                <th class="r" style="width:112px;">Costo</th>
+                                                <th class="r" style="width:132px;">Cubren bandas</th>
+                                                <th class="r" style="width:112px;">A pagar</th>
+                                                <th>Pago</th>
+                                                <th style="width:100px;">Estado</th>
+                                                <th class="r" style="width:168px;">Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Se arman en renderizarFilasCoberturaGastos() -->
+                                            <tr id="tr-gasto-cob-fotos"></tr>
+                                            <tr id="tr-gasto-cob-video"></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="cob-resumen-linea" id="tr-gasto-cob-resumen"></div>
+                            </div>
+
+                            <!-- 3. Cierre: Egresos / Estado de pago (se dibuja en renderizarGastosFestival) -->
+                            <div id="cierre-gastos" class="fin-grupos dos sec-cierre" style="margin-top:14px;"></div>
                         </div>
 
-                        <!-- SUB-PESTAÑA 4: COBROS & CUOTAS ALUMNOS Y BANDAS (VISTA UNIFICADA) -->
                         <div id="tab-fin-cobros" class="tab-fin-content" style="display:none;">
                             <!-- RESUMEN DE COBROS: tres tarjetas (Cobrado / Por cobrar / Total esperado), se dibuja en actualizarKpiPendienteTotalCobros() -->
                             <div class="content-card" style="margin-bottom:16px;">
@@ -2136,7 +2136,9 @@
                                         </span>
                                     </div>
                                     <div class="sec-chips" onclick="event.stopPropagation()">
-                                        <span class="sec-chip" id="chip-cobros-contrato">Cobrado $ 0 de $ 0</span>
+                                        <span class="sec-chip" id="chip-cobros-contrato-deuda">Deuda total $ 0</span>
+                                        <span class="sec-chip sec-chip-ok" id="chip-cobros-contrato-cobrado">Cobrado $ 0</span>
+                                        <span class="sec-chip sec-chip-pend" id="chip-cobros-contrato-pendiente">Por cobrar $ 0</span>
                                         <label class="sec-chip" style="cursor:pointer;">
                                             <input type="checkbox" id="chk-mostrar-todos-cobros-contrato" onchange="renderizarCobrosContratoUnificado()"> Ver también cupo completo
                                         </label>
@@ -2270,9 +2272,6 @@
                                 <button type="button" class="btn-app btn-secondary" onclick="descargarExcelDeudas()" title="Descargar planilla Excel (.xlsx)">
                                     📊 Excel
                                 </button>
-                                <button type="button" class="btn-app btn-primary" id="btn-marcar-seleccionados-deudas" onclick="marcarSeleccionadosComoPagadosDeudas()" disabled style="opacity:0.6;">
-                                    ✓ Marcar Seleccionados como Pagados
-                                </button>
                             </div>
                         </div>
 
@@ -2329,7 +2328,6 @@
                                 <thead>
                                     <tr>
                                         <th class="col-chk-deudas" style="width:36px; text-align:center;">
-                                            <input type="checkbox" id="chk-master-deudas" onchange="toggleSeleccionTodasDeudas(this.checked)" title="Seleccionar todas las deudas visibles">
                                         </th>
                                         <th style="text-align:left;">CONCEPTO / PARTICIPANTE</th>
                                         <th style="width:130px; text-align:right;">MONTO</th>
@@ -2718,6 +2716,8 @@
                     </div>
                 </div>
                 <div id="modal-deuda-resultado" class="modo-resultado" style="display:none;"></div>
+                <!-- Omitir: una vez generada la deuda, se decide no cobrarla (no es ingreso ni gasto) -->
+                <div id="modal-deuda-omitir-zona" class="modal-omitir-zona" style="display:none;"></div>
 
                 <div id="contenedor-campos-cuotas-deuda">
                     <!-- CONFIGURACIÓN MANUAL DE VALOR DE ENTRADA / MONTO REAL DE DEUDA -->
@@ -6175,7 +6175,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.16";
+        const APP_VERSION = "v2.17";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6841,7 +6841,8 @@
             const fila = (rotulo, monto, extra) => '<div class="fin-r' + (extra || '') + '"><em>' + rotulo + '</em><strong>' + monto + '</strong></div>';
             let ingresos, egresos;
             if (m.conDetalle) {
-                ingresos = fila('Ventas netas de entradas', htmlMonto(m.recaudacionEntradas))
+                ingresos = fila('Ventas netas de entradas', htmlMonto(m.ventasEntradasNetas !== undefined ? m.ventasEntradasNetas : m.recaudacionEntradas))
+                    + ((m.ventasEspeciales || 0) > 0 ? fila('Ventas especiales', htmlMonto(m.ventasEspeciales)) : '')
                     + fila('Cobros por incumplimiento', htmlMonto(m.ingresosIncumplimientos))
                     + ((m.ingresosSalasPropias || 0) > 0 ? fila('Uso de salas de la escuela', htmlMonto(m.ingresosSalasPropias)) : '')
                     + ((m.excedenteCobertura || 0) > 0 ? fila('Excedente de cobertura', htmlMonto(m.excedenteCobertura)) : '');
@@ -10026,6 +10027,7 @@
             let recaudacionEntradas = Math.round(brutoTotal * 0.7);
 
             let montoSadaicUsado = null;
+            let ventasEspecialesEvento = 0;
             let datosVenue = { montoVenue: null, esAlquiler: false, porcEscuela: null };
             if (tieneDatosIngresos && fin) {
                 // Mismo cálculo que usa la pantalla del festival (una sola fuente de verdad)
@@ -10038,6 +10040,7 @@
                 };
                 brutoTotal = taq.brutoTotal;
                 recaudacionEntradas = taq.recaudacionEntradas;
+                ventasEspecialesEvento = Math.max(0, Number(taq.totVentasEspeciales) || 0);
                 montoSadaicUsado = taq.montoSadaic;
             }
 
@@ -10079,6 +10082,9 @@
                 egresosTotales,
                 brutoTotal,
                 recaudacionEntradas,
+                // Para mostrar por separado: entradas (neto de venue y SADAIC) y ventas especiales (100% escuela)
+                ventasEntradasNetas: Math.max(0, recaudacionEntradas - ventasEspecialesEvento),
+                ventasEspeciales: ventasEspecialesEvento,
                 ingresosIncumplimientos,
                 recaudacionNeta,
                 gastosOperativos,
@@ -15736,41 +15742,51 @@
             return '<span class="pill-status pill-warning">Debe</span>';
         }
 
-        // Omitir una cuota de entradas adeudadas: se decide no cobrarla. No genera ingreso ni egreso y deja de figurar en Deudas.
-        // (Distinto de Excluir, que se usa antes de cerrar el festival para no tener en cuenta a la persona.)
-        async function omitirCuotaEntradas(festId, contId, idxCuota, omitir) {
-            const fId = festId || eventoActualId;
+        // Omitir la deuda de entradas de un participante: se decide no cobrarle lo que falta. No es ingreso ni egreso y deja de figurar en Deudas.
+        // Se hace desde el plan de cuotas (⚙). Lo ya cobrado no se toca. (Distinto de Excluir, que se usa antes de cerrar el festival.)
+        async function omitirDeudaEntradas(contId, omitir) {
+            const fId = eventoActualId;
             const lista = obtenerListaParticipantesContratoFestival(fId);
             const cont = buscarContrato(lista, contId, contId);
-            const p = cont && Array.isArray(cont.pagosDeuda) ? cont.pagosDeuda[parseInt(idxCuota, 10) || 0] : null;
-            if (!p) return;
+            const pagos = (cont && Array.isArray(cont.pagosDeuda)) ? cont.pagosDeuda.filter(Boolean) : [];
+            const sinCobrar = pagos.filter(p => !p.pagada);
+            if (!cont || !sinCobrar.length) return;
+            const monto = sinCobrar.reduce((a, p) => a + Math.max(0, Number(p.monto || 0)), 0);
             if (omitir) {
-                if (p.pagada) { mostrarToast('Esa cuota ya está cobrada: no se puede omitir.', 'warning'); return; }
                 const ok = await mostrarModalConfirmacion({
-                    titulo: 'Omitir deuda de entradas',
-                    mensaje: `¿No cobrarle a <strong>${esc(cont.nombre)}</strong> ${formatearMonedaAr(p.monto)}?<br><span style="font-size:12px; color:var(--text-muted);">No se registra como ingreso ni como gasto. Se puede deshacer desde Finanzas › Cobros.</span>`,
+                    titulo: 'Omitir la deuda',
+                    mensaje: `¿No cobrarle a <strong>${esc(cont.nombre)}</strong> ${formatearMonedaAr(monto)}?<br><span style="font-size:12px; color:var(--text-muted);">No se registra como ingreso ni como gasto. Se puede deshacer desde el plan de cuotas.</span>`,
                     icono: '🙅',
                     textoConfirmar: 'Omitir'
                 });
                 if (!ok) return;
-                p.omitida = true;
-                p.fechaOmitida = hoyISO();
+                sinCobrar.forEach(p => { p.omitida = true; p.fechaOmitida = hoyISO(); });
             } else {
-                delete p.omitida;
-                delete p.fechaOmitida;
+                sinCobrar.forEach(p => { delete p.omitida; delete p.fechaOmitida; });
             }
             contratosAlumnosFestivalesDB[fId] = lista;
             if (typeof persistirCambiosFestivalDirecto === 'function') await persistirCambiosFestivalDirecto(fId, { contratosAlumnos: lista });
-            else if (typeof autoguardarDetalleFestivalFirestore === 'function' && fId === eventoActualId) autoguardarDetalleFestivalFirestore('contratosAlumnos', lista);
-            if (fId === eventoActualId) {
-                if (typeof renderizarCobrosContratoUnificado === 'function') renderizarCobrosContratoUnificado();
-                if (typeof renderizarGastosFestival === 'function') renderizarGastosFestival(false);
-            }
+            else if (typeof autoguardarDetalleFestivalFirestore === 'function') autoguardarDetalleFestivalFirestore('contratosAlumnos', lista);
+            if (typeof renderizarCobrosContratoUnificado === 'function') renderizarCobrosContratoUnificado();
+            if (typeof renderizarGastosFestival === 'function') renderizarGastosFestival(false);
             if (typeof renderizarPanelDeudas === 'function' && document.getElementById('panel-deudas')?.offsetParent) renderizarPanelDeudas();
             if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
+            pintarZonaOmitirDeuda(cont);
             mostrarToast(omitir ? `Deuda de ${cont.nombre} omitida: no se le cobra.` : `La deuda de ${cont.nombre} vuelve a quedar por cobrar.`, 'info');
         }
-        window.omitirCuotaEntradas = omitirCuotaEntradas;
+        window.omitirDeudaEntradas = omitirDeudaEntradas;
+
+        // Deudas › servicio de un alumno: ⚙ para que la escuela absorba la cuota
+        async function confirmarAbsorberDesdeDeudas(festId, bandaNombre, idxCuota, nombre) {
+            const ok = await mostrarModalConfirmacion({
+                titulo: 'Absorber la cuota',
+                mensaje: `¿La escuela se hace cargo de la cuota${nombre ? ' de <strong>' + esc(nombre) + '</strong>' : ''}?<br><span style="font-size:12px; color:var(--text-muted);">Deja de cobrarse y cuenta como gasto de la escuela. Se puede deshacer desde Finanzas › Cobros (⚙ del integrante).</span>`,
+                icono: '🏫',
+                textoConfirmar: 'Absorber'
+            });
+            if (ok) absorberDesdeDeudas(festId, bandaNombre, idxCuota);
+        }
+        window.confirmarAbsorberDesdeDeudas = confirmarAbsorberDesdeDeudas;
 
         function renderizarCobrosCoberturaFinanzas() {
             const tbody = document.getElementById('tbody-cobros-cobertura-finanzas');
@@ -15852,8 +15868,8 @@
                         <td>${htmlEstadoCobro(pago.pagada ? 'pagada' : 'debe')}</td>
                         <td>${htmlDetallePagoCobro(pago, h)}</td>
                         <td class="r">${pago.pagada
-                            ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
-                            : `<button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, true)" title="Registrar el cobro">✔ Cobrar</button>`}</td>
+                            ? `<button type="button" class="btn-deshacer" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
+                            : `<button type="button" class="btn-marcar" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, true)" title="Registrar el cobro">Marcar cobrado</button>`}</td>
                     </tr>`;
                 });
 
@@ -16195,8 +16211,8 @@
                         <input type="date" class="installment-date-inp" value="${esc(pago.fecha || '')}"${pagada ? '' : ' disabled'} onchange="actualizarDetalleCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', 'fecha', this.value)">
                     </span>`;
                     const boton = pagada
-                        ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', false)" title="Marcar como pendiente">Deshacer</button>`
-                        : (f.estado === 'absorbida' ? '' : `<button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', true)">✔ Cobrar</button>`);
+                        ? `<button type="button" class="btn-deshacer" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', false)" title="Marcar como pendiente">Deshacer</button>`
+                        : (f.estado === 'absorbida' ? '' : `<button type="button" class="btn-marcar" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', true)">Marcar cobrado</button>`);
                     return `<tr><td><strong>${esc(f.nombre)}</strong></td><td class="r sec-mono"><strong>${htmlMonto(resPag.cuota)}</strong></td><td>${estadoHtml}</td><td>${detalle}</td><td class="r" style="white-space:nowrap;">${boton} ${gear}</td></tr>`;
                 }).join('');
                 html += `<table class="sec-tabla" style="margin-top:6px;"><thead><tr><th>Integrante</th><th class="r" style="width:110px;">Cuota</th><th style="width:110px;">Estado</th><th>Detalle del pago</th><th class="r" style="width:150px;">Acción</th></tr></thead><tbody>${filas}</tbody></table>`;
@@ -16237,8 +16253,8 @@
             const cubiertoHtml = salaPropia
                 ? '<div class="srv-campo"><span class="srv-k">Resultado</span><span class="pill-status pill-info" title="Lo que cobran los alumnos es ganancia de la escuela; no se paga a ningún proveedor">🏫 Ingreso de la escuela</span></div>'
                 : `<div class="srv-campo"><span class="srv-k">Proveedor</span>${srv.pagadoProveedor
-                    ? `<button type="button" class="btn-app btn-secondary btn-sm" style="background:var(--ok-bg); color:var(--ok); border-color:color-mix(in srgb, var(--ok) 25%, white);" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, false)" title="Click para desmarcar">☑ Cubierto</button>`
-                    : `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, true)" title="Tildalo cuando el proveedor ya cobró este servicio. Si los alumnos todavía no pagaron, la escuela lo adelanta y figura como gasto hasta recuperarlo">☐ Cubierto</button>`}</div>`;
+                    ? `<span class="pill-status pill-success">Pagado</span> <button type="button" class="btn-deshacer" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, false)" title="Volver a dejarlo como pendiente de pago al proveedor">Deshacer</button>`
+                    : `<button type="button" class="btn-marcar" onclick="cambiarEstadoPagoProveedorServicio('${sb}', ${sIdx}, true)" title="Cuando el proveedor ya cobró este servicio. Si los alumnos todavía no pagaron, la escuela lo adelanta y figura como gasto hasta recuperarlo">Marcar pagado</button>`}</div>`;
             const cuotaExacta = resPag.pagadores.length > 0 ? total / resPag.pagadores.length : 0;
             const hayExcluidos = resPag.excluidos.length > 0;
             const cuotaHtml = resPag.pagadores.length > 0
@@ -16543,8 +16559,8 @@
                         const estado = pago.pagada ? 'pagada' : (pago.absorbida ? 'absorbida' : 'debe');
                         const h = (campo) => `actualizarDetalleCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', '${campo}', this.value)`;
                         const acciones = pago.pagada
-                            ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', false)" title="Marcar como pendiente">Deshacer</button>`
-                            : `<div style="display:inline-flex; gap:4px;"><button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', true)" title="Registrar el cobro">✔ Cobrar</button><button type="button" class="btn-app btn-secondary btn-sm" title="${pago.absorbida ? 'Volver a dejar la cuota por cobrar' : 'No se va a cobrar: la escuela se hace cargo'}" onclick="absorberDesdeFinanzas('${sb}', ${sIdx}, '${si}', ${pago.absorbida ? 'false' : 'true'})">${pago.absorbida ? 'Deshacer' : 'Absorber'}</button></div>`;
+                            ? `<button type="button" class="btn-deshacer" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', false)" title="Marcar como pendiente">Deshacer</button>`
+                            : `<div style="display:inline-flex; gap:4px;"><button type="button" class="btn-marcar" onclick="cambiarEstadoCobroServicioFinanzas('${sb}', ${sIdx}, '${si}', true)" title="Registrar el cobro">Marcar cobrado</button></div>`;
 
                         filas += `<tr>
                             <td><strong>${esc(intgNombre)}</strong></td>
@@ -17094,19 +17110,18 @@
                     + '<optgroup label="Proveedores"><option value="sonidista" ' + (dest.valor === 'sonidista' ? 'selected' : '') + '>Sonidista</option>'
                     + listaProds.map(p => `<option value="${esc(p.id)}" ${dest.valor === p.id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('') + '</optgroup>'
                     + '<optgroup label="Socios">' + SOCIOS_GASTOS.map(s => `<option value="socio:${esc(s)}" ${dest.valor === 'socio:' + s ? 'selected' : ''}>${esc(s)}</option>`).join('') + '</optgroup>';
-                const celdaProveedor = `
-                        <select class="installment-select" style="width:100%;" onchange="cambiarProveedorGasto(${idx}, this.value)" title="A quién va el gasto: el sonidista, la productora o uno de los socios. En el detalle del pago se indica quién paga.">${opcionesProv}</select>
-                        ${!dest.valor && g.proveedor ? `<input type="text" class="spreadsheet-inp text-left" style="margin-top:4px; font-size:11.5px;" value="${esc(g.proveedor)}" placeholder="Detalle (opcional)" oninput="actualizarGastoOperativoFestival(${idx}, 'proveedor', this.value)">` : ''}`;
+                // Fila de una sola línea: los selectores se ven como texto hasta pasar el mouse (.sel-fantasma)
+                const textoViejo = (!dest.valor && g.proveedor) ? String(g.proveedor) : '';
+                const celdaProveedor = `<select class="installment-select sel-fantasma" onchange="cambiarProveedorGasto(${idx}, this.value)" title="${textoViejo ? 'Antes: ' + esc(textoViejo) + '. ' : ''}A quién va el gasto: el sonidista, la productora o uno de los socios.">${textoViejo ? `<option value="" selected>${esc(textoViejo)} (elegir)</option>` + opcionesProv.replace('<option value="" selected>Elegir destinatario…</option>', '') : opcionesProv}</select>`;
                 const celdaContacto = prodSel
                     ? (contactoSel
-                        ? `<div class="gasto-contacto-linea"><select class="installment-select" onchange="cambiarContactoPagoGasto(${idx}, this.value)" title="A quién se le paga (datos de pago del proveedor)">${contactosProv.map(c => `<option value="${esc(c.id)}" ${c.id === contactoSel.id ? 'selected' : ''}>Pagar a: ${esc(c.nombre)}</option>`).join('')}</select>
-                           <span class="gasto-contacto-det"><span>Alias: <strong>${esc(contactoSel.alias)}</strong></span><button type="button" onclick="copiarAliasPago('${escJs(contactoSel.alias)}')" title="Copiar el alias">Copiar</button></span></div>`
-                        : `<div class="gasto-contacto-det"><span>Sin datos de pago (cargalos en Productoras)</span></div>`)
+                        ? `<select class="installment-select sel-fantasma" onchange="cambiarContactoPagoGasto(${idx}, this.value)" title="A quién se le paga (datos de pago del proveedor)">${contactosProv.map(c => `<option value="${esc(c.id)}" ${c.id === contactoSel.id ? 'selected' : ''}>A: ${esc(c.nombre)}</option>`).join('')}</select><button type="button" class="alias-chip" onclick="copiarAliasPago('${escJs(contactoSel.alias)}')" title="Copiar el alias: ${esc(contactoSel.alias)}">⧉ alias</button>`
+                        : `<span class="chico-gris" title="Cargá los datos de pago en Productoras">Sin datos de pago</span>`)
                     : '';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-size:12px;" value="${esc(g.fecha || '')}" placeholder="dd/mm/aaaa" oninput="actualizarGastoOperativoFestival(${idx}, 'fecha', this.value)">
+                        <input type="text" class="spreadsheet-inp gasto-fecha-inp" value="${esc(g.fecha || '')}" placeholder="dd/mm/aaaa" oninput="actualizarGastoOperativoFestival(${idx}, 'fecha', this.value)">
                     </td>
                     <td>
                         <div class="gasto-concepto-fila">
@@ -17114,28 +17129,27 @@
                             <input type="text" class="spreadsheet-inp text-left gasto-obs-inp" value="${esc(g.obs || '')}" placeholder="Observaciones…" oninput="actualizarGastoOperativoFestival(${idx}, 'obs', this.value)">
                         </div>
                     </td>
-                    <td>${celdaProveedor}
+                    <td>${celdaProveedor}</td>
+                    <td>
+                        <input type="text" class="spreadsheet-inp gasto-monto-inp" value="${montoDisplay}" onfocus="enfocarInputMontoGasto(this, ${idx})" onblur="formatearInputMontoGasto(this, ${idx})" oninput="actualizarGastoOperativoFestival(${idx}, 'monto', this.value)">
                     </td>
                     <td>
-                        <input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:800; font-size:13.5px; text-align:right; padding-right:4px;" value="${montoDisplay}" onfocus="enfocarInputMontoGasto(this, ${idx})" onblur="formatearInputMontoGasto(this, ${idx})" oninput="actualizarGastoOperativoFestival(${idx}, 'monto', this.value)">
-                    </td>
-                    <td>
-                        <span class="srv-det-pago">
-                            <select class="installment-select" onchange="actualizarGastoOperativoFestival(${idx}, 'metodo', this.value)">
-                                <option value="Transferencia" ${metodo === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
+                        <div class="gasto-pago-linea">
+                            <select class="installment-select sel-fantasma" onchange="actualizarGastoOperativoFestival(${idx}, 'metodo', this.value)" title="Medio de pago">
+                                <option value="Transferencia" ${metodo === 'Transferencia' ? 'selected' : ''}>Transf.</option>
                                 <option value="Efectivo" ${metodo === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
                             </select>
-                            <select class="installment-select" onchange="actualizarGastoOperativoFestival(${idx}, 'responsable', this.value)" title="${prodSel ? 'Quién de Mandala hace el pago al proveedor' : 'Quién pagó este gasto de la escuela'}">
+                            <select class="installment-select sel-fantasma" onchange="actualizarGastoOperativoFestival(${idx}, 'responsable', this.value)" title="${prodSel ? 'Quién de Mandala hace el pago al proveedor' : 'Quién pagó este gasto'}">
                                 ${listaResp.map(n => `<option value="${esc(n)}" ${n === resp ? 'selected' : ''}>${etqResp}: ${esc(n)}</option>`).join('')}
                             </select>
-                        </span>
-                        ${celdaContacto}
+                            ${celdaContacto}
+                        </div>
                     </td>
                     <td><span class="pill-status ${pagado ? 'pill-success' : 'pill-warning'}">${pagado ? 'Pagado' : 'Pendiente'}</span></td>
                     <td class="r" style="white-space:nowrap;">
                         ${pagado
-                            ? `<button type="button" class="btn-app btn-secondary btn-sm" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, false)" title="Marcar como pendiente">Deshacer</button>`
-                            : `<button type="button" class="btn-app btn-primary btn-sm" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, true)">Marcar pagado</button>`}
+                            ? `<button type="button" class="btn-deshacer" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, false)" title="Marcar como pendiente">Deshacer</button>`
+                            : `<button type="button" class="btn-marcar" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, true)">Marcar pagado</button>`}
                         <button type="button" class="btn-row-del" onclick="eliminarGastoOperativoFestival(${idx})" title="Eliminar gasto">✕</button>
                     </td>
                 `;
@@ -17332,8 +17346,8 @@
         function renderizarFilasCoberturaGastos(res, fechaEvento, nomProductora) {
             const trF = document.getElementById('tr-gasto-cob-fotos');
             const trV = document.getElementById('tr-gasto-cob-video');
-            const trR = document.getElementById('tr-gasto-cob-resumen');
-            if (!trF || !trV || !trR) return;
+            const resumen = document.getElementById('tr-gasto-cob-resumen');
+            if (!trF || !trV) return;
             const prod = buscarProductora(productoraDeFestival(eventoActualId));
             const contactos = prod ? normalizarContactosPago(prod.contactosPago) : [];
             const money = n => '$ ' + Number(n || 0).toLocaleString('es-AR');
@@ -17343,40 +17357,51 @@
                 if (!listaResp.includes(it.responsable)) listaResp.push(it.responsable);
                 const sel = contactos.find(c => c.id === it.contactoId) || contactos[0] || null;
                 const contactoHtml = sel
-                    ? `<div class="gasto-contacto-linea"><select class="installment-select" onchange="actualizarPagoCoberturaItem('${it.clave}', 'contacto', this.value)" title="A quién se le paga esta parte de la cobertura (datos de pago de la productora)">${contactos.map(c => `<option value="${esc(c.id)}" ${c.id === sel.id ? 'selected' : ''}>Pagar a: ${esc(c.nombre)}</option>`).join('')}</select>
-                       <span class="gasto-contacto-det"><span>Alias: <strong>${esc(sel.alias)}</strong></span><button type="button" onclick="copiarAliasPago('${escJs(sel.alias)}')" title="Copiar el alias">Copiar</button></span></div>`
-                    : '<div class="gasto-contacto-det"><span>Sin datos de pago (cargalos en Productoras)</span></div>';
+                    ? `<select class="installment-select sel-fantasma" onchange="actualizarPagoCoberturaItem('${it.clave}', 'contacto', this.value)" title="A quién se le paga esta parte (datos de pago de la productora)">${contactos.map(c => `<option value="${esc(c.id)}" ${c.id === sel.id ? 'selected' : ''}>A: ${esc(c.nombre)}</option>`).join('')}</select><button type="button" class="alias-chip" onclick="copiarAliasPago('${escJs(sel.alias)}')" title="Copiar el alias: ${esc(sel.alias)}">⧉ alias</button>`
+                    : '<span class="chico-gris" title="Cargá los datos de pago en Productoras">Sin datos de pago</span>';
                 const etq = it.pagada ? 'Pagó' : 'Paga';
-                const estado = it.diferencia <= 0 ? 'Sin saldo' : (it.pagada ? 'Pagado' : 'Pendiente');
+                const estado = it.diferencia <= 0 ? '<span class="pill-status pill-success">Cubierto</span>'
+                    : `<span class="pill-status ${it.pagada ? 'pill-success' : 'pill-warning'}">${it.pagada ? 'Pagado' : 'Pendiente'}</span>`;
                 const accion = it.diferencia <= 0 ? '' : (it.pagada
-                    ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoPagoCoberturaItem('${it.clave}', false)">Deshacer</button>`
-                    : `<button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoPagoCoberturaItem('${it.clave}', true)">Marcar pagado</button>`);
+                    ? `<button type="button" class="btn-deshacer" onclick="cambiarEstadoPagoCoberturaItem('${it.clave}', false)" title="Marcar como pendiente">Deshacer</button>`
+                    : `<button type="button" class="btn-marcar" onclick="cambiarEstadoPagoCoberturaItem('${it.clave}', true)">Marcar pagado</button>`);
+                let detalle = '';
+                if (it.clave === 'video') {
+                    const partes = ['base'];
+                    if (res.cantReelsEscuela > 0) partes.push(res.cantReelsEscuela + ' reels escuela');
+                    if (res.cantReelsBandas > 0) partes.push(res.cantReelsBandas + ' reels bandas');
+                    detalle = ` <span class="chico-gris">${partes.join(' + ')}</span>`;
+                }
                 tr.innerHTML = `
-                    <td><input type="text" class="spreadsheet-inp" readonly tabindex="-1" style="font-family:'Geist Mono'; font-size:12px; cursor:default;" value="${esc(fechaEvento)}"></td>
-                    <td style="padding-left:10px;"><strong>Cobertura audiovisual · ${it.nombre}</strong> <span class="pill-status pill-info" style="font-size:10.5px;" title="Se calcula desde la solapa Servicios / Cobertura">Automático</span>
-                        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">Costo <span class="sec-mono">${money(it.costo)}</span> · Cubierto por bandas
-                            <input type="text" class="spreadsheet-inp" style="width:104px; font-family:'Geist Mono'; font-size:12px; text-align:right;" value="${money(it.aporte)}" onfocus="this.value=String(Math.round(parseFloat(this.value.replace(/[^0-9]/g,'')||0)));this.select();" onchange="actualizarAporteCoberturaItem('${it.clave}', this.value)" title="Cuánto de lo aportado por las bandas cubre este ítem">
-                        </div>
-                        ${it.aporte > it.costo ? `<div style="font-size:11.5px; color:var(--text-muted);">El aporte supera el costo en ${money(it.aporte - it.costo)}</div>` : ''}
-                    </td>
-                    <td>${esc(nomProductora)}</td>
-                    <td class="r sec-mono"><div style="font-size:10.5px; color:var(--text-muted); font-family:inherit;">A pagar</div>${money(it.diferencia)}</td>
+                    <td><strong>${it.nombre}</strong>${detalle}${it.aporte > it.costo ? ` <span class="chico-gris">· el aporte supera el costo en ${money(it.aporte - it.costo)}</span>` : ''}</td>
+                    <td class="r sec-mono">${money(it.costo)}</td>
+                    <td class="r"><input type="text" class="spreadsheet-inp gasto-monto-inp" style="font-weight:600;" value="${money(it.aporte)}" onfocus="this.value=String(Math.round(parseFloat(this.value.replace(/[^0-9]/g,'')||0)));this.select();" onchange="actualizarAporteCoberturaItem('${it.clave}', this.value)" title="Cuánto de lo aportado por las bandas cubre este ítem"></td>
+                    <td class="r sec-mono"><strong>${money(it.diferencia)}</strong></td>
                     <td>
-                        <span class="srv-det-pago">
-                            <select class="installment-select" onchange="actualizarPagoCoberturaItem('${it.clave}', 'metodo', this.value)">${['Transferencia', 'Efectivo'].map(m => `<option value="${m}" ${it.metodo === m ? 'selected' : ''}>${m}</option>`).join('')}</select>
-                            <select class="installment-select" onchange="actualizarPagoCoberturaItem('${it.clave}', 'responsable', this.value)">${listaResp.map(n => `<option value="${esc(n)}" ${n === it.responsable ? 'selected' : ''}>${etq}: ${esc(n)}</option>`).join('')}</select>
-                        </span>
-                        ${contactoHtml}
+                        <div class="gasto-pago-linea">
+                            <select class="installment-select sel-fantasma" onchange="actualizarPagoCoberturaItem('${it.clave}', 'metodo', this.value)" title="Medio de pago">${[['Transferencia', 'Transf.'], ['Efectivo', 'Efectivo']].map(([v, t]) => `<option value="${v}" ${it.metodo === v ? 'selected' : ''}>${t}</option>`).join('')}</select>
+                            <select class="installment-select sel-fantasma" onchange="actualizarPagoCoberturaItem('${it.clave}', 'responsable', this.value)" title="Quién de Mandala paga">${listaResp.map(n => `<option value="${esc(n)}" ${n === it.responsable ? 'selected' : ''}>${etq}: ${esc(n)}</option>`).join('')}</select>
+                            ${contactoHtml}
+                        </div>
                     </td>
-                    <td><span class="pill-status ${it.pagada ? 'pill-success' : 'pill-warning'}">${estado}</span></td>
-                    <td class="r" style="white-space:nowrap;">${accion}<span style="display:inline-block; width:28px;"></span></td>`;
+                    <td>${estado}</td>
+                    <td class="r" style="white-space:nowrap;">${accion}<span class="hueco-borrar"></span></td>`;
             });
-            const sinAsignar = Math.max(0, res.totalBandas - res.aporteAsignado);
-            trR.innerHTML = `<td></td><td colspan="6" style="font-size:11.5px; color:var(--text-muted);">Aportado por bandas <span class="sec-mono">${money(res.totalBandas)}</span> · Asignado a los ítems <span class="sec-mono">${money(res.aporteAsignado)}</span>`
-                + (sinAsignar > 0 ? ` · <strong style="color:var(--warn);">Sin asignar ${money(sinAsignar)}</strong>` : '')
-                + (res.aporteAsignado > res.totalBandas ? ` · <strong style="color:var(--warn);">Asignaste ${money(res.aporteAsignado - res.totalBandas)} más de lo aportado</strong>` : '')
-                + (res.aporteManual ? ' · <a href="#" onclick="restablecerAporteCobertura(); return false;">Repartir según el plan de cada banda</a>' : ' · Repartido según el plan de cada banda')
-                + '</td>';
+            // Cabecera del bloque y línea de resumen del aporte de las bandas
+            const pendiente = res.itemsCobertura.reduce((a, it) => a + (it.pagada ? 0 : it.diferencia), 0);
+            const chipT = document.getElementById('chip-cob-total');
+            const chipP = document.getElementById('chip-cob-pendiente');
+            if (chipT) chipT.textContent = `Total ${money(res.saldoEscuela)}`;
+            if (chipP) chipP.textContent = `Pendiente ${money(pendiente)}`;
+            const sub = document.getElementById('sub-cobertura-gastos');
+            if (sub) sub.textContent = `Fotos y video se pagan por separado a ${nomProductora || 'la productora'}.`;
+            if (resumen) {
+                const sinAsignar = Math.max(0, res.totalBandas - res.aporteAsignado);
+                resumen.innerHTML = `Aportado por bandas <span class="sec-mono">${money(res.totalBandas)}</span> · Asignado <span class="sec-mono">${money(res.aporteAsignado)}</span>`
+                    + (sinAsignar > 0 ? ` · <strong style="color:var(--warn);">Sin asignar ${money(sinAsignar)}</strong>` : '')
+                    + (res.aporteAsignado > res.totalBandas ? ` · <strong style="color:var(--warn);">Asignaste ${money(res.aporteAsignado - res.totalBandas)} de más</strong>` : '')
+                    + (res.aporteManual ? ' · <a href="#" onclick="restablecerAporteCobertura(); return false;">Repartir según el plan de cada banda</a>' : ' · Repartido según el plan de cada banda');
+            }
         }
         window.renderizarFilasCoberturaGastos = renderizarFilasCoberturaGastos;
 
@@ -17426,9 +17451,9 @@
 
             // Pastillas de la cabecera y tarjetas de cierre (Egresos / Estado de pago)
             const chipGTotal = document.getElementById('chip-gastos-total');
-            if (chipGTotal) chipGTotal.textContent = `Total $ ${totalEgresos.toLocaleString('es-AR')}`;
+            if (chipGTotal) chipGTotal.textContent = `Total $ ${(totalOperativos + serv.adelantado).toLocaleString('es-AR')}`;
             const chipGPend = document.getElementById('chip-gastos-pendiente');
-            if (chipGPend) chipGPend.textContent = `Pendiente $ ${totalPendientePagarEscuela.toLocaleString('es-AR')}`;
+            if (chipGPend) chipGPend.textContent = `Pendiente $ ${totalOperativosPendientes.toLocaleString('es-AR')}`;
 
             const contCierreGastos = document.getElementById('cierre-gastos');
             if (contCierreGastos) {
@@ -18809,7 +18834,7 @@
             const falt = Number(e.faltantes) || 0;
             const ceroGris = '<span class="m-cero">$ 0</span>';
             const btnPlan = (titulo, textoBtn, m, f) => `<button type="button" class="btn-app btn-secondary btn-sm" title="${titulo}" onclick="configurarCobroCuotas('${sid}', '${sn}', ${m}, ${f})">${textoBtn}</button>`;
-            const btnCobrar = (texto, titulo) => `<button type="button" class="btn-app btn-primary btn-sm" title="${titulo}" onclick="irACobrosDesdeCierreEntradas('${sid}')">${texto}</button>`;
+            const btnCobrar = (texto, titulo) => `<button type="button" class="link-jump-pill" title="${titulo}" onclick="irACobrosDesdeCierreEntradas('${sid}')">${texto}</button>`;
             const envolver = (html) => html ? `<div class="cierre-acciones">${html}</div>` : '';
             const deudaEditable = `<input type="text" class="spreadsheet-inp inp-deuda-manual-participante" title="Click para editar el monto real a pagar por incumplimiento de este alumno" value="-$ ${monto.toLocaleString('es-AR')}" onfocus="enfocarInputDeudaManualParticipante(this, '${sid}')" onblur="formatearInputDeudaManualParticipante(this, '${sid}')" onchange="actualizarDeudaManualParticipante('${sid}', this.value)">`;
 
@@ -18834,13 +18859,13 @@
                     return {
                         deudaHtml: deudaEditable,
                         estadoHtml: `<span class="pill-status pill-warning" title="Pago parcial en Finanzas → Cobros">Parcial ${e.cuotasPagadas} de ${e.totalCuotasPlan} cuotas</span>`,
-                        accionHtml: envolver(btnCobrar('💳 Cobrar', 'Ir a cobrar una cuota en Finanzas → Cobros & Cuotas Alumnos') + btnPlan('Plan de cuotas', '⚙️', monto, falt))
+                        accionHtml: envolver(btnCobrar('💳 Ir a cobros', 'Ir a cobrar una cuota en Finanzas → Cobros & Cuotas Alumnos') + btnPlan('Plan de cuotas', '⚙️', monto, falt))
                     };
                 default: // debe
                     return {
                         deudaHtml: deudaEditable,
                         estadoHtml: `<span class="pill-status pill-warning">Debe ${falt} entrada${falt === 1 ? '' : 's'}</span>`,
-                        accionHtml: envolver(btnCobrar('💳 Cobrar', 'Ir a registrar el cobro en Finanzas → Cobros & Cuotas Alumnos') + btnPlan('Plan de cuotas', '⚙️', monto, falt))
+                        accionHtml: envolver(btnCobrar('💳 Ir a cobros', 'Ir a registrar el cobro en Finanzas → Cobros & Cuotas Alumnos') + btnPlan('Plan de cuotas', '⚙️', monto, falt))
                     };
             }
         }
@@ -19459,8 +19484,28 @@
             }
 
             actualizarPrevisualizacionCuotasDeuda();
+            pintarZonaOmitirDeuda(cont);
             document.getElementById('modal-gestionar-deuda').classList.add('active');
         }
+
+        // Zona "Omitir" del plan de cuotas: solo cuando ya hay una deuda en dinero sin cobrar (o ya omitida)
+        function pintarZonaOmitirDeuda(cont) {
+            const zona = document.getElementById('modal-deuda-omitir-zona');
+            if (!zona) return;
+            const pagos = (cont && Array.isArray(cont.pagosDeuda)) ? cont.pagosDeuda.filter(Boolean) : [];
+            const sinCobrar = pagos.filter(p => !p.pagada);
+            if (!cont || cont.excluido || cont.traspasoProximoFestival || !sinCobrar.length) { zona.style.display = 'none'; zona.innerHTML = ''; return; }
+            const omitida = sinCobrar.every(p => p.omitida);
+            const monto = sinCobrar.reduce((a, p) => a + Math.max(0, Number(p.monto || 0)), 0);
+            const sid = escJs(cont.id || cont.nombre);
+            zona.style.display = 'flex';
+            zona.innerHTML = omitida
+                ? `<div><b>Deuda omitida</b><small>No se le cobra ${formatearMonedaAr(monto)}. No es ingreso ni gasto.</small></div>
+                   <button type="button" class="btn-deshacer" onclick="omitirDeudaEntradas('${sid}', false)">Volver a cobrarla</button>`
+                : `<div><b>¿No se le va a cobrar?</b><small>Omitir la deuda de ${formatearMonedaAr(monto)}: deja de figurar en Deudas y no es ingreso ni gasto.</small></div>
+                   <button type="button" class="btn-app btn-secondary btn-sm" onclick="omitirDeudaEntradas('${sid}', true)">Omitir la deuda</button>`;
+        }
+        window.pintarZonaOmitirDeuda = pintarZonaOmitirDeuda;
 
         function formatearFechaVisual(isoStr) {
             if (!isoStr) return '';
@@ -19762,10 +19807,10 @@
                         <td>${htmlDetallePagoCobro(p, h, { obs: true })}</td>
                         <td class="r"><div style="display:inline-flex; align-items:center; gap:4px;">
                             ${p.pagada
-                                ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="cambiarEstadoPagoContratoAlumno('${sid}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
+                                ? `<button type="button" class="btn-deshacer" onclick="cambiarEstadoPagoContratoAlumno('${sid}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
                                 : (p.omitida
-                                    ? `<button type="button" class="btn-app btn-secondary btn-sm" onclick="omitirCuotaEntradas(null, '${sid}', ${cIdx}, false)" title="Volver a cobrarla">Deshacer omitir</button>`
-                                    : `<button type="button" class="btn-app btn-primary btn-sm" onclick="cambiarEstadoPagoContratoAlumno('${sid}', ${cIdx}, true)" title="Registrar el cobro">✔ Cobrar</button><button type="button" class="btn-app btn-secondary btn-sm" onclick="omitirCuotaEntradas(null, '${sid}', ${cIdx}, true)" title="No cobrarle: no es ingreso ni gasto">Omitir</button>`)}
+                                    ? '' // omitida: se deshace desde el plan de cuotas (⚙)
+                                    : `<button type="button" class="btn-marcar" onclick="cambiarEstadoPagoContratoAlumno('${sid}', ${cIdx}, true)" title="Registrar el cobro">Marcar cobrado</button>`)}
                             <button type="button" class="btn-app btn-secondary btn-sm" title="Modificar plan de cuotas" onclick="configurarCobroCuotas('${sid}', '${sn}', ${deudaMonto}, ${faltantes})">⚙️</button>
                         </div></td>
                     </tr>`;
@@ -19784,8 +19829,13 @@
             }
             tbody.innerHTML = html;
 
-            const chip = document.getElementById('chip-cobros-contrato');
-            if (chip) chip.textContent = `Cobrado ${formatearMonedaAr(totalCobrado)} de ${formatearMonedaAr(totalContratado)}`;
+            const resInc = calcularIngresosIncumplimientosFestival(eventoActualId);
+            const chipDeuda = document.getElementById('chip-cobros-contrato-deuda');
+            const chipCob = document.getElementById('chip-cobros-contrato-cobrado');
+            const chipPend = document.getElementById('chip-cobros-contrato-pendiente');
+            if (chipDeuda) chipDeuda.textContent = 'Deuda total ' + formatearMonedaAr(resInc.totalDeuda);
+            if (chipCob) chipCob.textContent = 'Cobrado ' + formatearMonedaAr(resInc.cobrado);
+            if (chipPend) chipPend.textContent = 'Por cobrar ' + formatearMonedaAr(resInc.pendiente);
 
             actualizarKpiPendienteTotalCobros();
             if (typeof renderizarGastosFestival === 'function') renderizarGastosFestival(false);
@@ -20377,7 +20427,7 @@
             tr.dataset.abierto = abrir ? '1' : '0';
             tr.style.display = abrir ? '' : 'none';
             const btn = document.querySelector('button.btn-detalle-deuda[data-deuda-id="' + id + '"]');
-            if (btn) btn.textContent = abrir ? '▴' : '▾';
+            if (btn) btn.textContent = abrir ? '−' : '＋';
         }
         window.alternarDetalleDeuda = alternarDetalleDeuda;
 
@@ -20471,20 +20521,15 @@
                     ? (item.estadoTraspaso === 'asignado'
                         ? `<button type="button" class="btn-app btn-secondary btn-sm" title="Ir al festival donde se cubre" onclick="irAFestivalDesdeDeudas('${item.destinoFestId}', event)">Ver festival</button>`
                         : `<button type="button" class="btn-app btn-secondary btn-sm" title="Configurar el traspaso" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">Gestionar</button>`)
-                    : `<button type="button" class="btn-app btn-primary btn-sm" onclick="saldarDeudaIndividual('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}')">${esPago ? 'Pagar' : 'Cobrar'}</button>`;
+                    : `<button type="button" class="btn-marcar" onclick="saldarDeudaIndividual('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}')">${esPago ? 'Marcar pagado' : 'Marcar cobrado'}</button>`;
                 const botonAbsorber = (item.tipo === 'servicio_alumno')
-                    ? `<button type="button" class="btn-app btn-secondary btn-sm" title="No se va a cobrar: la escuela se hace cargo de esta cuota" onclick="absorberDesdeDeudas('${item.festId}', '${escJs(item.bandaServicio || item.itemId)}', '${item.idxCuota}')">Absorber</button>` : '';
-                const botonOmitir = (item.tipo === 'alumno_entrada')
-                    ? `<button type="button" class="btn-app btn-secondary btn-sm" title="No cobrarle: no es ingreso ni gasto. Se puede deshacer desde Finanzas › Cobros" onclick="omitirCuotaEntradas('${item.festId}', '${escJs(String(item.itemId))}', '${item.idxCuota}', true)">Omitir</button>` : '';
+                    ? `<button type="button" class="btn-app btn-secondary btn-sm" title="Gestionar: la escuela absorbe esta cuota" onclick="confirmarAbsorberDesdeDeudas('${item.festId}', '${escJs(item.bandaServicio || item.itemId)}', '${item.idxCuota}', '${escJs(String(item.concepto || '').replace(/^\S+\s/, ''))}')">⚙️</button>` : '';
+                const botonOmitir = '';
                 const botonCuotas = (!esPago && !esTraspasoItem && item.tipo !== 'servicio_alumno' && item.tipo !== 'banda_cobertura')
                     ? `<button type="button" class="btn-app btn-secondary btn-sm" title="Plan de cuotas" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">⚙️</button>` : '';
                 tr.innerHTML = `
                     <td class="col-chk-deudas" style="text-align:center;">
-                        <input type="checkbox" class="chk-item-deuda"
-                            data-id="${item.id}" data-tipo="${item.tipo}" data-fest-id="${item.festId}" data-item-id="${item.itemId}"
-                            data-cuota-idx="${item.idxCuota !== null ? item.idxCuota : ''}"
-                            ${esTraspasoItem ? 'disabled title="Se compensa sumando entradas en el próximo festival"' : ''}
-                            onchange="actualizarEstadoBotonSeleccionadosDeudas()">
+                        <button type="button" class="expand-btn-finanzas btn-detalle-deuda no-print" data-deuda-id="${idSeguro}" title="Ver medio de pago, ${esPago ? 'quién paga' : 'a quién paga'} y observaciones" onclick="alternarDetalleDeuda('${idSeguro}')">＋</button>
                     </td>
                     <td style="padding-left:24px;">
                         <span style="font-size:12.5px;">${esc(item.concepto)}</span>${wa}
@@ -20495,7 +20540,6 @@
                     <td class="col-accion-deudas col-accion-cell" style="text-align:center; white-space:nowrap;">
                         <div style="display:inline-flex; align-items:center; gap:4px; justify-content:center;">
                             ${botonAccion}${botonAbsorber}${botonOmitir}${botonCuotas}
-                            <button type="button" class="btn-app btn-secondary btn-detalle-deuda no-print btn-sm" data-deuda-id="${idSeguro}" title="Ver medio de pago, responsable y observaciones" onclick="alternarDetalleDeuda('${idSeguro}')">▾</button>
                         </div>
                     </td>`;
                 tbody.appendChild(tr);
@@ -20512,7 +20556,7 @@
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:11.5px;">
                             ${esTraspasoItem ? `<span style="color:var(--ink-2);">${esc(item.obs || '')}</span>` : `
                             <label style="display:inline-flex; align-items:center; gap:4px;">Medio ${selMedio(item)}</label>
-                            <label style="display:inline-flex; align-items:center; gap:4px;">${item.esPasivoEscuela ? 'Quién paga' : 'Responsable'}
+                            <label style="display:inline-flex; align-items:center; gap:4px;">${item.esPasivoEscuela ? 'Quién paga' : 'A quién paga'}
                                 <select class="installment-select" style="font-size:11.5px; padding:3px 6px; border-radius:6px;" onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'responsable', this.value)">${item.esPasivoEscuela
                                     ? (SOCIOS_GASTOS.includes(item.responsable) ? SOCIOS_GASTOS : SOCIOS_GASTOS.concat(item.responsable ? [item.responsable] : [])).map(n => `<option value="${esc(n)}" ${n === item.responsable ? 'selected' : ''}>${esc(n)}</option>`).join('')
                                     : opcionesResponsablesHTML(item.responsable)}</select></label>

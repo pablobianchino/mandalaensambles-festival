@@ -9,7 +9,7 @@
 // editar esta colección sin tener acceso a las finanzas del evento.
 // =======================================================================
 
-import { db, doc, getDoc, setDoc, deleteDoc, collection, query, where, onSnapshot } from "../config/firebase.js";
+import { db, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot } from "../config/firebase.js";
 import { COLLECTIONS } from "../config/constants.js";
 import { notificarErrorPersistencia } from "../utils/errores.js";
 
@@ -46,27 +46,30 @@ export async function espejarSonidoEvento(eventoId, partes) {
 }
 
 /**
- * Indica si el evento graba el show: la pestaña REC solo aparece cuando está activa.
- * Se guarda en sonido.recActivo; al apagarla los datos del REC quedan guardados.
+ * Limpieza única (v2.7): la solapa REC se eliminó del sistema. Borra sonido.rec y sonido.recActivo de todos los eventos.
+ * Se corre a mano una sola vez (window.MandalaApp.sonido.borrarRecTodos()). No toca el Rider técnico.
+ * Devuelve { revisados, borrados, errores }.
  */
-export async function guardarRecActivoEvento(eventoId, activo, usuarioEmail = '') {
-    try {
-        await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, eventoId), {
-            eventoId,
-            sonido: { recActivo: !!activo },
-            actualizadoEn: new Date().toISOString(),
-            actualizadoPor: usuarioEmail || ''
-        }, { merge: true });
-        return true;
-    } catch (err) {
-        console.error(`[Mandala Festivales] Error al guardar si el evento ${eventoId} graba:`, err);
-        notificarErrorPersistencia("la activación del REC", err);
-        return false;
+export async function borrarRecDeTodosLosEventos() {
+    const resultado = { revisados: 0, borrados: 0, errores: 0 };
+    const snap = await getDocs(collection(db, COLLECTIONS.FESTIVALES_SONIDO));
+    for (const d of snap.docs) {
+        resultado.revisados++;
+        const sonido = (d.data() || {}).sonido || {};
+        if (sonido.rec === undefined && sonido.recActivo === undefined) continue;
+        try {
+            await updateDoc(d.ref, { 'sonido.rec': deleteField(), 'sonido.recActivo': deleteField() });
+            resultado.borrados++;
+        } catch (err) {
+            resultado.errores++;
+            console.warn(`[Mandala Festivales] No se pudo borrar el REC de ${d.id}:`, err);
+        }
     }
+    return resultado;
 }
 
 /**
- * Al duplicar un evento: copia su Rider técnico y su REC al evento nuevo, para editarlos después.
+ * Al duplicar un evento: copia su Rider técnico al evento nuevo, para editarlo después.
  * Devuelve { ok, copiado } (copiado = qué partes había para copiar).
  */
 export async function copiarSonidoEvento(origenId, destinoId) {
@@ -75,8 +78,6 @@ export async function copiarSonidoEvento(origenId, destinoId) {
         const sonido = (snap.exists() && snap.data().sonido) || {};
         const aCopiar = {};
         if (sonido.riderTecnico) aCopiar.riderTecnico = sonido.riderTecnico;
-        if (sonido.rec) aCopiar.rec = sonido.rec;
-        if (sonido.recActivo !== undefined) aCopiar.recActivo = sonido.recActivo;
         const copiado = Object.keys(aCopiar);
         if (!copiado.length) return { ok: true, copiado };
         await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, destinoId), {
@@ -117,26 +118,6 @@ export function escucharEventosSonidoEnCurso(onDatos, onError) {
         console.warn('[Mandala Festivales] Error al escuchar los eventos para sonidistas:', err);
         if (typeof onError === 'function') onError(err);
     });
-}
-
-/**
- * Guarda el REC (grabación del show) de un evento (reemplaza sonido.rec completo).
- * Con merge no toca sonido.tecnico ni el resto del documento.
- */
-export async function guardarRecEvento(eventoId, rec, usuarioEmail = '') {
-    try {
-        await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, eventoId), {
-            eventoId,
-            sonido: { rec },
-            actualizadoEn: new Date().toISOString(),
-            actualizadoPor: usuarioEmail || ''
-        }, { merge: true });
-        return true;
-    } catch (err) {
-        console.error(`[Mandala Festivales] Error al guardar el REC de ${eventoId}:`, err);
-        notificarErrorPersistencia("la grabación (REC)", err);
-        return false;
-    }
 }
 
 /**

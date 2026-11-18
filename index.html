@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.6">
-    <script src="src/ui/iconos.js?v=v2.6"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.7">
+    <script src="src/ui/iconos.js?v=v2.7"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.6" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.7" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -582,13 +582,7 @@
                             <button class="segmented-tab-btn" id="btn-subtab-checklist" onclick="switchRiderSubTab('checklist')">
                                 Checklist de equipamiento
                             </button>
-                            <!-- REC: solo aparece (al final) cuando el evento graba el show. Mientras no, un botón "＋ REC" lo activa -->
-                            <button class="segmented-tab-btn" id="btn-subtab-rec" style="display:none;" onclick="switchRiderSubTab('rec')">
-                                REC
-                            </button>
-                            <button class="segmented-tab-btn rec-agregar-btn" id="btn-subtab-rec-agregar" style="display:none;" onclick="activarRecEvento()" title="Activar la pestaña REC si este show se graba">
-                                ＋ REC
-                            </button>
+
                         </div>
 
                         <!-- Sub-pestaña Rider: Bandas (Planilla Editable In-Situ) -->
@@ -674,6 +668,8 @@
                                     </div>
                                     <div class="sec-chips">
                                         <span class="sec-chip" id="chip-tecnico-canales">0 canales</span>
+                                        <button type="button" class="rec-btn" id="btn-tecnico-rec" onclick="alternarGrabacionTecnico()" aria-pressed="false" title="Marcar que este evento se graba: el encabezado de la planilla se pinta de rojo claro para que el sonidista lo vea"><i></i>REC</button>
+                                        <span class="rec-leyenda" id="tecnico-rec-leyenda"></span>
                                         <div class="rider-modo-switch" role="group" aria-label="Modo del rider técnico">
                                             <button type="button" id="btn-tecnico-modo-vista" class="rider-modo-btn" onclick="setTecnicoModo('vista')" title="Ver la planilla limpia, como se imprime">👁 Vista</button>
                                             <button type="button" id="btn-tecnico-modo-edicion" class="rider-modo-btn active" onclick="setTecnicoModo('edicion')" title="Editar canales y totales">✏️ Edición</button>
@@ -696,51 +692,6 @@
                             </div>
                         </div>
 
-                        <!-- Sub-pestaña Sonido: REC (grabación del show: uno o más equipos, todo a mano) -->
-                        <div id="rider-subtab-rec" style="display:none;">
-                            <div class="content-card" id="card-rider-rec">
-                                <div class="print-rider-header print-only">
-                                    <div class="print-rider-header-inner">
-                                        <h2 id="print-title-rec" class="print-rider-title">Grabación (REC)</h2>
-                                        <span class="print-rider-brand">Mandala Ensambles</span>
-                                    </div>
-                                </div>
-
-                                <div class="card-header-flex no-print">
-                                    <div>
-                                        <h3 class="card-title">
-                                            <span class="screen-title">REC</span>
-                                        </h3>
-                                        <span style="font-size:12px; color:var(--text-muted);" class="subtitulo-descriptivo-app">
-                                            Grabación del show: un cuadro por equipo de grabación, con los canales que entran en cada uno. Todo se carga a mano.
-                                        </span>
-                                    </div>
-                                    <div class="sec-chips">
-                                        <span class="sec-chip" id="chip-rec-equipos">0 equipos</span>
-                                        <div class="rider-modo-switch" role="group" aria-label="Modo del REC">
-                                            <button type="button" id="btn-rec-modo-vista" class="rider-modo-btn" onclick="setRecModo('vista')" title="Ver la planilla limpia, como se imprime">👁 Vista</button>
-                                            <button type="button" id="btn-rec-modo-edicion" class="rider-modo-btn active" onclick="setRecModo('edicion')" title="Editar equipos y canales">✏️ Edición</button>
-                                        </div>
-                                        <button type="button" class="btn-app btn-secondary" id="btn-rec-fullscreen" onclick="toggleRecPantallaCompleta()" title="Agrandar la planilla a pantalla completa (Esc para salir)" aria-label="Pantalla completa">
-                                            <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pantalla completa
-                                        </button>
-                                        <button class="btn-app btn-secondary" onclick="imprimirRec()" title="Imprimir el REC (vertical u horizontal según el ancho)" aria-label="Imprimir REC">
-                                            🖨️
-                                        </button>
-                                        <button class="btn-app btn-secondary" id="btn-rec-quitar" onclick="quitarRecEvento()" title="Este show no se graba: oculta la pestaña REC (los datos quedan guardados)">
-                                            Quitar REC
-                                        </button>
-                                        <button class="btn-app btn-primary" id="btn-rec-add-equipo" onclick="agregarEquipoRec()" title="Agregar un equipo de grabación">
-                                            ＋ Equipo de grabación
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div id="rec-contenido">
-                                    <!-- Se renderiza vía renderizarRec() -->
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Sub-pestaña Rider: Checklist (Planilla Editable In-Situ) -->
                         <div id="rider-subtab-checklist" style="display:none;">
@@ -1503,7 +1454,7 @@
                         <div class="card-header-flex">
                             <div>
                                 <span style="font-size:13px; color:var(--ink-3);">
-                                    Personas de sonido. Al cargar a alguien se le crea un usuario con acceso reducido: ve los eventos en curso y completa el Rider técnico y el REC. Con el interruptor Activo le das o le sacás el acceso.
+                                    Personas de sonido. Al cargar a alguien se le crea un usuario con acceso reducido: ve los eventos en curso y completa el Rider técnico. Con el interruptor Activo le das o le sacás el acceso.
                                 </span>
                             </div>
                             <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -3749,11 +3700,6 @@
                 const cardTecnico = document.getElementById('card-rider-tecnico');
                 if (cardTecnico && cardTecnico.classList.contains('rider-fullscreen-active')) {
                     toggleTecnicoPantallaCompleta();
-                    return;
-                }
-                const cardRec = document.getElementById('card-rider-rec');
-                if (cardRec && cardRec.classList.contains('rider-fullscreen-active')) {
-                    toggleRecPantallaCompleta();
                     return;
                 }
                 const confModal = document.getElementById('modal-mandala-confirm');
@@ -6224,7 +6170,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.6";
+        const APP_VERSION = "v2.7";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6725,8 +6671,6 @@
             if (elTitleRider) elTitleRider.textContent = `Rider general para ${festNombre}`;
             const elTitleTecnico = document.getElementById('print-title-tecnico');
             if (elTitleTecnico) elTitleTecnico.textContent = `Rider técnico para ${festNombre}`;
-            const elTitleRec = document.getElementById('print-title-rec');
-            if (elTitleRec) elTitleRec.textContent = `Grabación (REC) para ${festNombre}`;
             const elTitleChecklist = document.getElementById('print-title-checklist');
             if (elTitleChecklist) elTitleChecklist.textContent = `Checklist de Equipamiento para ${festNombre}`;
 
@@ -6779,7 +6723,6 @@
             if (tabId === 'info') renderizarArtistasFestival();
             if (tabId === 'rider') {
                 switchRiderSubTab('bandas');
-                if (typeof cargarRecActivoEvento === 'function') cargarRecActivoEvento();
                 renderizarRiderTecnicoFestival();
                 if (typeof renderizarChecklistFestival === 'function') {
                     renderizarChecklistFestival(checklistFestivalesDB[eventoActualId] || null);
@@ -8826,11 +8769,8 @@
         window.addEventListener('beforeprint', () => {
             const subtabChecklist = document.getElementById('rider-subtab-checklist');
             const subtabTecnico = document.getElementById('rider-subtab-tecnico');
-            const subtabRec = document.getElementById('rider-subtab-rec');
             if (subtabTecnico && subtabTecnico.style.display !== 'none' && typeof orientacionRiderCanales === 'function') {
                 establecerOrientacionImpresion(orientacionRiderCanales());
-            } else if (subtabRec && subtabRec.style.display !== 'none' && typeof orientacionRec === 'function') {
-                establecerOrientacionImpresion(orientacionRec());
             } else if (subtabChecklist && subtabChecklist.style.display !== 'none') {
                 establecerOrientacionImpresion('portrait');
             } else {
@@ -8839,7 +8779,7 @@
         });
 
         function switchRiderSubTab(subTabId) {
-            ['bandas', 'tecnico', 'rec', 'checklist'].forEach(id => {
+            ['bandas', 'tecnico', 'checklist'].forEach(id => {
                 const panel = document.getElementById('rider-subtab-' + id);
                 if (panel) panel.style.display = (subTabId === id) ? 'block' : 'none';
                 const btn = document.getElementById('btn-subtab-' + id);
@@ -8848,10 +8788,6 @@
 
             if (subTabId === 'tecnico') {
                 if (typeof abrirRiderTecnicoCanales === 'function') abrirRiderTecnicoCanales();
-                return;
-            }
-            if (subTabId === 'rec') {
-                if (typeof abrirRecEvento === 'function') abrirRecEvento();
                 return;
             }
             establecerOrientacionImpresion(subTabId === 'checklist' ? 'portrait' : 'landscape');
@@ -9016,8 +8952,6 @@
             if (elTitleRider) elTitleRider.textContent = `Rider general para ${nombre}`;
             const elTitleTecnico = document.getElementById('print-title-tecnico');
             if (elTitleTecnico) elTitleTecnico.textContent = `Rider técnico para ${nombre}`;
-            const elTitleRec = document.getElementById('print-title-rec');
-            if (elTitleRec) elTitleRec.textContent = `Grabación (REC) para ${nombre}`;
             const elTitleChecklist = document.getElementById('print-title-checklist');
             if (elTitleChecklist) elTitleChecklist.textContent = `Checklist de Equipamiento para ${nombre}`;
 
@@ -9687,10 +9621,10 @@
                 }).catch(e => console.warn('Error guardando en Firestore:', e));
             }
 
-            // Al duplicar, el Rider técnico y el REC del evento origen también se copian (se editan después en el evento nuevo)
+            // Al duplicar, el Rider técnico del evento origen también se copia (se edita después en el evento nuevo)
             if (esDuplicacion && window.MandalaApp && window.MandalaApp.sonido && typeof window.MandalaApp.sonido.copiar === 'function') {
                 window.MandalaApp.sonido.copiar(idOrigen, nuevoId).then(res => {
-                    if (res && res.ok === false) mostrarToast('El evento se duplicó, pero no se pudieron copiar el Rider técnico y el REC. Se pueden cargar a mano.', 'warning');
+                    if (res && res.ok === false) mostrarToast('El evento se duplicó, pero no se pudo copiar el Rider técnico. Se puede cargar a mano.', 'warning');
                 });
             }
 
@@ -13003,7 +12937,7 @@
         function enviarAccesoSonidistaWhatsApp() {
             if (!_ultimoAccesoSonidista) return;
             const { res, datos } = _ultimoAccesoSonidista;
-            let texto = `Hola ${datos.nombre}! Ya podés ingresar a Mandala Festivales para cargar el rider técnico y el REC de los eventos: ${URL_APP_FESTIVALES}\nUsuario: ${datos.email}`;
+            let texto = `Hola ${datos.nombre}! Ya podés ingresar a Mandala Festivales para cargar el rider técnico de los eventos: ${URL_APP_FESTIVALES}\nUsuario: ${datos.email}`;
             if (res.claveInicial) texto += `\nClave inicial: ${res.claveInicial} (te pide cambiarla al entrar)`;
             abrirWhatsAppDirecto(datos.telefono, datos.nombre, texto);
         }
@@ -13229,7 +13163,7 @@
         function canalBaseTecnico(extra) {
             return Object.assign({
                 id: nuevoIdCanalTecnico(), origenColId: null, origenNombre: '', sub: 0, canalAuto: '',
-                habilitado: true, inManual: '', canal: '', micDi: '', phantom: false, pie: '', rec: true, notas: '', aviso: '',
+                habilitado: true, inManual: '', canal: '', micDi: '', phantom: false, pie: '', notas: '', aviso: '',
                 descartado: false // canal del rider general que se quitó a mano: queda oculto para que no se vuelva a crear
             }, extra || {});
         }
@@ -13256,7 +13190,7 @@
         function crearTecnicoDesdeRider(columnas) {
             const canales = [];
             columnas.forEach(col => canales.push(...canalesSugeridosDeColumna(col)));
-            return { version: 2, consola: '', canales, cajasDi: '', notaEquipamiento: '' };
+            return { version: 2, consola: '', grabacion: false, canales, cajasDi: '', notaEquipamiento: '' };
         }
 
         function normalizarTecnico(t) {
@@ -13264,7 +13198,9 @@
             return {
                 version: 2,
                 consola: String(t.consola || ''),
-                canales: t.canales.filter(c => c && typeof c === 'object').map(c => canalBaseTecnico({ ...c, id: c.id || nuevoIdCanalTecnico() })),
+                grabacion: t.grabacion === true, // el evento se graba (botón REC)
+                // La columna REC por canal ya no existe: se descarta la marca vieja (c.rec)
+                canales: t.canales.filter(c => c && typeof c === 'object').map(c => { const { rec, ...resto } = c; return canalBaseTecnico({ ...resto, id: c.id || nuevoIdCanalTecnico() }); }),
                 cajasDi: (t.cajasDi === undefined || t.cajasDi === null) ? '' : String(t.cajasDi),
                 notaEquipamiento: String(t.notaEquipamiento || '')
             };
@@ -13470,6 +13406,23 @@
             if (bAdd) bAdd.style.display = tecnicoModo === 'vista' ? 'none' : '';
         }
 
+        // Botón REC: el evento se graba (se pinta de rojo claro el encabezado de la planilla, en pantalla y en la hoja impresa)
+        function actualizarBotonRecTecnico(tec) {
+            const btn = document.getElementById('btn-tecnico-rec');
+            const ley = document.getElementById('tecnico-rec-leyenda');
+            const on = Boolean(tec && tec.grabacion);
+            if (btn) { btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+            if (ley) ley.textContent = on ? 'Este evento se graba' : '';
+        }
+        function alternarGrabacionTecnico() {
+            const tec = sonidoTecnicoDB[eventoActualId];
+            if (!tec) { mostrarToast('Esperá a que termine de cargar el rider técnico.', 'info'); return; }
+            tec.grabacion = !tec.grabacion;
+            guardarTecnicoEvento();
+            renderizarRiderTecnicoCanales();
+        }
+        window.alternarGrabacionTecnico = alternarGrabacionTecnico;
+
         function setTecnicoModo(modo) {
             tecnicoModo = (modo === 'vista') ? 'vista' : 'edicion';
             try { localStorage.setItem('mandala_tecnico_modo', tecnicoModo); } catch (e) { /* ignorar */ }
@@ -13494,41 +13447,46 @@
 
         function htmlHojaTecnico(tec) {
             const nums = numerarCanalesTecnico(tec);
-            const t = calcularTotalesRiderTecnico(tec);
+            const t = calcularTotalesTecnico(tec);
             const hab = tec.canales.filter(c => c.habilitado);
             const filas = hab.length ? hab.map(c => `
                 <tr>
-                    <td class="${c.rec ? '' : 'tecnico-hoja-no'}">${c.rec ? 'SI' : 'NO'}</td>
                     <td>${esc(nums[c.id])}</td>
                     <td class="izq">${esc(c.canal)}</td>
                     <td>${esc(c.micDi)}</td>
                     <td>${c.phantom ? 'SI' : 'NO'}</td>
+                    <td>${esc(c.pie)}</td>
                     <td class="izq">${esc(c.notas)}</td>
                 </tr>`).join('') : `<tr><td colspan="6" class="izq">No hay canales habilitados.</td></tr>`;
             return `
+                ${tec.grabacion ? `<p class="tecnico-hoja-rec"><span class="badge-rec">REC</span> Este evento se graba</p>` : ''}
                 ${tec.consola.trim() ? `<p class="tecnico-hoja-linea"><b>CONSOLA:</b> ${esc(tec.consola.trim())}</p>` : ''}
                 <table class="tecnico-hoja-tabla" id="tabla-tecnico-hoja">
-                    <thead><tr><th>REC</th><th>IN</th><th class="izq">CANAL</th><th>MIC O DI</th><th>48V</th><th class="izq">NOTAS</th></tr></thead>
+                    <thead class="${tec.grabacion ? 'rec-on' : ''}"><tr><th>IN</th><th class="izq">CANAL</th><th>MIC O DI</th><th>48V</th><th>SOPORTE</th><th class="izq">NOTAS</th></tr></thead>
                     <tbody>${filas}</tbody>
                 </table>
                 <table class="tecnico-hoja-tabla tecnico-hoja-totales">
-                    <thead><tr><th>PIE / MIC</th><th>CABLE XLR</th><th>CAJA DI</th></tr></thead>
-                    <tbody><tr><td>${t.pieMic}</td><td>${t.xlr}</td><td>${esc(t.cajasDi)}</td></tr></tbody>
+                    <thead><tr><th>MIC</th><th>PIE</th><th>CLAMP</th><th>CABLE XLR</th><th>CAJA DI</th></tr></thead>
+                    <tbody><tr><td>${t.mic}</td><td>${t.pie}</td><td>${t.clamp}</td><td>${t.xlr}</td><td>${esc(t.cajasDi)}</td></tr></tbody>
                 </table>
                 ${tec.notaEquipamiento.trim() ? `<p class="tecnico-hoja-linea"><b>NOTA:</b> ${esc(tec.notaEquipamiento.trim())}</p>` : ''}`;
         }
 
         function htmlTotalesTecnico(tec) {
-            const t = calcularTotalesRiderTecnico(tec);
+            const t = calcularTotalesTecnico(tec);
             return `
                 <div class="tecnico-totales-h">Totales <span>(canales habilitados)</span></div>
-                <div class="tecnico-tot-fila"><span>PIE / MIC</span><b>${t.pieMic}</b></div>
+                <div class="tecnico-tot-fila"><span>MIC</span><b>${t.mic}</b></div>
+                <div class="tecnico-tot-fila"><span>PIE</span><b>${t.pie}</b></div>
+                <div class="tecnico-tot-fila"><span>CLAMP</span><b>${t.clamp}</b></div>
                 <div class="tecnico-tot-fila"><span>CABLE XLR</span><b>${t.xlr}</b></div>
                 ${htmlFilaCajaDi(t, tec.cajasDi, "editarCampoTecnico('cajasDi', this.value)")}`;
         }
 
         function htmlFilaTecnico(c, idx, total, nums) {
             const id = escJs(c.id);
+            const opcionesSoporte = ['', ...TECNICO_OPCIONES_PIE];
+            if (c.pie && !opcionesSoporte.includes(c.pie)) opcionesSoporte.push(c.pie);
             const pill = c.aviso === 'nuevo'
                 ? '<span class="pill-status pill-info tecnico-aviso-pill" title="Se agregó porque el rider general tiene esta columna">nuevo</span>'
                 : (c.aviso === 'quitado' ? '<span class="pill-status pill-neutral tecnico-aviso-pill" title="Su columna ya no está en el rider general">fuera del rider</span>' : '');
@@ -13536,11 +13494,11 @@
                 <tr class="${c.habilitado ? '' : 'tecnico-apagado'}" data-canal-id="${esc(c.id)}" ondragstart="tecnicoDragStart(event, '${id}')" ondragover="tecnicoDragOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="tecnicoDrop(event, '${id}')" ondragend="tecnicoDragEnd(event)">
                     <td class="drag-handle tecnico-handle" title="Arrastrar para mover el canal" onmousedown="this.parentNode.draggable = true" onmouseup="this.parentNode.draggable = false">⠿</td>
                     <td class="tecnico-c"><input type="checkbox" ${c.habilitado ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'habilitado', this.checked)" title="${c.habilitado ? 'Apagar este canal (queda sombreado y no se imprime)' : 'Volver a usar este canal'}"></td>
-                    <td class="tecnico-c"><input type="checkbox" ${c.rec ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'rec', this.checked)" title="${c.rec ? 'Se graba este canal (REC: SI)' : 'No se graba este canal (REC: NO)'}"></td>
                     <td class="tecnico-c"><input type="text" class="spreadsheet-inp tecnico-inp-in" value="${esc(c.inManual)}" placeholder="${c.habilitado ? esc(nums[c.id]) : '—'}" onchange="editarCanalTecnico('${id}', 'inManual', this.value)" title="Número de entrada. Vacío = correlativo automático"></td>
                     <td><div class="tecnico-canal-wrap"><input type="text" class="spreadsheet-inp text-left tecnico-inp-canal" value="${esc(c.canal)}" placeholder="Canal" onchange="editarCanalTecnico('${id}', 'canal', this.value)">${pill}</div></td>
                     <td><input type="text" class="spreadsheet-inp text-left" list="dl-tecnico-mic" value="${esc(c.micDi)}" placeholder="—" onchange="editarCanalTecnico('${id}', 'micDi', this.value)"></td>
                     <td class="tecnico-c"><input type="checkbox" ${c.phantom ? 'checked' : ''} onchange="editarCanalTecnico('${id}', 'phantom', this.checked)" title="Phantom 48V"></td>
+                    <td><select class="spreadsheet-inp tecnico-sel" onchange="editarCanalTecnico('${id}', 'pie', this.value)" title="Soporte del micrófono: pie o clamp">${opcionesSoporte.map(o => `<option value="${esc(o)}" ${o === c.pie ? 'selected' : ''}>${o ? esc(o) : '·'}</option>`).join('')}</select></td>
                     <td><input type="text" class="spreadsheet-inp text-left" value="${esc(c.notas)}" placeholder="Notas" onchange="editarCanalTecnico('${id}', 'notas', this.value)"></td>
                     <td class="tecnico-c tecnico-acciones">
                         ${esCanalAutomaticoTecnico(c) ? '' : `<button type="button" class="btn-row-del" onclick="quitarCanalTecnico('${id}')" title="Quitar canal" aria-label="Quitar canal"></button>`}
@@ -13567,6 +13525,7 @@
             }
             const t = calcularTotalesTecnico(tec);
             if (chip) chip.textContent = `${t.canales} ${t.canales === 1 ? 'canal' : 'canales'}${t.apagados ? ` · ${t.apagados} apagado${t.apagados === 1 ? '' : 's'}` : ''}`;
+            actualizarBotonRecTecnico(tec);
 
             const nums = numerarCanalesTecnico(tec);
             const visibles = canalesVisiblesTecnico(tec);
@@ -13591,14 +13550,14 @@
                     <div class="tecnico-layout">
                         <div class="table-responsive tecnico-tabla-wrap">
                             <table class="spreadsheet-table tecnico-tabla" id="tabla-tecnico-edicion">
-                                <thead><tr>
+                                <thead class="${tec.grabacion ? 'rec-on' : ''}"><tr>
                                     <th class="tecnico-c col-drag-header" style="width:32px;" title="Arrastrá la fila para mover el canal">⠿</th>
                                     <th class="tecnico-c" title="Habilitado: apagá los canales que no se usan" style="width:40px;">✓</th>
-                                    <th class="tecnico-c" title="REC: se graba este canal (SI) o no (NO)" style="width:52px;">REC</th>
                                     <th class="tecnico-c" style="width:54px;">IN</th>
                                     <th style="width:26%; text-align:left;">Canal</th>
                                     <th style="width:120px; text-align:left;">Mic o DI</th>
                                     <th class="tecnico-c" style="width:52px;">48V</th>
+                                    <th style="width:86px; text-align:left;">Soporte</th>
                                     <th style="text-align:left;">Notas</th>
                                     <th class="tecnico-c" style="width:40px;" title="Acciones"></th>
                                 </tr></thead>
@@ -13773,495 +13732,7 @@
         }
         window.imprimirRiderCanales = imprimirRiderCanales;
 
-        // =========================================================
-        // SONIDO › REC (grabación del show)
-        // - festivales_sonido/{eventoId}.sonido.rec = { equipos: [{ id, nombre, destino, canales, cajasDi, repuestos }], nota }
-        // - Todo a mano (no se trae nada del Rider técnico). Los totales usan el mismo cálculo que el Rider técnico.
-        // =========================================================
-        // ¿Este evento graba el show? La pestaña REC (al final de las de Sonido) solo se ve cuando sí.
-        // Se guarda en festivales_sonido/{id}.sonido.recActivo; si el evento ya tiene equipos de REC cargados, cuenta como activo.
-        const recActivoDB = {};   // festId -> true | false (ausente = todavía no se leyó)
-
-        function actualizarPestanaRec() {
-            const id = eventoActualId;
-            const activo = !!recActivoDB[id];
-            const leido = recActivoDB[id] !== undefined;
-            const btnRec = document.getElementById('btn-subtab-rec');
-            const btnAgregar = document.getElementById('btn-subtab-rec-agregar');
-            if (btnRec) btnRec.style.display = activo ? '' : 'none';
-            if (btnAgregar) btnAgregar.style.display = (leido && !activo) ? '' : 'none';
-            // Si se apagó mientras se estaba viendo, se vuelve a la primera pestaña
-            const panelRec = document.getElementById('rider-subtab-rec');
-            if (!activo && panelRec && panelRec.style.display !== 'none') switchRiderSubTab('bandas');
-        }
-
-        async function cargarRecActivoEvento() {
-            const festId = eventoActualId;
-            if (!festId) return;
-            actualizarPestanaRec();
-            const svc = window.MandalaApp && window.MandalaApp.sonido;
-            if (!svc || typeof svc.obtener !== 'function') return;
-            try {
-                const res = await svc.obtener(festId);
-                const sonido = (res && res.datos && res.datos.sonido) || {};
-                const tieneDatos = !!(sonido.rec && Array.isArray(sonido.rec.equipos) && sonido.rec.equipos.length > 0);
-                recActivoDB[festId] = sonido.recActivo === true || (sonido.recActivo === undefined && tieneDatos);
-            } catch (e) {
-                console.warn('[Mandala Festivales] No se pudo leer si el evento graba (REC):', e);
-            }
-            if (festId === eventoActualId) actualizarPestanaRec();
-        }
-        window.cargarRecActivoEvento = cargarRecActivoEvento;
-
-        async function activarRecEvento() {
-            const festId = eventoActualId;
-            const svc = window.MandalaApp && window.MandalaApp.sonido;
-            if (!festId || !svc) return;
-            recActivoDB[festId] = true;
-            actualizarPestanaRec();
-            switchRiderSubTab('rec');
-            const email = (window.MandalaApp.auth && window.MandalaApp.auth.instance && window.MandalaApp.auth.instance.currentUser && window.MandalaApp.auth.instance.currentUser.email) || '';
-            const ok = await svc.guardarRecActivo(festId, true, email);
-            if (!ok) { recActivoDB[festId] = false; actualizarPestanaRec(); }
-        }
-        window.activarRecEvento = activarRecEvento;
-
-        async function quitarRecEvento() {
-            const festId = eventoActualId;
-            const svc = window.MandalaApp && window.MandalaApp.sonido;
-            if (!festId || !svc) return;
-            const conf = await mostrarModalConfirmacion({
-                titulo: 'Quitar la pestaña REC',
-                mensaje: 'Este show no se graba: la pestaña REC se oculta en este evento.<br><br>Lo que cargaste queda guardado: si volvés a activarla con <strong>＋ REC</strong>, está todo como lo dejaste.',
-                icono: '🎙️',
-                textoConfirmar: 'Quitar REC'
-            });
-            if (!conf) return;
-            recActivoDB[festId] = false;
-            actualizarPestanaRec();
-            const email = (window.MandalaApp.auth && window.MandalaApp.auth.instance && window.MandalaApp.auth.instance.currentUser && window.MandalaApp.auth.instance.currentUser.email) || '';
-            const ok = await svc.guardarRecActivo(festId, false, email);
-            if (!ok) { recActivoDB[festId] = true; actualizarPestanaRec(); }
-        }
-        window.quitarRecEvento = quitarRecEvento;
-
-        const sonidoRecDB = {};
-        const sonidoRecEstado = {};   // festId -> 'cargando' | 'listo' | 'error'
-        const _timersGuardadoRec = {};
-        let recModo = 'edicion';
-        try { if (localStorage.getItem('mandala_rec_modo') === 'vista') recModo = 'vista'; } catch (e) { /* sin storage: queda en edición */ }
-
-        function canalRecBase(extra) {
-            return Object.assign({ id: nuevoIdCanalTecnico(), habilitado: true, inManual: '', canal: '', micDi: '', phantom: false, pie: '', notas: '' }, extra || {});
-        }
-        function equipoRecBase(extra) {
-            return Object.assign({ id: nuevoIdCanalTecnico(), nombre: '', destino: '', canales: [], cajasDi: '', repuestos: { ...TECNICO_REPUESTOS_DEFECTO } }, extra || {});
-        }
-        function normalizarRec(r) {
-            const equipos = (r && Array.isArray(r.equipos) ? r.equipos : []).filter(e => e && typeof e === 'object').map(e => equipoRecBase({
-                id: e.id || nuevoIdCanalTecnico(),
-                nombre: String(e.nombre || ''),
-                destino: String(e.destino || ''),
-                canales: (Array.isArray(e.canales) ? e.canales : []).filter(c => c && typeof c === 'object').map(c => canalRecBase({ ...c, id: c.id || nuevoIdCanalTecnico() })),
-                cajasDi: (e.cajasDi === undefined || e.cajasDi === null) ? '' : String(e.cajasDi),
-                repuestos: { ...TECNICO_REPUESTOS_DEFECTO, ...(e.repuestos || {}) }
-            }));
-            return { equipos, nota: String((r && r.nota) || '') };
-        }
-
-        function obtenerRecEvento() {
-            const festId = eventoActualId;
-            return (festId && sonidoRecEstado[festId] === 'listo') ? sonidoRecDB[festId] : null;
-        }
-
-        async function abrirRecEvento() {
-            const festId = eventoActualId;
-            if (!festId) return;
-            establecerOrientacionImpresion('portrait');
-            if (sonidoRecEstado[festId] !== 'listo') sonidoRecEstado[festId] = 'cargando';
-            renderizarRec();
-            if (_timersGuardadoRec[festId]) return; // hay cambios sin guardar: no se pisan con lo de la base
-            const svc = window.MandalaApp && window.MandalaApp.sonido;
-            try {
-                if (!svc || typeof svc.obtener !== 'function') throw new Error('Servicio de sonido no disponible');
-                const res = await svc.obtener(festId);
-                if (_timersGuardadoRec[festId]) return;
-                const sonido = (res && res.datos && res.datos.sonido) || {};
-                sonidoRecDB[festId] = normalizarRec(sonido.rec);
-                sonidoRecEstado[festId] = 'listo';
-            } catch (e) {
-                console.warn('[Mandala Festivales] No se pudo leer el REC:', e);
-                if (sonidoRecEstado[festId] !== 'listo') sonidoRecEstado[festId] = 'error';
-            }
-            if (festId === eventoActualId) renderizarRec();
-        }
-        window.abrirRecEvento = abrirRecEvento;
-
-        function guardarRecEventoActual() {
-            const festId = eventoActualId;
-            if (!festId || !sonidoRecDB[festId]) return;
-            clearTimeout(_timersGuardadoRec[festId]);
-            _timersGuardadoRec[festId] = setTimeout(async () => {
-                const svc = window.MandalaApp && window.MandalaApp.sonido;
-                const rec = sonidoRecDB[festId];
-                let ok = false;
-                if (svc && typeof svc.guardarRec === 'function' && rec) {
-                    const email = (window.MandalaApp.auth && window.MandalaApp.auth.instance && window.MandalaApp.auth.instance.currentUser && window.MandalaApp.auth.instance.currentUser.email) || '';
-                    ok = await svc.guardarRec(festId, JSON.parse(JSON.stringify(rec)), email);
-                }
-                delete _timersGuardadoRec[festId];
-                if (ok) console.log('[Mandala Festivales] REC guardado:', festId);
-            }, 650);
-        }
-
-        function aplicarRecModoEnPantalla() {
-            const card = document.getElementById('card-rider-rec');
-            if (card) card.classList.toggle('tecnico-modo-vista', recModo === 'vista');
-            const bV = document.getElementById('btn-rec-modo-vista');
-            const bE = document.getElementById('btn-rec-modo-edicion');
-            if (bV) bV.classList.toggle('active', recModo === 'vista');
-            if (bE) bE.classList.toggle('active', recModo === 'edicion');
-            const bAdd = document.getElementById('btn-rec-add-equipo');
-            if (bAdd) bAdd.style.display = recModo === 'vista' ? 'none' : '';
-        }
-        function setRecModo(modo) {
-            recModo = (modo === 'vista') ? 'vista' : 'edicion';
-            try { localStorage.setItem('mandala_rec_modo', recModo); } catch (e) { /* ignorar */ }
-            renderizarRec();
-        }
-        window.setRecModo = setRecModo;
-
-        function toggleRecPantallaCompleta() {
-            const card = document.getElementById('card-rider-rec');
-            const btn = document.getElementById('btn-rec-fullscreen');
-            if (!card) return;
-            const activo = card.classList.toggle('rider-fullscreen-active');
-            if (btn) {
-                btn.innerHTML = activo
-                    ? '<svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg> Salir (Esc)'
-                    : '<svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pantalla completa';
-                btn.title = activo ? 'Salir de pantalla completa (Esc)' : 'Agrandar la planilla a pantalla completa (Esc para salir)';
-            }
-            document.body.style.overflow = activo ? 'hidden' : '';
-        }
-        window.toggleRecPantallaCompleta = toggleRecPantallaCompleta;
-
-        function nombreEquipoRec(eq, idx) {
-            return (eq.nombre || '').trim() || `EQUIPO ${idx + 1}`;
-        }
-
-        function htmlHojaRec(rec) {
-            // El repuesto "(+1)" solo se anota si hay algo de ese elemento (0 pies no necesitan un pie de repuesto)
-            const rep = (v, total) => (numTecnico(v) && Number(total) > 0) ? ` <span class="tecnico-hoja-rep">(+${numTecnico(v)})</span>` : '';
-            const bloques = rec.equipos.map((eq, idx) => {
-                const t = calcularTotalesTecnico(eq);
-                const r = eq.repuestos || {};
-                const hab = eq.canales.filter(c => c.habilitado);
-                const nums = numerarCanalesTecnico(eq);
-                const filas = hab.length ? hab.map(c => `
-                    <tr>
-                        <td>${esc(nums[c.id])}</td>
-                        <td class="izq">${esc(c.canal)}</td>
-                        <td>${esc(c.micDi)}</td>
-                        <td>${c.phantom ? 'SI' : ''}</td>
-                        <td>${esc(c.pie)}</td>
-                        <td class="izq">${esc(c.notas)}</td>
-                    </tr>`).join('') : `<tr><td colspan="6" class="izq">No hay canales habilitados.</td></tr>`;
-                return `
-                    <div class="rec-hoja-equipo">
-                        <p class="tecnico-hoja-linea"><b>${esc(nombreEquipoRec(eq, idx).toUpperCase())}</b>${eq.destino.trim() ? ` — ${esc(eq.destino.trim())}` : ''}</p>
-                        <table class="tecnico-hoja-tabla">
-                            <thead><tr><th>IN</th><th class="izq">CANAL</th><th>MIC O DI</th><th>48V</th><th>PIE</th><th class="izq">NOTAS</th></tr></thead>
-                            <tbody>${filas}</tbody>
-                        </table>
-                        <table class="tecnico-hoja-tabla tecnico-hoja-totales">
-                            <thead><tr><th>MIC</th><th>PIE</th><th>CLAMP</th><th>CABLE XLR</th><th>CAJA DI</th></tr></thead>
-                            <tbody><tr><td>${t.mic}</td><td>${t.pie}${rep(r.pie, t.pie)}</td><td>${t.clamp}${rep(r.clamp, t.clamp)}</td><td>${t.xlr}${rep(r.xlr, t.xlr)}</td><td>${esc(t.cajasDi)}${rep(r.di, t.cajasDi)}</td></tr></tbody>
-                        </table>
-                    </div>`;
-            }).join('');
-            return (bloques || `<p class="tecnico-hoja-linea">No hay equipos de grabación cargados.</p>`) +
-                (rec.nota.trim() ? `<p class="tecnico-hoja-linea"><b>NOTA:</b> ${esc(rec.nota.trim())}</p>` : '');
-        }
-
-        function htmlTotalesRec(eq) {
-            const t = calcularTotalesTecnico(eq);
-            const r = eq.repuestos || {};
-            const e = escJs(eq.id);
-            const inpRep = (k) => `<input type="number" min="0" class="tecnico-inp-num" value="${numTecnico(r[k])}" onchange="editarRepuestoRec('${e}', '${k}', this.value)" title="Repuestos: se anotan como (+n) junto al total, no se suman">`;
-            return `
-                <div class="tecnico-totales-h">Totales <span>(canales habilitados)</span></div>
-                <div class="tecnico-tot-fila"><span>MIC</span><b>${t.mic}</b></div>
-                <div class="tecnico-tot-fila"><span>PIE ${t.pie > 0 ? `<small>(+${numTecnico(r.pie)})</small>` : ''}</span><b>${t.pie}</b></div>
-                <div class="tecnico-tot-fila"><span>CLAMP ${t.clamp > 0 ? `<small>(+${numTecnico(r.clamp)})</small>` : ''}</span><b>${t.clamp}</b></div>
-                <div class="tecnico-tot-fila"><span>CABLE XLR ${t.xlr > 0 && numTecnico(r.xlr) ? `<small>(+${numTecnico(r.xlr)})</small>` : ''}</span><b>${t.xlr}</b></div>
-                ${htmlFilaCajaDi(t, eq.cajasDi, `editarEquipoRec('${e}', 'cajasDi', this.value)`)}
-                <div class="tecnico-totales-sub">Repuestos (se anotan, no se suman)</div>
-                <div class="tecnico-repuestos">PIE + ${inpRep('pie')} CLAMP + ${inpRep('clamp')} DI + ${inpRep('di')} XLR + ${inpRep('xlr')}</div>`;
-        }
-
-        function htmlFilaRec(eqId, c, nums) {
-            const e = escJs(eqId);
-            const id = escJs(c.id);
-            const opcionesPie = ['', ...TECNICO_OPCIONES_PIE];
-            if (c.pie && !opcionesPie.includes(c.pie)) opcionesPie.push(c.pie);
-            return `
-                <tr class="${c.habilitado ? '' : 'tecnico-apagado'}" ondragstart="recDragStart(event, '${e}', '${id}')" ondragover="recDragOver(event, '${e}')" ondragleave="this.classList.remove('drag-over')" ondrop="recDrop(event, '${e}', '${id}')" ondragend="recDragEnd(event)">
-                    <td class="drag-handle tecnico-handle" title="Arrastrar para mover el canal" onmousedown="this.parentNode.draggable = true" onmouseup="this.parentNode.draggable = false">⠿</td>
-                    <td class="tecnico-c"><input type="checkbox" ${c.habilitado ? 'checked' : ''} onchange="editarCanalRec('${e}', '${id}', 'habilitado', this.checked)" title="${c.habilitado ? 'Apagar este canal (queda sombreado y no se imprime)' : 'Volver a usar este canal'}"></td>
-                    <td class="tecnico-c"><input type="text" class="spreadsheet-inp tecnico-inp-in" value="${esc(c.inManual)}" placeholder="${c.habilitado ? esc((nums || {})[c.id] || 'IN') : '—'}" onchange="editarCanalRec('${e}', '${id}', 'inManual', this.value)" title="Entrada del equipo de grabación. Vacío = número corrido automático; si escribís algo (ej.: 3 (LÍNEA)) se usa eso"></td>
-                    <td><input type="text" class="spreadsheet-inp text-left tecnico-inp-canal" value="${esc(c.canal)}" placeholder="Canal" onchange="editarCanalRec('${e}', '${id}', 'canal', this.value)"></td>
-                    <td><input type="text" class="spreadsheet-inp text-left" list="dl-rec-mic" value="${esc(c.micDi)}" placeholder="—" onchange="editarCanalRec('${e}', '${id}', 'micDi', this.value)"></td>
-                    <td class="tecnico-c"><input type="checkbox" ${c.phantom ? 'checked' : ''} onchange="editarCanalRec('${e}', '${id}', 'phantom', this.checked)" title="Phantom 48V"></td>
-                    <td><select class="spreadsheet-inp tecnico-sel" onchange="editarCanalRec('${e}', '${id}', 'pie', this.value)">${opcionesPie.map(o => `<option value="${esc(o)}" ${o === c.pie ? 'selected' : ''}>${o ? esc(o) : '·'}</option>`).join('')}</select></td>
-                    <td><input type="text" class="spreadsheet-inp text-left" value="${esc(c.notas)}" placeholder="Notas" onchange="editarCanalRec('${e}', '${id}', 'notas', this.value)"></td>
-                    <td class="tecnico-c tecnico-acciones"><button type="button" class="btn-row-del" onclick="quitarCanalRec('${e}', '${id}')" title="Quitar canal" aria-label="Quitar canal"></button></td>
-                </tr>`;
-        }
-
-        function htmlEquipoRec(eq, idx) {
-            const e = escJs(eq.id);
-            return `
-                <div class="rec-card" data-equipo-id="${esc(eq.id)}">
-                    <div class="rec-card-h">
-                        <input type="text" class="rec-inp-nombre" value="${esc(eq.nombre)}" placeholder="Equipo de grabación (ej.: Zoom H4)" onchange="editarEquipoRec('${e}', 'nombre', this.value)">
-                        <input type="text" class="rec-inp-destino" value="${esc(eq.destino)}" placeholder="Destino o ubicación (ej.: al escenario)" onchange="editarEquipoRec('${e}', 'destino', this.value)" title="Destino o ubicación">
-                        <span style="flex:1;"></span>
-                        <button type="button" class="btn-app btn-secondary btn-sm" onclick="quitarEquipoRec('${e}')">Quitar equipo</button>
-                    </div>
-                    <div class="tecnico-layout">
-                        <div class="table-responsive tecnico-tabla-wrap">
-                            <table class="spreadsheet-table tecnico-tabla">
-                                <thead><tr>
-                                    <th class="tecnico-c col-drag-header" style="width:32px;" title="Arrastrá la fila para mover el canal">⠿</th>
-                                    <th class="tecnico-c" title="Habilitado: apagá los canales que no se usan" style="width:40px;">✓</th>
-                                    <th class="tecnico-c" style="width:76px;">IN</th>
-                                    <th style="width:22%; text-align:left;">Canal</th>
-                                    <th style="width:104px; text-align:left;">Mic o DI</th>
-                                    <th class="tecnico-c" style="width:48px;">48V</th>
-                                    <th style="width:86px; text-align:left;">Pie</th>
-                                    <th style="text-align:left;">Notas</th>
-                                    <th class="tecnico-c" style="width:40px;"></th>
-                                </tr></thead>
-                                <tbody>
-                                    ${eq.canales.length ? (() => { const nums = numerarCanalesTecnico(eq); return eq.canales.map(c => htmlFilaRec(eq.id, c, nums)).join(''); })() : `<tr><td colspan="9" class="tecnico-vacio">Este equipo todavía no tiene canales.</td></tr>`}
-                                    <tr><td colspan="9" class="rec-fila-add"><button type="button" class="btn-app btn-secondary btn-sm" onclick="agregarCanalRec('${e}')">＋ Canal</button></td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <aside class="tecnico-lateral">
-                            <div class="tecnico-totales" id="rec-tot-${esc(eq.id)}">${htmlTotalesRec(eq)}</div>
-                        </aside>
-                    </div>
-                </div>`;
-        }
-
-        function renderizarRec() {
-            const cont = document.getElementById('rec-contenido');
-            if (!cont) return;
-            aplicarRecModoEnPantalla();
-            const chip = document.getElementById('chip-rec-equipos');
-            const estado = sonidoRecEstado[eventoActualId];
-            if (estado === 'error') {
-                if (chip) chip.textContent = '—';
-                cont.innerHTML = `<div class="tecnico-estado tecnico-estado-error">No se pudo leer la grabación (REC) de este evento. Revisá la conexión y volvé a abrir la pestaña. <button type="button" class="btn-app btn-secondary" onclick="abrirRecEvento()">Reintentar</button></div>`;
-                return;
-            }
-            const rec = obtenerRecEvento();
-            if (!rec) {
-                if (chip) chip.textContent = '…';
-                cont.innerHTML = `<div class="tecnico-estado">Cargando la grabación (REC)…</div>`;
-                return;
-            }
-            if (chip) chip.textContent = `${rec.equipos.length} ${rec.equipos.length === 1 ? 'equipo' : 'equipos'}`;
-            const edicion = `
-                <div class="rec-edicion no-print">
-                    ${rec.equipos.length ? rec.equipos.map((eq, i) => htmlEquipoRec(eq, i)).join('') : `<div class="tecnico-estado">Todavía no hay equipos de grabación. Agregá el primero con <b>＋ Equipo de grabación</b>.</div>`}
-                    <div class="tecnico-nota rec-nota">
-                        <label for="inp-rec-nota">Nota de grabación</label>
-                        <textarea id="inp-rec-nota" rows="2" placeholder="Ej.: El H4 va al escenario; la PC queda en la cabina." onchange="editarNotaRec(this.value)">${esc(rec.nota)}</textarea>
-                    </div>
-                    <datalist id="dl-rec-mic">${TECNICO_OPCIONES_MIC.map(o => `<option value="${esc(o)}"></option>`).join('')}</datalist>
-                </div>`;
-            const hoja = `<div class="tecnico-hoja ${recModo === 'vista' ? '' : 'print-only'}" id="rec-hoja">${htmlHojaRec(rec)}</div>`;
-            cont.innerHTML = (recModo === 'vista' ? '' : edicion) + hoja;
-        }
-        window.renderizarRec = renderizarRec;
-
-        // Refresca totales y hoja sin rearmar las tablas (no se pierde el foco al tabular)
-        function refrescarResumenRec() {
-            const rec = obtenerRecEvento();
-            if (!rec) return;
-            rec.equipos.forEach(eq => {
-                const tot = document.getElementById('rec-tot-' + eq.id);
-                if (tot) tot.innerHTML = htmlTotalesRec(eq);
-            });
-            const hoja = document.getElementById('rec-hoja');
-            if (hoja) hoja.innerHTML = htmlHojaRec(rec);
-        }
-
-        function buscarEquipoRec(eqId) {
-            const rec = obtenerRecEvento();
-            return rec ? rec.equipos.find(x => x.id === eqId) : null;
-        }
-
-        function editarCanalRec(eqId, id, campo, valor) {
-            const eq = buscarEquipoRec(eqId);
-            const c = eq && eq.canales.find(x => x.id === id);
-            if (!c) return;
-            if (campo === 'canal' || campo === 'micDi' || campo === 'notas' || campo === 'inManual') valor = String(valor || '').trim();
-            if (campo === 'canal' || campo === 'micDi') valor = valor.toUpperCase();
-            c[campo] = valor;
-            guardarRecEventoActual();
-            if (campo === 'habilitado') renderizarRec();
-            else refrescarResumenRec();
-        }
-        window.editarCanalRec = editarCanalRec;
-
-        function editarEquipoRec(eqId, campo, valor) {
-            const eq = buscarEquipoRec(eqId);
-            if (!eq) return;
-            eq[campo] = String(valor || '').trim();
-            guardarRecEventoActual();
-            refrescarResumenRec();
-        }
-        window.editarEquipoRec = editarEquipoRec;
-
-        function editarRepuestoRec(eqId, k, valor) {
-            const eq = buscarEquipoRec(eqId);
-            if (!eq) return;
-            eq.repuestos = { ...TECNICO_REPUESTOS_DEFECTO, ...(eq.repuestos || {}), [k]: numTecnico(valor) };
-            guardarRecEventoActual();
-            refrescarResumenRec();
-        }
-        window.editarRepuestoRec = editarRepuestoRec;
-
-        function editarNotaRec(valor) {
-            const rec = obtenerRecEvento();
-            if (!rec) return;
-            rec.nota = String(valor || '').trim();
-            guardarRecEventoActual();
-            refrescarResumenRec();
-        }
-        window.editarNotaRec = editarNotaRec;
-
-        function agregarEquipoRec() {
-            const rec = obtenerRecEvento();
-            if (!rec) { mostrarToast('Esperá a que termine de cargar la grabación (REC).', 'info'); return; }
-            const eq = equipoRecBase({ canales: [canalRecBase()] });
-            rec.equipos.push(eq);
-            guardarRecEventoActual();
-            renderizarRec();
-            setTimeout(() => {
-                const card = document.querySelector(`.rec-card[data-equipo-id="${eq.id}"]`);
-                const inp = card && card.querySelector('.rec-inp-nombre');
-                if (inp) { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus(); }
-            }, 30);
-        }
-        window.agregarEquipoRec = agregarEquipoRec;
-
-        async function quitarEquipoRec(eqId) {
-            const rec = obtenerRecEvento();
-            const idx = rec ? rec.equipos.findIndex(x => x.id === eqId) : -1;
-            if (idx < 0) return;
-            const eq = rec.equipos[idx];
-            const conf = await mostrarModalConfirmacion({
-                titulo: 'Quitar equipo de grabación',
-                mensaje: `¿Quitar <strong>"${esc(nombreEquipoRec(eq, idx))}"</strong> con sus ${eq.canales.length} ${eq.canales.length === 1 ? 'canal' : 'canales'}? No se puede deshacer.`,
-                icono: '🗑️',
-                textoConfirmar: 'Quitar equipo',
-                esPeligroso: true
-            });
-            if (!conf) return;
-            rec.equipos = rec.equipos.filter(x => x.id !== eqId);
-            guardarRecEventoActual();
-            renderizarRec();
-        }
-        window.quitarEquipoRec = quitarEquipoRec;
-
-        function agregarCanalRec(eqId) {
-            const eq = buscarEquipoRec(eqId);
-            if (!eq) return;
-            eq.canales.push(canalRecBase());
-            guardarRecEventoActual();
-            renderizarRec();
-            setTimeout(() => {
-                const card = document.querySelector(`.rec-card[data-equipo-id="${eqId}"]`);
-                const inps = card ? card.querySelectorAll('.tecnico-inp-canal') : [];
-                const ult = inps[inps.length - 1];
-                if (ult) ult.focus();
-            }, 30);
-        }
-        window.agregarCanalRec = agregarCanalRec;
-
-        async function quitarCanalRec(eqId, id) {
-            const eq = buscarEquipoRec(eqId);
-            const c = eq && eq.canales.find(x => x.id === id);
-            if (!c) return;
-            const conf = await mostrarModalConfirmacion({
-                titulo: 'Quitar canal',
-                mensaje: `¿Quitar el canal <strong>"${esc(c.canal || 'sin nombre')}"</strong> de este equipo?`,
-                icono: '🗑️',
-                textoConfirmar: 'Quitar',
-                esPeligroso: true
-            });
-            if (!conf) return;
-            eq.canales = eq.canales.filter(x => x.id !== id);
-            guardarRecEventoActual();
-            renderizarRec();
-        }
-        window.quitarCanalRec = quitarCanalRec;
-
-        // Reordenar canales arrastrando desde ⠿ (solo dentro del mismo equipo)
-        let recCanalArrastrado = null; // { eqId, id }
-        function recDragStart(e, eqId, id) {
-            recCanalArrastrado = { eqId, id };
-            e.dataTransfer.effectAllowed = 'move';
-            try { e.dataTransfer.setData('text/plain', id); } catch (err) { /* algunos navegadores lo exigen */ }
-            e.currentTarget.classList.add('dragging');
-        }
-        function recDragOver(e, eqId) {
-            if (!recCanalArrastrado || recCanalArrastrado.eqId !== eqId) return;
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            document.querySelectorAll('#rec-contenido tr.drag-over').forEach(r => r.classList.remove('drag-over'));
-            e.currentTarget.classList.add('drag-over');
-        }
-        function recDragEnd(e) {
-            recCanalArrastrado = null;
-            if (e && e.currentTarget) { e.currentTarget.classList.remove('dragging'); e.currentTarget.draggable = false; }
-            document.querySelectorAll('#rec-contenido tr.drag-over').forEach(r => r.classList.remove('drag-over'));
-        }
-        function recDrop(e, eqId, idDestino) {
-            e.preventDefault();
-            e.stopPropagation();
-            const origen = recCanalArrastrado;
-            recDragEnd(e);
-            const eq = buscarEquipoRec(eqId);
-            if (!eq || !origen || origen.eqId !== eqId || origen.id === idDestino) return;
-            const iOrigen = eq.canales.findIndex(x => x.id === origen.id);
-            const iDestino = eq.canales.findIndex(x => x.id === idDestino);
-            if (iOrigen < 0 || iDestino < 0) return;
-            const [canal] = eq.canales.splice(iOrigen, 1);
-            eq.canales.splice(iDestino, 0, canal);
-            guardarRecEventoActual();
-            renderizarRec();
-        }
-        window.recDragStart = recDragStart;
-        window.recDragOver = recDragOver;
-        window.recDragEnd = recDragEnd;
-        window.recDrop = recDrop;
-
-        function orientacionRec() { return orientacionDeHoja('rec-hoja'); }
-        window.orientacionRec = orientacionRec;
-
-        function imprimirRec() {
-            if (!obtenerRecEvento()) { mostrarToast('Esperá a que termine de cargar la grabación (REC).', 'info'); return; }
-            refrescarResumenRec();
-            establecerOrientacionImpresion(orientacionRec());
-            setTimeout(() => window.print(), 60);
-        }
-        window.imprimirRec = imprimirRec;
+        // (La solapa REC se eliminó del sistema: el Rider técnico tiene su propio botón REC y la columna Soporte.)
 
         // =========================================================
         // GESTIÓN DE NOTAS TÉCNICAS (COLUMNAS Y CANCIONES)

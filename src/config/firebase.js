@@ -17,7 +17,8 @@ import {
     where,
     orderBy,
     onSnapshot,
-    writeBatch
+    writeBatch,
+    deleteField
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { 
     getAuth, 
@@ -57,6 +58,7 @@ export {
     orderBy,
     onSnapshot,
     writeBatch,
+    deleteField,
     getAuth,
     signInWithPopup,
     signInWithEmailAndPassword,

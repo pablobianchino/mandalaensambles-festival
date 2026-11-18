@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.20">
-    <script src="src/ui/iconos.js?v=v2.20"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.21">
+    <script src="src/ui/iconos.js?v=v2.21"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.20" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.21" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1638,6 +1638,9 @@
                                     </div>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:16px;">
+                                    <button type="button" class="btn-app btn-secondary" onclick="abrirReporteCaja()" title="Reporte de caja del año elegido: ingresos, gastos, ganancias y proyección">
+                                        <svg class="ico-e" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg> Reporte
+                                    </button>
                                     <div style="text-align:right;">
                                         <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block;">Saldo Disponible</span>
                                         <span style="font-size:1.75em; font-family:'Geist Mono'; font-weight:900; color:var(--accent-blue);" id="saldo-caja-disponible-badge">
@@ -1746,6 +1749,9 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- SALDO PROYECTADO A FIN DE AÑO (se dibuja en renderizarProyeccionCaja) -->
+                            <div class="caja-proyeccion" id="caja-proyeccion-card"></div>
                         </div>
 
                     </div>
@@ -1812,16 +1818,19 @@
                             <div id="resumen-liquidacion-tarjetas"></div>
                         </div>
 
+                        <!-- FRANJA FIJA: Estado de pago y Estado de cobros (se dibuja en renderizarFranjaEstados) -->
+                        <div id="franja-estados" class="franja-estados"></div>
+
                         <!-- PESTAÑAS DE FINANZAS: VENTAS / GASTOS / COBROS -->
                         <div class="segmented-tabs-bar" style="margin-bottom:16px;">
                             <button class="segmented-tab-btn active" id="btn-tab-fin-ingresos" onclick="switchFinanzasTab('ingresos')">
                                 Ventas
                             </button>
                             <button class="segmented-tab-btn" id="btn-tab-fin-gastos" onclick="switchFinanzasTab('gastos')">
-                                Gastos del evento
+                                Gastos
                             </button>
                             <button class="segmented-tab-btn" id="btn-tab-fin-cobros" onclick="switchFinanzasTab('cobros')">
-                                Cobros y cuotas
+                                Cobros
                             </button>
                         </div>
 
@@ -2012,19 +2021,19 @@
 
                         </div>
 
-                        <!-- SUB-PESTAÑA 3: GASTOS DEL EVENTO -->
+                        <!-- SUB-PESTAÑA 3: GASTOS (Gastos operativos + Servicios contratados) -->
                         <div id="tab-fin-gastos" class="tab-fin-content" style="display:none;">
-                            <!-- 1. Gastos cargados (filas de una sola línea) -->
+                            <!-- 1. Gastos operativos: los ponen los socios u otras personas que ayudan; después se les reintegra con lo que gana el festival -->
                             <div class="content-card" id="card-gastos-evento">
-                                <div class="card-header-flex" onclick="toggleBloqueGastosEvento(event)" style="cursor:pointer;" title="Click para colapsar o abrir la tabla de gastos">
+                                <div class="card-header-flex" onclick="toggleBloqueGastosEvento(event)" style="cursor:pointer;" title="Click para colapsar o abrir la tabla de gastos operativos">
                                     <div>
-                                        <h3 class="card-title"><span class="collapsible-chevron" id="chevron-gastos-evento">▼</span>Gastos del evento</h3>
-                                        <span style="font-size:12px; color:var(--text-muted);">Fletes, sonido, staff y demás gastos del festival.</span>
+                                        <h3 class="card-title"><span class="collapsible-chevron" id="chevron-gastos-evento">▼</span>Gastos operativos</h3>
+                                        <span style="font-size:12px; color:var(--text-muted);">Lo que ponen los socios y quienes ayudan para que el evento ocurra. Se les reintegra con lo que gana el festival.</span>
                                     </div>
                                     <div class="sec-chips">
                                         <span class="sec-chip" id="chip-gastos-total">Total $ 0</span>
-                                        <span class="sec-chip" id="chip-gastos-pendiente">Pendiente $ 0</span>
-                                        <button type="button" class="btn-app btn-primary" onclick="agregarGastoOperativoFestival()">＋ Registrar gasto</button>
+                                        <span class="sec-chip" id="chip-gastos-pendiente">Por reintegrar $ 0</span>
+                                        <button type="button" class="btn-app btn-primary" onclick="event.stopPropagation(); agregarGastoOperativoFestival()">＋ Registrar gasto</button>
                                     </div>
                                 </div>
 
@@ -2032,88 +2041,76 @@
                                     <table class="sec-tabla tabla-gastos-ev" id="tabla-gastos-festival">
                                         <thead>
                                             <tr>
-                                                <th style="width:104px;">Fecha</th>
                                                 <th>Concepto</th>
-                                                <th style="width:150px;">Destinatario</th>
                                                 <th class="r" style="width:112px;">Monto</th>
-                                                <th>Pago</th>
-                                                <th style="width:100px;">Estado</th>
-                                                <th class="r" style="width:168px;" id="th-accion-gastos-fest">Acción</th>
+                                                <th style="width:150px;">Pagó</th>
+                                                <th style="width:120px;">Estado</th>
+                                                <th>Detalle del reintegro</th>
+                                                <th style="width:128px;">Fecha de reintegro</th>
+                                                <th class="r" style="width:176px;" id="th-accion-gastos-fest">Acción</th>
                                             </tr>
                                         </thead>
                                         <tbody id="tbody-gastos-festival-operativos">
-                                            <!-- Se renderiza dinámicamente sin gastos ficticios vía renderizarGastosFestival() -->
+                                            <!-- Se renderiza dinámicamente vía renderizarTablaGastosOperativosFestival() -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 2. Servicios contratados: lo que contrata la escuela para que el evento suceda (sonido, cobertura y otros) -->
+                            <div class="content-card" id="card-servicios-contratados" style="margin-top:14px;">
+                                <div class="card-header-flex">
+                                    <div>
+                                        <h3 class="card-title">Servicios contratados</h3>
+                                        <span style="font-size:12px; color:var(--text-muted);" id="sub-cobertura-gastos">Servicios que contrata la escuela para el evento: sonido, cobertura audiovisual y otros.</span>
+                                    </div>
+                                    <div class="sec-chips">
+                                        <span class="sec-chip" id="chip-serv-total">Total $ 0</span>
+                                        <span class="sec-chip" id="chip-serv-pendiente">Pendiente $ 0</span>
+                                        <button type="button" class="btn-app btn-primary" onclick="agregarServicioContratadoFestival()">＋ Servicio</button>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="sec-tabla tabla-gastos-ev" id="tabla-servicios-contratados">
+                                        <thead>
+                                            <tr>
+                                                <th>Servicio</th>
+                                                <th style="width:170px;">Proveedor</th>
+                                                <th class="r" style="width:112px;">Monto</th>
+                                                <th style="width:120px;">Estado</th>
+                                                <th>Detalle del pago</th>
+                                                <th style="width:128px;">Fecha de pago</th>
+                                                <th class="r" style="width:176px;">Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-servicios-contratados">
+                                            <!-- Servicios cargados (sonido y otros), se arman en renderizarTablaGastosOperativosFestival() -->
                                         </tbody>
                                         <tbody id="tbody-gasto-cobertura-escuela">
+                                            <tr class="grupo-fila"><td colspan="7">Cobertura audiovisual</td></tr>
+                                            <!-- Fotos y Video se arman en renderizarFilasCoberturaGastos() -->
+                                            <tr id="tr-gasto-cob-fotos"></tr>
+                                            <tr id="tr-gasto-cob-video"></tr>
+                                        </tbody>
+                                        <tbody>
                                             <tr id="tr-gasto-servicios-adelantados" style="display:none;">
-                                                <td class="gasto-fecha-auto">—</td>
                                                 <td><strong>Servicios adelantados</strong> <span class="chico-gris" id="gasto-serv-adelantado-det">El proveedor ya cobró; falta cobrar a los alumnos.</span></td>
                                                 <td>Sesionistas y salas</td>
                                                 <td class="r sec-mono" id="gasto-serv-adelantado-monto">$ 0</td>
-                                                <td class="chico-gris">Se calcula en Servicios</td>
                                                 <td><span class="pill-status pill-warning" id="gasto-serv-adelantado-estado">A recuperar</span></td>
+                                                <td class="chico-gris">Se calcula en Servicios</td>
+                                                <td></td>
                                                 <td></td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
-                            </div>
-
-                            <!-- 2. Cobertura audiovisual: Fotos y Video, cada una con su costo, lo que cubren las bandas y lo que falta pagar -->
-                            <div class="content-card" id="card-cobertura-gastos" style="margin-top:14px;">
-                                <div class="card-header-flex">
-                                    <div>
-                                        <h3 class="card-title">Cobertura audiovisual</h3>
-                                        <span style="font-size:12px; color:var(--text-muted);" id="sub-cobertura-gastos">Fotos y video se pagan por separado a la productora.</span>
-                                    </div>
-                                    <div class="sec-chips">
-                                        <span class="sec-chip" id="chip-cob-total">Total $ 0</span>
-                                        <span class="sec-chip" id="chip-cob-pendiente">Pendiente $ 0</span>
-                                    </div>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="sec-tabla tabla-gastos-ev" id="tabla-cobertura-gastos">
-                                        <thead>
-                                            <tr>
-                                                <th>Parte</th>
-                                                <th class="r" style="width:112px;">Costo</th>
-                                                <th class="r" style="width:132px;">Cubren bandas</th>
-                                                <th class="r" style="width:112px;">A pagar</th>
-                                                <th>Pago</th>
-                                                <th style="width:100px;">Estado</th>
-                                                <th class="r" style="width:168px;">Acción</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Se arman en renderizarFilasCoberturaGastos() -->
-                                            <tr id="tr-gasto-cob-fotos"></tr>
-                                            <tr id="tr-gasto-cob-video"></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
                                 <div class="cob-resumen-linea" id="tr-gasto-cob-resumen"></div>
                             </div>
-
-                            <!-- 3. Cierre: Egresos / Estado de pago (se dibuja en renderizarGastosFestival) -->
-                            <div id="cierre-gastos" class="fin-grupos dos sec-cierre" style="margin-top:14px;"></div>
                         </div>
 
                         <div id="tab-fin-cobros" class="tab-fin-content" style="display:none;">
-                            <!-- RESUMEN DE COBROS: tres tarjetas (Cobrado / Por cobrar / Total esperado), se dibuja en actualizarKpiPendienteTotalCobros() -->
-                            <div class="content-card" style="margin-bottom:16px;">
-                                <div class="card-header-flex">
-                                    <div>
-                                        <h3 class="card-title">Resumen de cobros</h3>
-                                        <span style="font-size:12px; color:var(--text-muted);">Lo cobrado y lo que falta cobrar en este evento, por concepto.</span>
-                                    </div>
-                                    <div class="sec-chips">
-                                        <span class="sec-chip" id="chip-cobros-pct">Cobrado 0%</span>
-                                        <span class="sec-chip" id="chip-cobros-porcobrar">Por cobrar $ 0</span>
-                                    </div>
-                                </div>
-                                <div id="resumen-cobros-tarjetas" class="fin-grupos"></div>
-                            </div>
-
+                            <!-- El resumen de cobros ahora vive en la franja fija "Estado de cobros" (arriba de las pestañas) -->
                             <div class="numbered-cards-toolbar no-print">
                                 <span class="numbered-cards-hint">💡 Hacé click en cada sección para expandir o comprimir su detalle</span>
                                 <div style="display:flex; gap:8px;">
@@ -2157,7 +2154,8 @@
                                                     <th style="width:190px;">Concepto</th>
                                                     <th class="r" style="width:120px;">Monto</th>
                                                     <th style="width:100px;">Estado</th>
-                                                    <th>Detalle del pago</th>
+                                                    <th>Detalle del cobro</th>
+                                                    <th style="width:128px;">Fecha de cobro</th>
                                                     <th class="r" style="width:150px;">Acción</th>
                                                 </tr>
                                             </thead>
@@ -2192,7 +2190,8 @@
                                                     <th style="width:190px;">Concepto</th>
                                                     <th class="r" style="width:120px;">Monto</th>
                                                     <th style="width:100px;">Estado</th>
-                                                    <th>Detalle del pago</th>
+                                                    <th>Detalle del cobro</th>
+                                                    <th style="width:128px;">Fecha de cobro</th>
                                                     <th class="r" style="width:150px;">Acción</th>
                                                 </tr>
                                             </thead>
@@ -2229,7 +2228,8 @@
                                                     <th style="width:190px;">Concepto</th>
                                                     <th class="r" style="width:120px;">Monto</th>
                                                     <th style="width:100px;">Estado</th>
-                                                    <th>Detalle del pago</th>
+                                                    <th>Detalle del cobro</th>
+                                                    <th style="width:128px;">Fecha de cobro</th>
                                                     <th class="r" style="width:190px;">Acción</th>
                                                 </tr>
                                             </thead>
@@ -3870,6 +3870,16 @@
             if (txt.toLowerCase() === 'sonidista' || (g.esSonido && !txt)) return { valor: 'sonidista', tipo: 'sonidista', nombre: 'Sonidista', prod: null };
             return { valor: '', tipo: '', nombre: txt, prod: null };
         }
+        // Tipo de un gasto cargado: 'servicio' (sonido, productora u otro proveedor contratado) o 'operativo'
+        // (lo pone un socio u otra persona que ayuda y después se le reintegra). Los gastos viejos se clasifican por su destinatario.
+        function tipoGasto(g) {
+            g = g || {};
+            if (g.tipo === 'servicio' || g.tipo === 'operativo') return g.tipo;
+            if (g.esSonido) return 'servicio';
+            const t = destinoGasto(g).tipo;
+            return (t === 'sonidista' || t === 'productora') ? 'servicio' : 'operativo';
+        }
+        window.tipoGasto = tipoGasto;
         let responsablesCobroCache = null;
         function obtenerResponsablesCobro() {
             return (responsablesCobroCache && responsablesCobroCache.length) ? responsablesCobroCache : RESPONSABLES_COBRO_RESPALDO;
@@ -4071,7 +4081,8 @@
                 metodo: it.metodo || d.coberturaEscuelaMetodo || 'Transferencia',
                 responsable: it.responsable || d.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO,
                 contactoId: it.contactoId || d.coberturaEscuelaContactoId || '',
-                pagada: it.pagada !== undefined ? Boolean(it.pagada) : Boolean(d.coberturaEscuelaPagada)
+                pagada: it.pagada !== undefined ? Boolean(it.pagada) : Boolean(d.coberturaEscuelaPagada),
+                fecha: it.fecha || ''
             };
         }
         window.obtenerPagoCoberturaItem = obtenerPagoCoberturaItem;
@@ -6175,7 +6186,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.20";
+        const APP_VERSION = "v2.21";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6846,9 +6857,11 @@
                     + fila('Cobros por incumplimiento', htmlMonto(m.ingresosIncumplimientos))
                     + ((m.ingresosSalasPropias || 0) > 0 ? fila('Uso de salas de la escuela', htmlMonto(m.ingresosSalasPropias)) : '')
                     + ((m.excedenteCobertura || 0) > 0 ? fila('Excedente de cobertura', htmlMonto(m.excedenteCobertura)) : '');
-                egresos = fila('Gastos operativos', htmlMonto(m.gastosOperativos))
-                    + fila('Cobertura neta de la escuela', htmlMonto(m.gastosCobertura))
-                    + ((m.tercerosAdelantado || 0) > 0 ? fila('Servicios adelantados (a recuperar)', htmlMonto(m.tercerosAdelantado)) : '');
+                // Egresos divididos: Gastos operativos (los ponen los socios u otros y se reintegran) y Servicios contratados
+                const opPuros = Math.max(0, (m.gastosOperativos || 0) - (m.gastosServiciosCargados || 0));
+                const servContratados = (m.gastosServiciosCargados || 0) + (m.gastosCobertura || 0) + (m.tercerosAdelantado || 0);
+                egresos = fila('Gastos operativos', htmlMonto(opPuros))
+                    + fila('Servicios contratados', htmlMonto(servContratados));
             } else {
                 ingresos = fila('Recaudación bruta del festival', htmlMonto(m.ingresosTotales));
                 egresos = fila('Gastos del festival', htmlMonto(m.egresosTotales));
@@ -7266,6 +7279,7 @@
             if (typeof renderizarTablaCumplimientoContrato === 'function') {
                 renderizarTablaCumplimientoContrato();
             }
+            if (typeof renderizarFranjaEstados === 'function') renderizarFranjaEstados();
         }
 
         // Sincronizar datos al cambiar de festival en Finanzas
@@ -7904,6 +7918,111 @@
             return ingresos;
         }
 
+        // ---------------------------------------------------------------
+        // CAJA ANUAL: datos para el reporte y la proyección (mismas fuentes que la tabla de Caja)
+        // ---------------------------------------------------------------
+        function datosCajaAnio(anio) {
+            const a = String(anio);
+            const n = parseInt(a, 10);
+            const ingresos = [];
+            if (!isNaN(n) && n > 2024) {
+                const saldoAnt = calcularSaldoEjercicioAnio(String(n - 1));
+                if (saldoAnt > 0) ingresos.push({ fecha: String(n - 1), concepto: 'Saldo a favor ejercicio ' + (n - 1), monto: saldoAnt, esSaldoAnterior: true });
+            }
+            obtenerIngresosFestivalesAnio(a).forEach(i => ingresos.push(i));
+            ((ingresosManualesCajaDB && ingresosManualesCajaDB[a]) || []).forEach(i => ingresos.push(Object.assign({ manual: true }, i)));
+            const gastos = ((gastosEscuelaDB && gastosEscuelaDB[a]) || []).map(g => Object.assign({ manual: true }, g));
+            const ordenar = (l) => l.sort((x, y) => obtenerTimestampItemCaja(x, a) - obtenerTimestampItemCaja(y, a));
+            ordenar(ingresos); ordenar(gastos);
+            const fmt = (it) => ({ fecha: it.esSaldoAnterior ? it.fecha : (formatearFechaVisualCaja(it.fecha, a) || it.fecha || ''), concepto: it.concepto || '', monto: Number(it.monto) || 0, festId: it.festId || '', esSaldoAnterior: Boolean(it.esSaldoAnterior), manual: Boolean(it.manual), crudo: it });
+            const ing = ingresos.map(fmt), gas = gastos.map(fmt);
+            const totalIngresos = ing.reduce((s, i) => s + i.monto, 0);
+            const totalGastos = gas.reduce((s, i) => s + i.monto, 0);
+            return { anio: a, ingresos: ing, gastos: gas, totalIngresos, totalGastos, saldo: totalIngresos - totalGastos };
+        }
+        window.datosCajaAnio = datosCajaAnio;
+
+        // Ganancia de cada festival del año (el mismo dato y orden del gráfico "Ganancias Anuales" de Estadísticas)
+        function datosGananciasAnio(anio) {
+            const a = String(anio);
+            const lista = Object.values(infoFestivales || {}).filter(f => {
+                if (!f || !f.nombre) return false;
+                const vacio = (!f.nombre || f.nombre === 'Festival') && (!f.fecha || f.fecha === 'A definir') && (!f.venue || f.venue === 'Venue') && !f.finanzas;
+                if (vacio) return false;
+                return String(f.anio || '2026').trim() === a;
+            });
+            lista.sort((x, y) => obtenerTimestampFestival(x) - obtenerTimestampFestival(y));
+            const puntos = lista.map(f => {
+                const m = (typeof calcularBalanceGeneralFestival === 'function') ? calcularBalanceGeneralFestival(f.id, f) : null;
+                let g = 0;
+                if (m && m.gananciaEscuela !== undefined) g = m.gananciaEscuela;
+                else if (f.netoEscuela !== undefined && f.netoEscuela !== null) g = Number(f.netoEscuela) || 0;
+                return { label: formatearEtiquetaGrafico(f), nombre: f.nombre, valor: g };
+            });
+            return { anio: a, puntos, total: puntos.reduce((s, p) => s + p.valor, 0) };
+        }
+        window.datosGananciasAnio = datosGananciasAnio;
+
+        // Saldo de caja mes a mes y proyección a fin de año: saldo actual + festivales que faltan (en curso o programados) + ritmo mensual de lo cargado a mano.
+        // En curso: su ganancia de hoy. Programado: promedio de ganancia de los finalizados del año.
+        function proyeccionCajaAnio(anio) {
+            const a = String(anio);
+            const n = parseInt(a, 10);
+            const hoy = new Date();
+            const esActual = hoy.getFullYear() === n;
+            const mesHoy = esActual ? hoy.getMonth() : (n < hoy.getFullYear() ? 11 : -1);
+            const d = datosCajaAnio(a);
+            const mesDe = (it) => {
+                const p = parsearFechaCajaObjeto(it.crudo.fecha, a);
+                if (!p.valid) return Math.max(0, mesHoy);
+                return p.year < n ? 0 : (p.year > n ? 11 : Math.min(11, Math.max(0, p.month - 1)));
+            };
+            const neto = Array(12).fill(0);
+            let base = 0, manualIng = 0, manualGas = 0;
+            d.ingresos.forEach(it => { if (it.esSaldoAnterior) { base += it.monto; return; } neto[mesDe(it)] += it.monto; if (it.manual) manualIng += it.monto; });
+            d.gastos.forEach(it => { neto[mesDe(it)] -= it.monto; manualGas += it.monto; });
+            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const real = Array(12).fill(null);
+            let acum = base;
+            for (let m = 0; m <= 11; m++) {
+                acum += neto[m];
+                if (m < mesHoy) real[m] = acum;
+                if (m === mesHoy) real[m] = d.saldo; // el último punto real es el saldo de hoy (incluye lo cargado con fecha posterior)
+            }
+            const saldoHoy = d.saldo;
+            const proy = Array(12).fill(null);
+            const festivales = [];
+            let ritmoNeto = 0, mesesRestantes = 0;
+            const hayProyeccion = esActual && mesHoy < 11;
+            if (hayProyeccion) {
+                const mesesTranscurridos = mesHoy + 1;
+                ritmoNeto = Math.round((manualIng - manualGas) / mesesTranscurridos);
+                mesesRestantes = 11 - mesHoy;
+                const finalizados = d.ingresos.filter(i => i.festId);
+                const promedio = finalizados.length ? Math.round(finalizados.reduce((s, i) => s + i.monto, 0) / finalizados.length) : 0;
+                const eliminados = obtenerFestivalesEliminadosIds();
+                const sumaFest = Array(12).fill(0);
+                Object.keys(infoFestivales || {}).forEach(id => {
+                    const f = infoFestivales[id];
+                    if (!f || eliminados.includes(id) || String(f.anio || '2026') !== a) return;
+                    const est = (f.estado || '').trim();
+                    if (est === 'Finalizado') return;
+                    const enCurso = est === 'En Curso';
+                    const monto = enCurso ? Math.round(Number(calcularBalanceGeneralFestival(id, f).gananciaEscuela) || 0) : promedio;
+                    const p = parsearFechaCajaObjeto(String(f.fecha || '').split(' ')[0], a);
+                    const mes = Math.min(11, Math.max(mesHoy + 1, p.valid && p.year === n ? p.month - 1 : mesHoy + 1));
+                    sumaFest[mes] += monto;
+                    festivales.push({ nombre: f.nombre || 'Festival', estado: enCurso ? 'En curso' : 'Programado', fecha: String(f.fecha || '').split(' ')[0] || 'A definir', monto, como: enCurso ? 'Ganancia calculada hoy' : 'Promedio de los finalizados del año', mes });
+                });
+                proy[mesHoy] = saldoHoy;
+                for (let m = mesHoy + 1; m <= 11; m++) proy[m] = proy[m - 1] + ritmoNeto + sumaFest[m];
+            }
+            const saldoFin = hayProyeccion ? proy[11] : saldoHoy;
+            festivales.sort((x, y) => x.mes - y.mes);
+            return { anio: a, meses, real, proy, mesHoy, saldoHoy, saldoFin, festivales, ritmoNeto, mesesRestantes, hayProyeccion, esActual };
+        }
+        window.proyeccionCajaAnio = proyeccionCajaAnio;
+
         // Calcular saldo consolidado de un ejercicio previo (para saldo a favor)
         function calcularSaldoEjercicioAnio(anio) {
             const anioStr = String(anio);
@@ -8002,7 +8121,7 @@
                                         <input type="date" class="caja-date-native-input" value="${isoFest}" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}" onchange="cambiarFechaCalendarioCaja('festival', '${idFest}', this.value)">
                                     </div>
                                 </td>
-                                <td style="font-weight:500; color:var(--ink); padding:6px;">🎪 ${esc(item.concepto)}</td>
+                                <td style="font-weight:500; color:var(--ink); padding:6px;"><a href="javascript:void(0)" class="lnk-evento" title="Abrir las finanzas de este evento" onclick="abrirDetalleFinanzasFestival('${idFest}')">${esc(item.concepto)} ↗</a></td>
                                 <td style="text-align:right; padding:4px 6px;">
                                     <span class="cell-caja-editable cell-caja-monto" data-monto="${montoNum}" title="${montoNum < 0 ? 'Festival con resultado negativo. ' : ''}Click para ajustar el resultado neto del festival" style="font-family:'Geist Mono'; font-weight:500; color:${montoNum < 0 ? 'var(--accent-red)' : 'var(--accent-green)'}; width:100%; text-align:right; display:block;" contenteditable="true" onfocus="iniciarEdicionMonto(this, 'festival', '${idFest}')" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" onblur="finalizarEdicionMonto(this, '${idFest}', 'festival')">${formatearMonedaAr(montoNum)}</span>
                                 </td>
@@ -8108,8 +8227,41 @@
                     estadoBadge.style.color = '#991b1b';
                 }
             }
+            if (typeof renderizarProyeccionCaja === 'function') renderizarProyeccionCaja();
         }
         window.renderizarCajaFestivales = renderizarCajaFestivales;
+
+        // Reporte de caja del año elegido (vista previa y descarga en PDF)
+        function abrirReporteCaja() {
+            if (typeof window.vistaPreviaReporte === 'function') window.vistaPreviaReporte(String(anioCajaActual || '2026'), 'caja');
+            else mostrarToast('Los reportes todavía se están cargando. Reintentá en unos segundos.', 'info');
+        }
+        window.abrirReporteCaja = abrirReporteCaja;
+
+        // Bloque "Saldo proyectado a fin de año" de la vista de Caja
+        function renderizarProyeccionCaja() {
+            const cont = document.getElementById('caja-proyeccion-card');
+            if (!cont) return;
+            let p = null;
+            try { p = proyeccionCajaAnio(anioCajaActual || '2026'); } catch (e) { console.error('[Mandala] proyección de caja', e); }
+            if (!p || typeof window.svgProyeccionCaja !== 'function') { cont.innerHTML = ''; return; }
+            const m = (n) => formatearMonedaAr(n);
+            let detalle;
+            if (!p.esActual) {
+                detalle = p.mesHoy < 0 ? 'Este año todavía no empezó: no hay saldo real para proyectar.' : 'Año cerrado: se muestra el saldo real mes a mes.';
+            } else if (!p.hayProyeccion) {
+                detalle = 'Estamos en el último mes del año: el saldo de hoy es el de fin de año.';
+            } else {
+                const filas = p.festivales.map(f => `<tr><td>${esc(f.nombre)}</td><td>${esc(f.estado)} · ${esc(f.fecha)}</td><td class="chico-gris">${esc(f.como)}</td><td class="r sec-mono">${m(f.monto)}</td></tr>`).join('');
+                detalle = `<table class="sec-tabla" style="margin-top:6px;"><thead><tr><th>Festival que falta</th><th>Estado</th><th>Cómo se estima</th><th class="r">Suma</th></tr></thead><tbody>${filas || '<tr><td colspan="4" class="chico-gris">No quedan festivales en curso o programados este año.</td></tr>'}
+                    <tr><td colspan="3" class="chico-gris">Ritmo mensual de lo cargado a mano × ${p.mesesRestantes} ${p.mesesRestantes === 1 ? 'mes' : 'meses'}</td><td class="r sec-mono">${m(p.ritmoNeto * p.mesesRestantes)}</td></tr></tbody></table>
+                    <p class="chico-gris" style="margin:6px 0 0;">Estimación: no incluye gastos o ingresos que todavía no se cargaron.</p>`;
+            }
+            cont.innerHTML = `<div class="card-header-flex"><div><h3 class="card-title">Saldo proyectado a fin de año</h3><span style="font-size:12px; color:var(--text-muted);">Saldo real de ${esc(p.anio)} y estimación con los festivales que faltan.</span></div>
+                <div class="sec-chips"><span class="sec-chip">Hoy ${m(p.saldoHoy)}</span>${p.hayProyeccion ? `<span class="sec-chip sec-chip-ok">Fin de año ≈ ${m(p.saldoFin)}</span>` : ''}</div></div>
+                ${window.svgProyeccionCaja(p, 960, 230)}${detalle}`;
+        }
+        window.renderizarProyeccionCaja = renderizarProyeccionCaja;
 
         // =======================================================================
         // GESTIÓN DE FOCO Y EDICIÓN ATÓMICA DE CELDAS DE CAJA (OPCIÓN A)
@@ -10056,6 +10208,11 @@
             if (fin && Array.isArray(fin.gastosOperativos)) {
                 gastosOperativos = fin.gastosOperativos.reduce((acc, g) => acc + (Math.max(0, parseFloat(g.monto || 0) || 0)), 0);
             }
+            // Parte de lo cargado a mano que son servicios contratados (sonido, otros proveedores); el resto son gastos operativos
+            let gastosServiciosCargados = 0;
+            if (fin && Array.isArray(fin.gastosOperativos)) {
+                fin.gastosOperativos.forEach(g => { if (g && tipoGasto(g) === 'servicio') gastosServiciosCargados += Math.max(0, parseFloat(g.monto || 0) || 0); });
+            }
 
             let gastosCobertura = 0;
             let excedenteCobertura = 0;
@@ -10088,6 +10245,7 @@
                 ingresosIncumplimientos,
                 recaudacionNeta,
                 gastosOperativos,
+                gastosServiciosCargados,
                 gastosCobertura,
                 excedenteCobertura,
                 ingresosServicios: serv.cobradoReconocido,
@@ -15726,7 +15884,7 @@
             const pill = cantidad > 0
                 ? '<span class="pill-status ' + (pagadas === cantidad ? 'pill-success' : 'pill-warning') + '" style="font-size:11px;">Cobrado ' + pagadas + ' de ' + cantidad + '</span>'
                 : '';
-            return '<tr class="cierre-banda-h" style="cursor:default;"><td colspan="6"><div style="display:flex; align-items:center; gap:10px;">'
+            return '<tr class="cierre-banda-h" style="cursor:default;"><td colspan="7"><div style="display:flex; align-items:center; gap:10px;">'
                 + '<span>' + icono + ' ' + esc(titulo) + '</span>'
                 + '<small style="font-weight:500; color:var(--text-muted);">' + esc(detalle) + '</small>'
                 + '<span style="flex:1;"></span>'
@@ -15734,11 +15892,20 @@
                 + pill + '</div></td></tr>';
         }
 
+        // Fecha del cobro en su propia columna: se completa sola con el día en que se presiona "Marcar cobrado" y se puede editar
+        // campo: dónde se guarda ('fecha' por defecto; en las cuotas de entradas es 'fechaCobro' porque 'fecha' es el vencimiento)
+        function htmlFechaCobro(p, handler, campo) {
+            campo = campo || 'fecha';
+            const valor = p[campo] || (campo === 'fechaCobro' && p.pagada ? p.fecha : '') || '';
+            return '<input type="date" class="installment-date-inp" value="' + esc(valor) + '"' + (p.pagada ? '' : ' disabled')
+                + ' title="' + (p.pagada ? 'Día en que se cobró (editable)' : 'Se completa al registrar el cobro') + '" onchange="' + handler(campo) + '">';
+        }
+
         function htmlEstadoCobro(estado) {
-            if (estado === 'pagada') return '<span class="pill-status pill-success">Pagó</span>';
+            if (estado === 'pagada') return '<span class="pill-status pill-success">Cobrado</span>';
             if (estado === 'absorbida') return '<span class="pill-status pill-neutral" title="La escuela se hace cargo de esta cuota">Absorbida</span>';
             if (estado === 'omitida') return '<span class="pill-status pill-neutral" title="Se decidió no cobrarla: no es ingreso ni gasto">Omitida</span>';
-            return '<span class="pill-status pill-warning">Debe</span>';
+            return '<span class="pill-status pill-warning">Pendiente</span>';
         }
 
         // Omitir la deuda de entradas de un participante: se decide no cobrarle lo que falta. No es ingreso ni egreso y deja de figurar en Deudas.
@@ -15866,6 +16033,7 @@
                         <td class="r sec-mono">${htmlMonto(montoFila)}</td>
                         <td>${htmlEstadoCobro(pago.pagada ? 'pagada' : 'debe')}</td>
                         <td>${htmlDetallePagoCobro(pago, h)}</td>
+                        <td>${htmlFechaCobro(pago, h)}</td>
                         <td class="r">${pago.pagada
                             ? `<button type="button" class="btn-deshacer" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
                             : `<button type="button" class="btn-marcar" onclick="cambiarEstadoCuotaCoberturaFinanzas('${sn}', ${cIdx}, true)" title="Registrar el cobro">Marcar cobrado</button>`}</td>
@@ -15876,7 +16044,7 @@
             });
 
             if (!html) {
-                html = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted); font-size:12.5px;">
+                html = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted); font-size:12.5px;">
                     No hay bandas con cobertura audiovisual contratada en este festival. Elegí un plan en la solapa <strong>Servicios</strong> del evento para gestionar sus cobros acá.
                 </td></tr>`;
             }
@@ -15896,6 +16064,7 @@
             if (!dataCob || !Array.isArray(dataCob.pagosDetalle) || !dataCob.pagosDetalle[idxCuota]) return;
 
             dataCob.pagosDetalle[idxCuota].pagada = Boolean(estadoPagada);
+            if (estadoPagada) dataCob.pagosDetalle[idxCuota].fecha = hoyISO(); else delete dataCob.pagosDetalle[idxCuota].fecha;
             renderizarCoberturaBandasFestival();
             if (typeof autoguardarDetalleFestivalFirestore === 'function') {
                 autoguardarDetalleFestivalFirestore('cobertura', cobObj);
@@ -16201,9 +16370,9 @@
                     const pagada = f.estado === 'pagada';
                     const medio = pago.medio || 'Transferencia';
                     const cobra = pago.cobradoPor || RESPONSABLE_COBRO_DEFECTO;
-                    const estadoHtml = pagada ? '<span class="pill-status pill-success" style="font-size:11px;">✔ Pagó</span>'
+                    const estadoHtml = pagada ? '<span class="pill-status pill-success" style="font-size:11px;">✔ Cobrado</span>'
                         : (f.estado === 'absorbida' ? '<span class="pill-status pill-neutral" style="font-size:11px;" title="La escuela se hace cargo de esta cuota">🏫 Absorbida</span>'
-                        : '<span class="pill-status pill-warning" style="font-size:11px;">⏳ Debe</span>');
+                        : '<span class="pill-status pill-warning" style="font-size:11px;">⏳ Pendiente</span>');
                     const detalle = f.estado === 'absorbida' ? '' : `<span class="srv-det-pago">
                         <select class="installment-select" onchange="actualizarDetalleCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', 'medio', this.value)"><option value="Transferencia"${medio === 'Transferencia' ? ' selected' : ''}>Transferencia</option><option value="Efectivo"${medio === 'Efectivo' ? ' selected' : ''}>Efectivo</option></select>
                         <select class="installment-select" onchange="actualizarDetalleCobroServicioFinanzas('${sb}', ${sIdx}, '${sn}', 'cobradoPor', this.value)">${opcionesResponsablesHTML(cobra)}</select>
@@ -16533,8 +16702,10 @@
                     const nombresExcl = new Set(resPag.excluidos.map(e => e.nombre));
                     if (!srv.pagosIntegrantes) srv.pagosIntegrantes = {};
                     const horasTxt = String(srv.horas || 1).replace('.', ',');
-                    const quien = srv.salaPropia ? 'sala de la escuela' : (srv.proveedor ? `paga a ${srv.proveedor}` : '');
-                    const concepto = `${srv.tipo === 'sesionista' ? 'Sesionista' : 'Ensayo'} ${horasTxt} h${quien ? ' · ' + quien : ''}`;
+                    // Concepto claro del servicio (el proveedor y quién cobra ya se ven en Servicios y en el detalle del cobro)
+                    const concepto = srv.tipo === 'sesionista'
+                        ? `Sesionista de ${horasTxt} h`
+                        : `Ensayo de ${horasTxt} h en ${srv.salaPropia ? 'sala de la escuela' : 'sala externa'}`;
 
                     listaInt.forEach((intg, iIdx) => {
                         const intgNombre = typeof intg === 'string' ? intg : (intg.nombre || `Integrante ${iIdx + 1}`);
@@ -16566,7 +16737,8 @@
                             <td>${esc(concepto)}</td>
                             <td class="r sec-mono">${htmlMonto(cuotaInd)}</td>
                             <td>${htmlEstadoCobro(estado)}</td>
-                            <td>${htmlDetallePagoCobro(pago, h, { fecha: true, obs: true })}</td>
+                            <td>${htmlDetallePagoCobro(pago, h, { obs: true })}</td>
+                            <td>${htmlFechaCobro(pago, h)}</td>
                             <td class="r">${acciones}</td>
                         </tr>`;
                     });
@@ -16579,7 +16751,7 @@
             });
 
             if (!html) {
-                html = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted); font-size:12.5px;">
+                html = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted); font-size:12.5px;">
                     No hay servicios adicionales (sesionistas o salas de ensayo) contratados en este festival. Podés contratarlos en la solapa <strong>Servicios</strong> del evento.
                 </td></tr>`;
             }
@@ -17050,34 +17222,25 @@
         // MÓDULO DE GASTOS DEL FESTIVAL (DINÁMICO, SIN GASTOS FICTICIOS)
         // =========================================================
         function renderizarTablaGastosOperativosFestival() {
-            const tbody = document.getElementById('tbody-gastos-festival-operativos');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+            const tbodyOp = document.getElementById('tbody-gastos-festival-operativos');
+            const tbodyServ = document.getElementById('tbody-servicios-contratados');
+            if (!tbodyOp) return;
+            tbodyOp.innerHTML = '';
+            if (tbodyServ) tbodyServ.innerHTML = '';
 
             const datos = obtenerDatosIngresosEventoActual();
             if (!Array.isArray(datos.gastosOperativos)) datos.gastosOperativos = [];
-            // Fila de Sonido por defecto: el operador le pone el monto; en $ 0 es que no se usa el servicio
+            // Fila de Sonido por defecto (servicio contratado): el operador le pone el monto; en $ 0 es que no se usa el servicio
             if (!datos.sonidoOmitido && !datos.gastosOperativos.some(x => x && x.esSonido)) {
                 datos.gastosOperativos.unshift({
-                    id: 'gasto-op-sonido', fecha: '', concepto: 'Sonido', proveedor: 'Sonidista', proveedorId: 'sonidista', contactoPagoId: '',
+                    id: 'gasto-op-sonido', tipo: 'servicio', fecha: '', concepto: 'Sonido', proveedor: 'Sonidista', proveedorId: 'sonidista', contactoPagoId: '',
                     monto: 0, metodo: 'Transferencia', responsable: RESPONSABLE_COBRO_DEFECTO, pagado: false, esSonido: true
                 });
             }
+            asegurarListasGastos();
             const gastos = datos.gastosOperativos;
-            const tieneOperativos = gastos.length > 0;
 
-            if (!tieneOperativos) {
-                tbody.innerHTML = `
-                    <tr class="empty-row">
-                        <td colspan="7" style="text-align:center; padding:18px; color:var(--text-muted); font-size:12px;">
-                            No hay gastos operativos cargados en este festival. Hacé click en <strong>＋ Registrar gasto</strong> para agregar fletes, sonido extra, staff o sesionistas.
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            // Mismo orden que el reporte: primero lo pendiente, después lo pagado; dentro de cada grupo por fecha.
+            // Mismo orden que el reporte: primero lo pendiente, después lo resuelto; dentro de cada grupo por fecha.
             // Se conserva el índice real (idx) para que cada fila edite su propio gasto.
             const fechaOrden = (s) => {
                 const x = String(s || '').match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
@@ -17087,75 +17250,126 @@
             };
             const ordenados = gastos.map((g, idx) => ({ g, idx })).sort((a, b) =>
                 ((a.g && a.g.pagado ? 1 : 0) - (b.g && b.g.pagado ? 1 : 0)) || (fechaOrden(a.g && a.g.fecha) - fechaOrden(b.g && b.g.fecha)) || (a.idx - b.idx));
-            ordenados.forEach(({ g, idx }) => {
-                const pagado = Boolean(g.pagado);
-                const metodo = g.metodo || 'Transferencia';
-                const resp = g.responsable || RESPONSABLE_COBRO_DEFECTO;
+
+            const prodEvento = buscarProductora(productoraDeFestival(eventoActualId));
+            let hayOp = false, hayServ = false;
+
+            // Celdas comunes: concepto (con fecha del gasto y observaciones), monto
+            const celdaConcepto = (g, idx, placeholder) => `
+                <td>
+                    <div class="gasto-concepto-fila">
+                        <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${esc(g.concepto || '')}" placeholder="${placeholder}" oninput="actualizarGastoOperativoFestival(${idx}, 'concepto', this.value)">
+                    </div>
+                    <div class="gasto-concepto-fila gasto-sub-fila">
+                        <input type="text" class="spreadsheet-inp gasto-fecha-inp" value="${esc(g.fecha || '')}" placeholder="dd/mm/aaaa" title="Fecha del gasto" oninput="actualizarGastoOperativoFestival(${idx}, 'fecha', this.value)">
+                        <input type="text" class="spreadsheet-inp text-left gasto-obs-inp" value="${esc(g.obs || '')}" placeholder="Observaciones…" oninput="actualizarGastoOperativoFestival(${idx}, 'obs', this.value)">
+                    </div>
+                </td>`;
+            const celdaMonto = (g, idx) => {
                 const montoNum = Math.max(0, parseFloat(g.monto || 0) || 0);
-                const montoDisplay = montoNum > 0 ? `$ ${montoNum.toLocaleString('es-AR')}` : '$ 0';
-                // Destinatario: sonidista, la productora del evento o uno de los socios. Un texto viejo que coincide se toma como ese destinatario.
+                return `<td class="r"><input type="text" class="spreadsheet-inp gasto-monto-inp" value="${montoNum > 0 ? '$ ' + montoNum.toLocaleString('es-AR') : '$ 0'}" onfocus="enfocarInputMontoGasto(this, ${idx})" onblur="formatearInputMontoGasto(this, ${idx})" oninput="actualizarGastoOperativoFestival(${idx}, 'monto', this.value)"></td>`;
+            };
+            const celdaFecha = (g, idx) => `<td><input type="date" class="installment-date-inp" value="${esc(g.fechaPago || '')}" ${g.pagado ? '' : 'disabled'} title="${g.pagado ? 'Día en que se hizo (editable)' : 'Se completa al marcarlo'}" onchange="actualizarGastoOperativoFestival(${idx}, 'fechaPago', this.value)"></td>`;
+            const celdaMedio = (g, idx) => `<select class="installment-select sel-fantasma" onchange="actualizarGastoOperativoFestival(${idx}, 'metodo', this.value)" title="Medio de pago"><option value="Transferencia" ${(g.metodo || 'Transferencia') === 'Transferencia' ? 'selected' : ''}>Transferencia</option><option value="Efectivo" ${g.metodo === 'Efectivo' ? 'selected' : ''}>Efectivo</option></select>`;
+
+            ordenados.forEach(({ g, idx }) => {
+                if (!g) return;
+                const pagado = Boolean(g.pagado);
+                const resp = g.responsable || RESPONSABLE_COBRO_DEFECTO;
                 const dest = destinoGasto(g);
-                const prodSel = dest.tipo === 'productora' ? dest.prod : null;
-                const contactosProv = prodSel ? normalizarContactosPago(prodSel.contactosPago) : [];
-                const contactoSel = contactosProv.find(c => c.id === g.contactoPagoId) || contactosProv[0] || null;
-                // En los gastos del evento pagan los socios; un valor anterior distinto (ej. "Ariel") se conserva
-                const listaResp = SOCIOS_GASTOS.slice();
-                if (resp && !listaResp.includes(resp)) listaResp.push(resp);
-                const etqResp = pagado ? 'Pagó' : 'Paga';
-                const prodEvento = buscarProductora(productoraDeFestival(eventoActualId));
-                const listaProds = prodEvento ? [prodEvento] : [];
-                if (prodSel && !listaProds.some(p => p.id === prodSel.id)) listaProds.push(prodSel);
-                const opcionesProv = (dest.valor ? '' : '<option value="" selected>Elegir destinatario…</option>')
-                    + '<optgroup label="Proveedores"><option value="sonidista" ' + (dest.valor === 'sonidista' ? 'selected' : '') + '>Sonidista</option>'
-                    + listaProds.map(p => `<option value="${esc(p.id)}" ${dest.valor === p.id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('') + '</optgroup>'
-                    + '<optgroup label="Socios">' + SOCIOS_GASTOS.map(s => `<option value="socio:${esc(s)}" ${dest.valor === 'socio:' + s ? 'selected' : ''}>${esc(s)}</option>`).join('') + '</optgroup>';
-                // Fila de una sola línea: los selectores se ven como texto hasta pasar el mouse (.sel-fantasma)
-                const textoViejo = (!dest.valor && g.proveedor) ? String(g.proveedor) : '';
-                const celdaProveedor = `<select class="installment-select sel-fantasma" onchange="cambiarProveedorGasto(${idx}, this.value)" title="${textoViejo ? 'Antes: ' + esc(textoViejo) + '. ' : ''}A quién va el gasto: el sonidista, la productora o uno de los socios.">${textoViejo ? `<option value="" selected>${esc(textoViejo)} (elegir)</option>` + opcionesProv.replace('<option value="" selected>Elegir destinatario…</option>', '') : opcionesProv}</select>`;
-                const celdaContacto = prodSel
-                    ? (contactoSel
-                        ? `<select class="installment-select sel-fantasma" onchange="cambiarContactoPagoGasto(${idx}, this.value)" title="A quién se le paga (datos de pago del proveedor)">${contactosProv.map(c => `<option value="${esc(c.id)}" ${c.id === contactoSel.id ? 'selected' : ''}>A: ${esc(c.nombre)}</option>`).join('')}</select><button type="button" class="alias-chip" onclick="copiarAliasPago('${escJs(contactoSel.alias)}')" title="Copiar el alias: ${esc(contactoSel.alias)}">⧉ alias</button>`
-                        : `<span class="chico-gris" title="Cargá los datos de pago en Productoras">Sin datos de pago</span>`)
-                    : '';
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <input type="text" class="spreadsheet-inp gasto-fecha-inp" value="${esc(g.fecha || '')}" placeholder="dd/mm/aaaa" oninput="actualizarGastoOperativoFestival(${idx}, 'fecha', this.value)">
-                    </td>
-                    <td>
-                        <div class="gasto-concepto-fila">
-                            <input type="text" class="spreadsheet-inp text-left" style="font-weight:700;" value="${esc(g.concepto || '')}" placeholder="Ej: Flete / Alquiler sonido / Staff..." oninput="actualizarGastoOperativoFestival(${idx}, 'concepto', this.value)">
-                            <input type="text" class="spreadsheet-inp text-left gasto-obs-inp" value="${esc(g.obs || '')}" placeholder="Observaciones…" oninput="actualizarGastoOperativoFestival(${idx}, 'obs', this.value)">
-                        </div>
-                    </td>
-                    <td>${celdaProveedor}</td>
-                    <td>
-                        <input type="text" class="spreadsheet-inp gasto-monto-inp" value="${montoDisplay}" onfocus="enfocarInputMontoGasto(this, ${idx})" onblur="formatearInputMontoGasto(this, ${idx})" oninput="actualizarGastoOperativoFestival(${idx}, 'monto', this.value)">
-                    </td>
-                    <td>
-                        <div class="gasto-pago-linea">
-                            <select class="installment-select sel-fantasma" onchange="actualizarGastoOperativoFestival(${idx}, 'metodo', this.value)" title="Medio de pago">
-                                <option value="Transferencia" ${metodo === 'Transferencia' ? 'selected' : ''}>Transf.</option>
-                                <option value="Efectivo" ${metodo === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
-                            </select>
-                            <select class="installment-select sel-fantasma" onchange="actualizarGastoOperativoFestival(${idx}, 'responsable', this.value)" title="${prodSel ? 'Quién de Mandala hace el pago al proveedor' : 'Quién pagó este gasto'}">
-                                ${listaResp.map(n => `<option value="${esc(n)}" ${n === resp ? 'selected' : ''}>${etqResp}: ${esc(n)}</option>`).join('')}
-                            </select>
-                            ${celdaContacto}
-                        </div>
-                    </td>
-                    <td><span class="pill-status ${pagado ? 'pill-success' : 'pill-warning'}">${pagado ? 'Pagado' : 'Pendiente'}</span></td>
-                    <td class="r" style="white-space:nowrap;">
-                        ${pagado
-                            ? `<button type="button" class="btn-deshacer" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, false)" title="Marcar como pendiente">Deshacer</button>`
-                            : `<button type="button" class="btn-marcar" id="btn-gasto-op-pay-${idx}" onclick="cambiarEstadoGastoOperativoFestival(${idx}, true)">Marcar pagado</button>`}
-                        <button type="button" class="btn-row-del" onclick="eliminarGastoOperativoFestival(${idx})" title="Eliminar gasto">✕</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+
+                if (tipoGasto(g) === 'servicio') {
+                    hayServ = true;
+                    const prodSel = dest.tipo === 'productora' ? dest.prod : null;
+                    const contactosProv = prodSel ? normalizarContactosPago(prodSel.contactosPago) : [];
+                    const contactoSel = contactosProv.find(c => c.id === g.contactoPagoId) || contactosProv[0] || null;
+                    const listaResp = SOCIOS_GASTOS.slice();
+                    if (resp && !listaResp.includes(resp)) listaResp.push(resp);
+                    const celdaContacto = prodSel
+                        ? (contactoSel
+                            ? `<select class="installment-select sel-fantasma" onchange="cambiarContactoPagoGasto(${idx}, this.value)" title="A quién se le paga (datos de pago del proveedor)">${contactosProv.map(c => `<option value="${esc(c.id)}" ${c.id === contactoSel.id ? 'selected' : ''}>A: ${esc(c.nombre)}</option>`).join('')}</select><button type="button" class="alias-chip" onclick="copiarAliasPago('${escJs(contactoSel.alias)}')" title="Copiar el alias: ${esc(contactoSel.alias)}">⧉ alias</button>`
+                            : `<span class="chico-gris" title="Cargá los datos de pago en Productoras">Sin datos de pago</span>`)
+                        : '';
+                    tr.innerHTML = `
+                        ${celdaConcepto(g, idx, 'Ej: Sonido / Alquiler de equipos…')}
+                        <td><input type="text" class="spreadsheet-inp text-left" list="dl-proveedores-servicios" value="${esc(dest.nombre || g.proveedor || '')}" placeholder="Proveedor…" onchange="cambiarProveedorServicio(${idx}, this.value)" title="Quién presta el servicio: el sonidista, la productora u otro proveedor"></td>
+                        ${celdaMonto(g, idx)}
+                        <td><span class="pill-status ${pagado ? 'pill-success' : 'pill-warning'}">${pagado ? 'Pagado' : 'Pendiente'}</span></td>
+                        <td>
+                            <div class="gasto-pago-linea">
+                                ${celdaMedio(g, idx)}
+                                <select class="installment-select sel-fantasma" onchange="actualizarGastoOperativoFestival(${idx}, 'responsable', this.value)" title="Quién de Mandala hace el pago al proveedor">
+                                    ${listaResp.map(n => `<option value="${esc(n)}" ${n === resp ? 'selected' : ''}>${pagado ? 'Pagó' : 'Paga'}: ${esc(n)}</option>`).join('')}
+                                </select>
+                                ${celdaContacto}
+                            </div>
+                        </td>
+                        ${celdaFecha(g, idx)}
+                        <td class="r" style="white-space:nowrap;">
+                            ${pagado
+                                ? `<button type="button" class="btn-deshacer" onclick="cambiarEstadoGastoOperativoFestival(${idx}, false)" title="Marcar como pendiente">Deshacer</button>`
+                                : `<button type="button" class="btn-marcar" onclick="cambiarEstadoGastoOperativoFestival(${idx}, true)">Marcar pagado</button>`}
+                            <button type="button" class="btn-row-del" onclick="eliminarGastoOperativoFestival(${idx})" title="Eliminar servicio">✕</button>
+                        </td>`;
+                    tbodyServ.appendChild(tr);
+                } else {
+                    hayOp = true;
+                    const pagoPor = dest.nombre || g.proveedor || '';
+                    const listaResp = obtenerResponsablesCobro().slice();
+                    if (resp && !listaResp.includes(resp)) listaResp.push(resp);
+                    const aSiMismo = pagoPor && pagoPor.toLowerCase() === String(resp).toLowerCase();
+                    tr.innerHTML = `
+                        ${celdaConcepto(g, idx, 'Ej: Flete / Pilas / Impresión…')}
+                        ${celdaMonto(g, idx)}
+                        <td><input type="text" class="spreadsheet-inp text-left" list="dl-pago-por-gastos" value="${esc(pagoPor)}" placeholder="Quién pagó…" onchange="cambiarPagoPorGasto(${idx}, this.value)" title="Quién puso la plata: un socio u otra persona que ayuda"></td>
+                        <td><span class="pill-status ${pagado ? 'pill-success' : 'pill-warning'}">${pagado ? 'Reintegrado' : 'Por reintegrar'}</span></td>
+                        <td>
+                            <div class="gasto-pago-linea">
+                                <span class="lbl-det">${pagado ? 'Reintegró' : 'Reintegra'}</span>
+                                <select class="installment-select sel-fantasma" onchange="actualizarGastoOperativoFestival(${idx}, 'responsable', this.value)" title="Quién de Mandala hace el reintegro (puede ser el mismo que pagó)">
+                                    ${listaResp.map(n => `<option value="${esc(n)}" ${n === resp ? 'selected' : ''}>${esc(n)}</option>`).join('')}
+                                </select>
+                                ${aSiMismo ? '<span class="chip-mismo" title="Quien reintegra es quien pagó">a sí mismo</span>' : ''}
+                                ${celdaMedio(g, idx)}
+                            </div>
+                        </td>
+                        ${celdaFecha(g, idx)}
+                        <td class="r" style="white-space:nowrap;">
+                            ${pagado
+                                ? `<button type="button" class="btn-deshacer" onclick="cambiarEstadoGastoOperativoFestival(${idx}, false)" title="Volver a Por reintegrar">Deshacer</button>`
+                                : `<button type="button" class="btn-marcar" onclick="cambiarEstadoGastoOperativoFestival(${idx}, true)">Marcar reintegrado</button>`}
+                            <button type="button" class="btn-row-del" onclick="eliminarGastoOperativoFestival(${idx})" title="Eliminar gasto">✕</button>
+                        </td>`;
+                    tbodyOp.appendChild(tr);
+                }
             });
+
+            if (!hayOp) {
+                tbodyOp.innerHTML = `<tr class="empty-row"><td colspan="7" style="text-align:center; padding:18px; color:var(--text-muted); font-size:12px;">No hay gastos operativos cargados. Hacé click en <strong>＋ Registrar gasto</strong> para agregar fletes, pilas, impresiones y demás.</td></tr>`;
+            }
+            if (!hayServ && tbodyServ) {
+                tbodyServ.innerHTML = `<tr class="empty-row"><td colspan="7" style="text-align:center; padding:14px; color:var(--text-muted); font-size:12px;">No hay otros servicios cargados. Usá <strong>＋ Servicio</strong> para sumar sonido u otros proveedores.</td></tr>`;
+            }
         }
         window.renderizarTablaGastosOperativosFestival = renderizarTablaGastosOperativosFestival;
+
+        // Listas de sugerencias: quién pagó un gasto (socios y quienes ya figuran) y proveedores de servicios (sonidista y productoras)
+        function asegurarListasGastos() {
+            let dl = document.getElementById('dl-pago-por-gastos');
+            if (!dl) { dl = document.createElement('datalist'); dl.id = 'dl-pago-por-gastos'; document.body.appendChild(dl); }
+            const datos = obtenerDatosIngresosEventoActual();
+            const nombres = SOCIOS_GASTOS.slice();
+            (datos.gastosOperativos || []).forEach(g => { if (g && tipoGasto(g) === 'operativo') { const n = destinoGasto(g).nombre || g.proveedor; if (n && !nombres.includes(n)) nombres.push(n); } });
+            dl.innerHTML = nombres.map(n => `<option value="${esc(n)}"></option>`).join('');
+            let dp = document.getElementById('dl-proveedores-servicios');
+            if (!dp) { dp = document.createElement('datalist'); dp.id = 'dl-proveedores-servicios'; document.body.appendChild(dp); }
+            const provs = ['Sonidista'];
+            const prodEv = buscarProductora(productoraDeFestival(eventoActualId));
+            if (prodEv && prodEv.nombre) provs.push(prodEv.nombre);
+            (datos.gastosOperativos || []).forEach(g => { if (g && tipoGasto(g) === 'servicio') { const n = destinoGasto(g).nombre || g.proveedor; if (n && !provs.includes(n)) provs.push(n); } });
+            dp.innerHTML = provs.map(n => `<option value="${esc(n)}"></option>`).join('');
+        }
 
         function enfocarInputMontoGasto(inp, idx) {
             const datos = obtenerDatosIngresosEventoActual();
@@ -17180,6 +17394,7 @@
 
             datos.gastosOperativos.push({
                 id: 'gasto-op-' + Date.now(),
+                tipo: 'operativo',
                 fecha: fechaDef,
                 concepto: '',
                 proveedor: '',
@@ -17194,6 +17409,64 @@
             recalcularIngresosFestival(true);
         }
         window.agregarGastoOperativoFestival = agregarGastoOperativoFestival;
+
+        // ＋ Servicio: un servicio contratado más (alquiler de equipos, otro proveedor, etc.)
+        function agregarServicioContratadoFestival() {
+            const datos = obtenerDatosIngresosEventoActual();
+            if (!Array.isArray(datos.gastosOperativos)) datos.gastosOperativos = [];
+            const fInfo = (typeof infoFestivales !== 'undefined' && infoFestivales[eventoActualId]) ? infoFestivales[eventoActualId] : null;
+            const fechaDef = (fInfo && fInfo.fecha && fInfo.fecha !== 'A definir') ? fInfo.fecha.split(' ')[0] : new Date().toLocaleDateString('es-AR');
+            datos.gastosOperativos.push({
+                id: 'gasto-op-' + Date.now(),
+                tipo: 'servicio',
+                fecha: fechaDef,
+                concepto: '',
+                proveedor: '',
+                proveedorId: '',
+                contactoPagoId: '',
+                monto: 0,
+                metodo: 'Transferencia',
+                responsable: RESPONSABLE_COBRO_DEFECTO,
+                pagado: false
+            });
+            renderizarTablaGastosOperativosFestival();
+            recalcularIngresosFestival(true);
+        }
+        window.agregarServicioContratadoFestival = agregarServicioContratadoFestival;
+
+        // Quién pagó un gasto operativo (socio u otra persona que ayuda). Es texto libre con sugerencias.
+        function cambiarPagoPorGasto(idx, texto) {
+            const datos = obtenerDatosIngresosEventoActual();
+            const g = datos.gastosOperativos && datos.gastosOperativos[idx];
+            if (!g) return;
+            const nombre = String(texto || '').trim();
+            const socio = SOCIOS_GASTOS.find(s => s.toLowerCase() === nombre.toLowerCase());
+            g.proveedor = socio || nombre;
+            g.proveedorId = socio ? 'socio:' + socio : '';
+            g.tipo = 'operativo';
+            renderizarTablaGastosOperativosFestival();
+            renderizarGastosFestival(false);
+            recalcularIngresosFestival(true);
+        }
+        window.cambiarPagoPorGasto = cambiarPagoPorGasto;
+
+        // Proveedor de un servicio contratado: el sonidista, una productora (con sus datos de pago) u otro nombre libre
+        function cambiarProveedorServicio(idx, texto) {
+            const datos = obtenerDatosIngresosEventoActual();
+            const g = datos.gastosOperativos && datos.gastosOperativos[idx];
+            if (!g) return;
+            const nombre = String(texto || '').trim();
+            const prod = nombre ? buscarProductora(nombre) : null;
+            if (nombre.toLowerCase() === 'sonidista') { g.proveedorId = 'sonidista'; g.proveedor = 'Sonidista'; }
+            else if (prod) { g.proveedorId = prod.id; g.proveedor = prod.nombre; }
+            else { g.proveedorId = ''; g.proveedor = nombre; }
+            g.tipo = 'servicio';
+            g.contactoPagoId = '';
+            renderizarTablaGastosOperativosFestival();
+            renderizarGastosFestival(false);
+            recalcularIngresosFestival(true);
+        }
+        window.cambiarProveedorServicio = cambiarProveedorServicio;
 
         function actualizarGastoOperativoFestival(idx, campo, valor) {
             const datos = obtenerDatosIngresosEventoActual();
@@ -17249,12 +17522,16 @@
         function cambiarEstadoGastoOperativoFestival(idx, estadoPagado) {
             const datos = obtenerDatosIngresosEventoActual();
             if (!datos.gastosOperativos || !datos.gastosOperativos[idx]) return;
-            datos.gastosOperativos[idx].pagado = Boolean(estadoPagado);
+            const g = datos.gastosOperativos[idx];
+            g.pagado = Boolean(estadoPagado);
+            // Regla general: la fecha del pago / reintegro es el día en que se presiona el botón (después se puede editar)
+            if (g.pagado) g.fechaPago = hoyISO(); else delete g.fechaPago;
             renderizarTablaGastosOperativosFestival();
             renderizarGastosFestival(false);
             recalcularIngresosFestival(true);
-            const nom = datos.gastosOperativos[idx].concepto || 'Gasto operativo';
-            mostrarToast(estadoPagado ? `"${nom}" marcado como Pagado` : `"${nom}" marcado como Pendiente`, estadoPagado ? 'success' : 'info');
+            const nom = g.concepto || 'Gasto';
+            const esServ = tipoGasto(g) === 'servicio';
+            mostrarToast(estadoPagado ? `"${nom}" marcado como ${esServ ? 'Pagado' : 'Reintegrado'}` : `"${nom}" marcado como ${esServ ? 'Pendiente' : 'Por reintegrar'}`, estadoPagado ? 'success' : 'info');
         }
         window.cambiarEstadoGastoOperativoFestival = cambiarEstadoGastoOperativoFestival;
 
@@ -17295,7 +17572,9 @@
 
         function cambiarEstadoPagoCoberturaItem(clave, estadoPagado) {
             const datos = obtenerDatosIngresosEventoActual();
-            asegurarItemsCobertura(datos)[clave].pagada = Boolean(estadoPagado);
+            const itCob = asegurarItemsCobertura(datos)[clave];
+            itCob.pagada = Boolean(estadoPagado);
+            if (itCob.pagada) itCob.fecha = hoyISO(); else delete itCob.fecha; // la fecha del pago es el día en que se presiona
             sincronizarCoberturaPagada(datos);
             renderizarGastosFestival(false);
             recalcularIngresosFestival(true);
@@ -17309,6 +17588,7 @@
             if (campo === 'metodo') it.metodo = valor;
             if (campo === 'responsable') it.responsable = valor;
             if (campo === 'contacto') it.contactoId = valor;
+            if (campo === 'fecha') it.fecha = valor;
             renderizarGastosFestival(false);
             recalcularIngresosFestival(true);
         }
@@ -17372,28 +17652,24 @@
                     detalle = ` <span class="chico-gris">${partes.join(' + ')}</span>`;
                 }
                 tr.innerHTML = `
-                    <td><strong>${it.nombre}</strong>${detalle}${it.aporte > it.costo ? ` <span class="chico-gris">· el aporte supera el costo en ${money(it.aporte - it.costo)}</span>` : ''}</td>
-                    <td class="r sec-mono">${money(it.costo)}</td>
-                    <td class="r"><input type="text" class="spreadsheet-inp gasto-monto-inp" style="font-weight:600;" value="${money(it.aporte)}" onfocus="this.value=String(Math.round(parseFloat(this.value.replace(/[^0-9]/g,'')||0)));this.select();" onchange="actualizarAporteCoberturaItem('${it.clave}', this.value)" title="Cuánto de lo aportado por las bandas cubre este ítem"></td>
+                    <td><strong>${it.nombre}</strong>${detalle}
+                        <div class="chico-gris">Costo ${money(it.costo)} · Cubren las bandas <input type="text" class="spreadsheet-inp gasto-monto-inp aporte-inline" value="${money(it.aporte)}" onfocus="this.value=String(Math.round(parseFloat(this.value.replace(/[^0-9]/g,'')||0)));this.select();" onchange="actualizarAporteCoberturaItem('${it.clave}', this.value)" title="Cuánto de lo aportado por las bandas cubre este ítem">${it.aporte > it.costo ? ` · el aporte supera el costo en ${money(it.aporte - it.costo)}` : ''}</div></td>
+                    <td>${esc(nomProductora || 'Productora')}</td>
                     <td class="r sec-mono"><strong>${money(it.diferencia)}</strong></td>
+                    <td>${estado}</td>
                     <td>
                         <div class="gasto-pago-linea">
-                            <select class="installment-select sel-fantasma" onchange="actualizarPagoCoberturaItem('${it.clave}', 'metodo', this.value)" title="Medio de pago">${[['Transferencia', 'Transf.'], ['Efectivo', 'Efectivo']].map(([v, t]) => `<option value="${v}" ${it.metodo === v ? 'selected' : ''}>${t}</option>`).join('')}</select>
+                            <select class="installment-select sel-fantasma" onchange="actualizarPagoCoberturaItem('${it.clave}', 'metodo', this.value)" title="Medio de pago">${[['Transferencia', 'Transferencia'], ['Efectivo', 'Efectivo']].map(([v, t]) => `<option value="${v}" ${it.metodo === v ? 'selected' : ''}>${t}</option>`).join('')}</select>
                             <select class="installment-select sel-fantasma" onchange="actualizarPagoCoberturaItem('${it.clave}', 'responsable', this.value)" title="Quién de Mandala paga">${listaResp.map(n => `<option value="${esc(n)}" ${n === it.responsable ? 'selected' : ''}>${etq}: ${esc(n)}</option>`).join('')}</select>
                             ${contactoHtml}
                         </div>
                     </td>
-                    <td>${estado}</td>
+                    <td>${it.diferencia <= 0 ? '' : `<input type="date" class="installment-date-inp" value="${esc(it.fecha || '')}" ${it.pagada ? '' : 'disabled'} title="${it.pagada ? 'Día en que se pagó (editable)' : 'Se completa al marcarlo'}" onchange="actualizarPagoCoberturaItem('${it.clave}', 'fecha', this.value)">`}</td>
                     <td class="r" style="white-space:nowrap;">${accion}<span class="hueco-borrar"></span></td>`;
             });
-            // Cabecera del bloque y línea de resumen del aporte de las bandas
-            const pendiente = res.itemsCobertura.reduce((a, it) => a + (it.pagada ? 0 : it.diferencia), 0);
-            const chipT = document.getElementById('chip-cob-total');
-            const chipP = document.getElementById('chip-cob-pendiente');
-            if (chipT) chipT.textContent = `Total ${money(res.saldoEscuela)}`;
-            if (chipP) chipP.textContent = `Pendiente ${money(pendiente)}`;
+            // Línea de resumen del aporte de las bandas
             const sub = document.getElementById('sub-cobertura-gastos');
-            if (sub) sub.textContent = `Fotos y video se pagan por separado a ${nomProductora || 'la productora'}.`;
+            if (sub) sub.textContent = `Servicios que contrata la escuela para el evento. La cobertura (fotos y video) se paga por separado a ${nomProductora || 'la productora'}.`;
             if (resumen) {
                 const sinAsignar = Math.max(0, res.totalBandas - res.aporteAsignado);
                 resumen.innerHTML = `Aportado por bandas <span class="sec-mono">${money(res.totalBandas)}</span> · Asignado <span class="sec-mono">${money(res.aporteAsignado)}</span>`
@@ -17403,6 +17679,56 @@
             }
         }
         window.renderizarFilasCoberturaGastos = renderizarFilasCoberturaGastos;
+
+        // Egresos de un evento divididos en Gastos operativos (los ponen los socios u otros y se reintegran) y Servicios contratados
+        // (los cargados a mano + cobertura audiovisual + servicios adelantados). Fuente única para la franja de estados y los reportes.
+        function resumenEgresosEvento(fId) {
+            const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[fId]) || {};
+            const lista = Array.isArray(datos.gastosOperativos) ? datos.gastosOperativos : [];
+            let operativos = 0, porReintegrar = 0, serviciosCargados = 0, serviciosCargadosPend = 0;
+            lista.forEach(g => {
+                const m = Math.max(0, parseFloat(g && g.monto || 0) || 0);
+                if (!m) return;
+                if (tipoGasto(g) === 'servicio') { serviciosCargados += m; if (!g.pagado) serviciosCargadosPend += m; }
+                else { operativos += m; if (!g.pagado) porReintegrar += m; }
+            });
+            const res = calcularResumenPresupuestoProductora(fId);
+            const serv = calcularServiciosFestival(fId, (typeof infoFestivales !== 'undefined') ? (infoFestivales[fId] || null) : null);
+            const servicios = serviciosCargados + res.saldoEscuela + serv.adelantado;
+            const serviciosPendiente = serviciosCargadosPend + res.pendienteCobertura;
+            const total = operativos + servicios;
+            const pendiente = porReintegrar + serviciosPendiente;
+            return { operativos, porReintegrar, servicios, serviciosCargados, cobertura: res.saldoEscuela, adelantado: serv.adelantado,
+                serviciosPendiente, total, pendiente, pagado: total - pendiente };
+        }
+        window.resumenEgresosEvento = resumenEgresosEvento;
+
+        // Franja fija debajo de las tarjetas de Liquidación: Estado de pago (egresos) y Estado de cobros (ingresos por cobrar)
+        function renderizarFranjaEstados() {
+            const cont = document.getElementById('franja-estados');
+            if (!cont || !eventoActualId) return;
+            const fila = (rotulo, valor, extra) => '<div class="fin-r' + (extra || '') + '"><em>' + rotulo + '</em><strong>' + valor + '</strong></div>';
+            const barra = (pct, etqOk, etqPend) => '<div class="fin-barra-pago" title="' + pct + '%"><div class="fin-barra-pagado" style="width:' + pct + '%"></div></div>'
+                + '<div class="fin-barra-leyenda"><span><i class="fin-pto-ok"></i>' + etqOk + ' ' + pct + '%</span><span><i class="fin-pto-pend"></i>Pendiente ' + (100 - pct) + '%</span></div>';
+            const e = resumenEgresosEvento(eventoActualId);
+            const pctPago = e.total > 0 ? Math.round((e.pagado / e.total) * 100) : 100;
+            const c = (window._estadoCobrosEvento && window._estadoCobrosEvento.fId === eventoActualId) ? window._estadoCobrosEvento : null;
+            const pctCobro = c && c.total > 0 ? Math.round((c.cobrado / c.total) * 100) : 100;
+            cont.innerHTML = '<div class="fin-g fin-g-egr"><h4>Estado de pago</h4>' + barra(pctPago, 'Pagado', 'Pendiente')
+                + fila('Gastos operativos', htmlMonto(e.operativos))
+                + fila('Por reintegrar', htmlMonto(e.porReintegrar), ' fin-sub')
+                + fila('Servicios contratados', htmlMonto(e.servicios))
+                + fila('Pendiente de pago', htmlMonto(e.serviciosPendiente), ' fin-sub')
+                + fila('Falta restar de ganancia', htmlMonto(e.pendiente), ' fin-tot') + '</div>'
+                + '<div class="fin-g fin-g-ing"><h4>Estado de cobros</h4>' + barra(pctCobro, 'Cobrado', 'Pendiente')
+                + (c ? fila('Cobrado', htmlMonto(c.cobrado)) + fila('Por cobrar', htmlMonto(c.pendiente)) + fila('Total esperado', htmlMonto(c.total), ' fin-tot')
+                     : '<div class="chico-gris" style="padding:8px 12px;">Calculando…</div>') + '</div>';
+            if (!c && typeof actualizarKpiPendienteTotalCobros === 'function' && !window._calculandoCobros) {
+                window._calculandoCobros = true;
+                try { actualizarKpiPendienteTotalCobros(); } finally { window._calculandoCobros = false; }
+            }
+        }
+        window.renderizarFranjaEstados = renderizarFranjaEstados;
 
         // Renderizar los Gastos Operativos + la fila de Cobertura Audiovisual dentro de Gastos del Evento en Finanzas
         function renderizarGastosFestival(reconstruirTablaOperativos = true) {
@@ -17422,7 +17748,7 @@
 
             renderizarFilasCoberturaGastos(res, fechaEvento, nomProductora);
 
-            // Total real de gastos operativos cargados por el usuario (sin ficticios)
+            // Total de lo cargado a mano (operativos + servicios); la división por tipo sale de resumenEgresosEvento()
             let totalOperativos = 0;
             let totalOperativosPendientes = 0;
             (datos.gastosOperativos || []).forEach(g => {
@@ -17434,7 +17760,6 @@
             // Servicios adicionales (sesionistas y ensayos): costo con proveedores e ingreso cobrado a los integrantes (fuente única)
             const serv = calcularServiciosFestival(eventoActualId, (typeof infoFestivales !== 'undefined') ? infoFestivales[eventoActualId] : null);
 
-            const totalEgresos = totalOperativos + serv.adelantado + saldoEscuela;
             const trServAdel = document.getElementById('tr-gasto-servicios-adelantados');
             if (trServAdel) {
                 trServAdel.style.display = serv.adelantado > 0 ? '' : 'none';
@@ -17448,30 +17773,19 @@
             }
             const totalPendientePagarEscuela = totalOperativosPendientes + res.pendienteCobertura;
 
-            // Pastillas de la cabecera y tarjetas de cierre (Egresos / Estado de pago)
+            // Pastillas de cada apartado: Gastos operativos (por reintegrar) y Servicios contratados (pendiente de pago)
+            const egr = resumenEgresosEvento(eventoActualId);
             const chipGTotal = document.getElementById('chip-gastos-total');
-            if (chipGTotal) chipGTotal.textContent = `Total $ ${(totalOperativos + serv.adelantado).toLocaleString('es-AR')}`;
+            if (chipGTotal) chipGTotal.textContent = `Total $ ${egr.operativos.toLocaleString('es-AR')}`;
             const chipGPend = document.getElementById('chip-gastos-pendiente');
-            if (chipGPend) chipGPend.textContent = `Pendiente $ ${totalOperativosPendientes.toLocaleString('es-AR')}`;
+            if (chipGPend) chipGPend.textContent = `Por reintegrar $ ${egr.porReintegrar.toLocaleString('es-AR')}`;
+            const chipSTotal = document.getElementById('chip-serv-total');
+            if (chipSTotal) chipSTotal.textContent = `Total $ ${egr.servicios.toLocaleString('es-AR')}`;
+            const chipSPend = document.getElementById('chip-serv-pendiente');
+            if (chipSPend) chipSPend.textContent = `Pendiente $ ${egr.serviciosPendiente.toLocaleString('es-AR')}`;
 
-            const contCierreGastos = document.getElementById('cierre-gastos');
-            if (contCierreGastos) {
-                // Pagado = gastos operativos pagados + cobertura pagada + servicios que la escuela ya le adelantó al proveedor
-                const pagadoTotal = (totalOperativos - totalOperativosPendientes) + (saldoEscuela - res.pendienteCobertura) + serv.adelantado;
-                const pctPagado = totalEgresos > 0 ? Math.round((pagadoTotal / totalEgresos) * 100) : 100;
-                const filaG = (rotulo, valor, extra) => '<div class="fin-r' + (extra || '') + '"><em>' + rotulo + '</em><strong>' + valor + '</strong></div>';
-                contCierreGastos.innerHTML = '<div class="fin-g fin-g-egr"><h4>Egresos</h4>'
-                    + filaG('Gastos operativos', htmlMonto(totalOperativos))
-                    + filaG('Cobertura audiovisual', htmlMonto(saldoEscuela))
-                    + filaG('Servicios adelantados', htmlMonto(serv.adelantado))
-                    + filaG('Total egresos', htmlMonto(totalEgresos), ' fin-tot') + '</div>'
-                    + '<div class="fin-g fin-g-res"><h4>Estado de pago</h4>'
-                    + '<div class="fin-barra-pago" title="' + pctPagado + '% pagado"><div class="fin-barra-pagado" style="width:' + pctPagado + '%"></div></div>'
-                    + '<div class="fin-barra-leyenda"><span><i class="fin-pto-ok"></i>Pagado ' + pctPagado + '%</span><span><i class="fin-pto-pend"></i>Pendiente ' + (100 - pctPagado) + '%</span></div>'
-                    + filaG('Pagado', htmlMonto(pagadoTotal))
-                    + filaG('Pendiente de pago', htmlMonto(totalPendientePagarEscuela))
-                    + filaG('A recuperar de alumnos', htmlMonto(Math.max(0, serv.adelantado - serv.absorbido))) + '</div>';
-            }
+            // Franja fija "Estado de pago / Estado de cobros" (visible en las tres pestañas)
+            renderizarFranjaEstados();
 
             // Sincronizar tarjetas de Resumen Financiero
             const elCardGastosOp = document.getElementById('resumen-card-gastos-tot');
@@ -18182,7 +18496,7 @@
             }
 
             // Recalcular gastos y ganancia real de la escuela (sin reconstruir tabla si el usuario está tipeando)
-            const editandoGastoOp = document.activeElement && document.activeElement.closest && document.activeElement.closest('#tbody-gastos-festival-operativos');
+            const editandoGastoOp = document.activeElement && document.activeElement.closest && document.activeElement.closest('#tbody-gastos-festival-operativos, #tbody-servicios-contratados');
             renderizarGastosFestival(!editandoGastoOp);
 
             // Autoguardar finanzas en Firestore SOLO cuando hay edición explícita del usuario
@@ -19804,6 +20118,7 @@
                         <td class="r"><input type="text" class="spreadsheet-inp" style="font-family:'Geist Mono'; font-weight:700; ${p.pagada ? 'color:var(--ink-3);' : ''} font-size:12.5px; text-align:right; width:110px; border:none; cursor:pointer;" title="Click para editar el monto real de este cobro" value="${formatearMonedaAr(p.monto)}" onfocus="enfocarInputMontoCuotaContrato(this, '${sid}', ${cIdx})" onblur="formatearInputMontoCuotaContrato(this, '${sid}', ${cIdx})" onchange="actualizarMontoCuotaContratoAlumno('${sid}', ${cIdx}, this.value)"></td>
                         <td>${htmlEstadoCobro(p.pagada ? 'pagada' : (p.omitida ? 'omitida' : 'debe'))}</td>
                         <td>${htmlDetallePagoCobro(p, h, { obs: true })}</td>
+                        <td>${htmlFechaCobro(p, h, 'fechaCobro')}</td>
                         <td class="r"><div style="display:inline-flex; align-items:center; gap:4px;">
                             ${p.pagada
                                 ? `<button type="button" class="btn-deshacer" onclick="cambiarEstadoPagoContratoAlumno('${sid}', ${cIdx}, false)" title="Marcar como pendiente">Deshacer</button>`
@@ -19897,7 +20212,8 @@
             if (!cont || !Array.isArray(cont.pagosDeuda) || !cont.pagosDeuda[idxCuota]) return;
 
             cont.pagosDeuda[idxCuota].pagada = Boolean(pagada);
-            if (pagada) cont.pagosDeuda[idxCuota].fecha = hoyISO();
+            // La fecha de cobro es aparte del vencimiento de la cuota (p.fecha)
+            if (pagada) cont.pagosDeuda[idxCuota].fechaCobro = hoyISO(); else delete cont.pagosDeuda[idxCuota].fechaCobro;
             contratosAlumnosFestivalesDB[eventoActualId] = cacheContratos;
 
             if (typeof autoguardarDetalleFestivalFirestore === 'function') {
@@ -19977,29 +20293,9 @@
             const totalPendiente = pendContrato + pendCobertura + pendServicios;
             const totalEsperado = totalCobrado + totalPendiente;
 
-            const fila = (rotulo, valor, extra) => '<div class="fin-r' + (extra || '') + '"><em>' + rotulo + '</em><strong>' + valor + '</strong></div>';
-            const cont = document.getElementById('resumen-cobros-tarjetas');
-            if (cont) {
-                cont.innerHTML = '<div class="fin-g fin-g-ing"><h4>Cobrado</h4>'
-                    + fila('Incumplimiento de contrato', htmlMonto(cobContrato))
-                    + fila('Cobertura de bandas', htmlMonto(cobCobertura))
-                    + fila('Servicios adicionales', htmlMonto(cobServicios))
-                    + fila('Total cobrado', htmlMonto(totalCobrado), ' fin-tot') + '</div>'
-                    + '<div class="fin-g fin-g-egr"><h4>Por cobrar</h4>'
-                    + fila('Incumplimiento de contrato', htmlMonto(pendContrato))
-                    + fila('Cobertura de bandas', htmlMonto(pendCobertura))
-                    + fila('Servicios adicionales', htmlMonto(pendServicios))
-                    + fila('Total por cobrar', htmlMonto(totalPendiente), ' fin-tot') + '</div>'
-                    + '<div class="fin-g fin-g-res"><h4>Total esperado</h4>'
-                    + fila('Incumplimiento de contrato', htmlMonto(cobContrato + pendContrato))
-                    + fila('Cobertura de bandas', htmlMonto(cobCobertura + pendCobertura))
-                    + fila('Servicios adicionales', htmlMonto(cobServicios + pendServicios))
-                    + fila('Total del evento', htmlMonto(totalEsperado), ' fin-tot') + '</div>';
-            }
-            const chipPct = document.getElementById('chip-cobros-pct');
-            if (chipPct) chipPct.textContent = `Cobrado ${totalEsperado > 0 ? Math.round((totalCobrado / totalEsperado) * 100) : 100}%`;
-            const chipPend = document.getElementById('chip-cobros-porcobrar');
-            if (chipPend) chipPend.textContent = `Por cobrar $ ${totalPendiente.toLocaleString('es-AR')}`;
+            // El resumen se muestra en la franja fija "Estado de cobros" (arriba de las pestañas)
+            window._estadoCobrosEvento = { fId: eventoActualId, cobrado: totalCobrado, pendiente: totalPendiente, total: totalEsperado };
+            if (typeof renderizarFranjaEstados === 'function') renderizarFranjaEstados();
         }
         window.actualizarKpiPendienteTotalCobros = actualizarKpiPendienteTotalCobros;
 
@@ -20053,6 +20349,9 @@
                     const gastosOp = Array.isArray(datosIng.gastosOperativos) ? datosIng.gastosOperativos : [];
                     gastosOp.forEach((g, gIdx) => {
                         if (g && !g.pagado && Number(g.monto) > 0) {
+                            // Gasto operativo = reintegro a quien lo pagó; servicio contratado = pago a un proveedor
+                            const esReintegro = tipoGasto(g) === 'operativo';
+                            const quien = destinoGasto(g).nombre || g.proveedor || '';
                             deudas.push({
                                 id: `gop-${festId}-${gIdx}`,
                                 festId,
@@ -20060,9 +20359,14 @@
                                 festFecha,
                                 tipo: 'escuela_gasto',
                                 tipoCat: 'escuela',
-                                tipoBadge: '<span class="pill-status pill-danger" style="font-size:10.5px;">🔴 Gasto Escuela</span>',
-                                concepto: `📦 ${g.concepto || g.nombre || 'Gasto operativo sin concepto'}`,
-                                categoria: 'Destinatario: ' + (destinoGasto(g).nombre || 'sin elegir'),
+                                esReintegro,
+                                tipoBadge: esReintegro
+                                    ? '<span class="pill-status pill-danger" style="font-size:10.5px;">🔴 Por reintegrar</span>'
+                                    : '<span class="pill-status pill-danger" style="font-size:10.5px;">🔴 Servicio contratado</span>',
+                                concepto: esReintegro
+                                    ? `📦 Reintegro a ${quien || 'quien pagó'} · ${g.concepto || g.nombre || 'Gasto sin concepto'}`
+                                    : `📦 ${g.concepto || g.nombre || 'Servicio sin concepto'}`,
+                                categoria: esReintegro ? ('Pagó: ' + (quien || 'sin elegir')) : ('Proveedor: ' + (quien || 'sin elegir')),
                                 monto: Number(g.monto),
                                 esPasivoEscuela: true,
                                 medio: g.metodo || 'Transferencia',
@@ -20520,7 +20824,7 @@
                     ? (item.estadoTraspaso === 'asignado'
                         ? `<button type="button" class="btn-app btn-secondary btn-sm" title="Ir al festival donde se cubre" onclick="irAFestivalDesdeDeudas('${item.destinoFestId}', event)">Ver festival</button>`
                         : `<button type="button" class="btn-app btn-secondary btn-sm" title="Configurar el traspaso" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">Gestionar</button>`)
-                    : `<button type="button" class="btn-marcar" onclick="saldarDeudaIndividual('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}')">${esPago ? 'Marcar pagado' : 'Marcar cobrado'}</button>`;
+                    : `<button type="button" class="btn-marcar" onclick="saldarDeudaIndividual('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}')">${item.esReintegro ? 'Marcar reintegrado' : (esPago ? 'Marcar pagado' : 'Marcar cobrado')}</button>`;
                 const botonAbsorber = (item.tipo === 'servicio_alumno')
                     ? `<button type="button" class="btn-cfg-chico" title="Gestionar: la escuela absorbe esta cuota" onclick="confirmarAbsorberDesdeDeudas('${item.festId}', '${escJs(item.bandaServicio || item.itemId)}', '${item.idxCuota}', '${escJs(String(item.concepto || '').replace(/^\S+\s/, ''))}')">⚙️</button>` : '';
                 const botonOmitir = '';
@@ -20528,7 +20832,7 @@
                     ? `<button type="button" class="btn-cfg-chico" title="Plan de cuotas" onclick="abrirModalGestionarDeudaDesdeTablaDeudas('${item.itemId}', '${item.festId}')">⚙️</button>` : '';
                 tr.innerHTML = `
                     <td class="col-chk-deudas" style="text-align:center;">
-                        <button type="button" class="expand-btn-finanzas btn-detalle-deuda no-print" data-deuda-id="${idSeguro}" title="Ver medio de pago, ${esPago ? 'quién paga' : 'a quién paga'} y observaciones" onclick="alternarDetalleDeuda('${idSeguro}')">＋</button>
+                        <button type="button" class="expand-btn-finanzas btn-detalle-deuda no-print" data-deuda-id="${idSeguro}" title="Ver medio de pago, ${item.esReintegro ? 'quién reintegra' : (esPago ? 'quién paga' : 'a quién paga')} y observaciones" onclick="alternarDetalleDeuda('${idSeguro}')">＋</button>
                     </td>
                     <td style="padding-left:24px;">
                         <span style="font-size:12.5px;">${esc(item.concepto)}</span>${wa}
@@ -20555,7 +20859,7 @@
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:11.5px;">
                             ${esTraspasoItem ? `<span style="color:var(--ink-2);">${esc(item.obs || '')}</span>` : `
                             <label style="display:inline-flex; align-items:center; gap:4px;">Medio ${selMedio(item)}</label>
-                            <label style="display:inline-flex; align-items:center; gap:4px;">${item.esPasivoEscuela ? 'Quién paga' : 'A quién paga'}
+                            <label style="display:inline-flex; align-items:center; gap:4px;">${item.esReintegro ? 'Quién reintegra' : (item.esPasivoEscuela ? 'Quién paga' : 'A quién paga')}
                                 <select class="installment-select" style="font-size:11.5px; padding:3px 6px; border-radius:6px;" onchange="actualizarDatoDeudaEnVivo('${item.tipo}', '${item.festId}', '${item.itemId}', '${item.idxCuota}', 'responsable', this.value)">${item.esPasivoEscuela
                                     ? (SOCIOS_GASTOS.includes(item.responsable) ? SOCIOS_GASTOS : SOCIOS_GASTOS.concat(item.responsable ? [item.responsable] : [])).map(n => `<option value="${esc(n)}" ${n === item.responsable ? 'selected' : ''}>${esc(n)}</option>`).join('')
                                     : opcionesResponsablesHTML(item.responsable)}</select></label>
@@ -20820,12 +21124,13 @@
                 let gasto = (!isNaN(gIdx) && datos.gastosOperativos[gIdx]) ? datos.gastosOperativos[gIdx] : datos.gastosOperativos.find((g, i) => String(i) === String(itemId) || (g && String(g.id) === String(itemId)));
                 if (gasto) {
                     gasto.pagado = true;
+                    gasto.fechaPago = hoyISO();
                     await persistirCambiosFestivalDirecto(festId, { finanzas: datos });
                 }
             } else if (tipo === 'escuela_cobertura') {
                 const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) ? ingresosFestivalesDB[festId] : { gastosOperativos: [] };
                 datos.coberturaEscuelaPagada = true;
-                if (typeof asegurarItemsCobertura === 'function') { const its = asegurarItemsCobertura(datos); its.fotos.pagada = true; its.video.pagada = true; }
+                if (typeof asegurarItemsCobertura === 'function') { const its = asegurarItemsCobertura(datos); its.fotos.pagada = true; its.video.pagada = true; its.fotos.fecha = its.fotos.fecha || hoyISO(); its.video.fecha = its.video.fecha || hoyISO(); }
                 await persistirCambiosFestivalDirecto(festId, { finanzas: datos });
             } else if (tipo === 'alumno_entrada') {
                 const cache = obtenerListaParticipantesContratoFestival(festId);
@@ -20833,7 +21138,7 @@
                 const idx = parseInt(idxCuota || 0, 10);
                 if (cont && cont.pagosDeuda && cont.pagosDeuda[idx]) {
                     cont.pagosDeuda[idx].pagada = true;
-                    cont.pagosDeuda[idx].fecha = hoyISO();
+                    cont.pagosDeuda[idx].fechaCobro = hoyISO();
                     contratosAlumnosFestivalesDB[festId] = cache;
                     await persistirCambiosFestivalDirecto(festId, { contratosAlumnos: cache });
                 }
@@ -20842,7 +21147,7 @@
                 const dataCob = cobObj[itemId];
                 const idx = parseInt(idxCuota || 0, 10);
                 if (dataCob && dataCob.pagosDetalle && dataCob.pagosDetalle[idx]) {
-                    dataCob.pagosDetalle[idx].pagada = true;
+                    dataCob.pagosDetalle[idx].pagada = true; dataCob.pagosDetalle[idx].fecha = hoyISO();
                     coberturaFestivalesDB[festId] = cobObj;
                     await persistirCambiosFestivalDirecto(festId, { cobertura: cobObj });
                 }
@@ -20919,12 +21224,13 @@
                     let gasto = (!isNaN(gIdx) && datos.gastosOperativos[gIdx]) ? datos.gastosOperativos[gIdx] : datos.gastosOperativos.find((g, i) => String(i) === String(itemId) || (g && String(g.id) === String(itemId)));
                     if (gasto) {
                         gasto.pagado = true;
+                        gasto.fechaPago = hoyISO();
                         patchesPorFestival[festId].finanzas = datos;
                     }
                 } else if (tipo === 'escuela_cobertura') {
                     const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) ? ingresosFestivalesDB[festId] : { gastosOperativos: [] };
                     datos.coberturaEscuelaPagada = true;
-                if (typeof asegurarItemsCobertura === 'function') { const its = asegurarItemsCobertura(datos); its.fotos.pagada = true; its.video.pagada = true; }
+                if (typeof asegurarItemsCobertura === 'function') { const its = asegurarItemsCobertura(datos); its.fotos.pagada = true; its.video.pagada = true; its.fotos.fecha = its.fotos.fecha || hoyISO(); its.video.fecha = its.video.fecha || hoyISO(); }
                     patchesPorFestival[festId].finanzas = datos;
                 } else if (tipo === 'alumno_entrada') {
                     const cache = obtenerListaParticipantesContratoFestival(festId);
@@ -20932,7 +21238,7 @@
                     const idx = parseInt(idxCuota || 0, 10);
                     if (cont && cont.pagosDeuda && cont.pagosDeuda[idx]) {
                         cont.pagosDeuda[idx].pagada = true;
-                    cont.pagosDeuda[idx].fecha = hoyISO();
+                    cont.pagosDeuda[idx].fechaCobro = hoyISO();
                         contratosAlumnosFestivalesDB[festId] = cache;
                         patchesPorFestival[festId].contratosAlumnos = cache;
                     }
@@ -20941,7 +21247,7 @@
                     const dataCob = cobObj[itemId];
                     const idx = parseInt(idxCuota || 0, 10);
                     if (dataCob && dataCob.pagosDetalle && dataCob.pagosDetalle[idx]) {
-                        dataCob.pagosDetalle[idx].pagada = true;
+                        dataCob.pagosDetalle[idx].pagada = true; dataCob.pagosDetalle[idx].fecha = hoyISO();
                         coberturaFestivalesDB[festId] = cobObj;
                         patchesPorFestival[festId].cobertura = cobObj;
                     }
@@ -21699,6 +22005,10 @@
             };
             chartVentasEventoInst = dibujar('chartVentasEvento', datos && datos.ventas, subV, fest ? 'Sin ventas cargadas en este evento' : 'Elegí un evento en el gráfico de ganancias');
             chartGastosEventoInst = dibujar('chartGastosEvento', datos && datos.gastos, subG, fest ? 'Sin gastos cargados en este evento' : 'Elegí un evento en el gráfico de ganancias');
+            // Los gastos se dividen en operativos (los ponen los socios u otros y se reintegran) y servicios contratados
+            if (subG && datos && Array.isArray(datos.gastosTipo) && datos.gastosTipo.length && chartGastosEventoInst) {
+                subG.textContent += ' · ' + datos.gastosTipo.map(p => `${p.nombre} $ ${p.valor.toLocaleString('es-AR')}`).join(' · ');
+            }
         }
         window.dibujarGraficosEventoEstadisticas = dibujarGraficosEventoEstadisticas;
 

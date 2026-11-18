@@ -23,7 +23,9 @@
     }
     function num(v) { return Math.max(0, parseFloat(v || 0) || 0); }
 
-    var TITULOS = { ventas: 'Reporte de ventas', gastos: 'Reporte de gastos', completo: 'Reporte completo' };
+    var TITULOS = { ventas: 'Reporte de ventas', gastos: 'Reporte de gastos', completo: 'Reporte completo', caja: 'Reporte de caja' };
+    // El reporte completo y el de caja tienen varias hojas: salen en PDF
+    function esReportePdf(tipo) { return tipo === 'completo' || tipo === 'caja'; }
 
     // Paleta única de los gráficos (misma en todos los reportes y en Estadísticas)
     var PALETA = ['#007b8f', '#e0a43a', '#6d5bd0', '#2e9e6a', '#d9467a', '#5b8def', '#c2410c', '#8a9097'];
@@ -65,6 +67,89 @@
         '.rv .pto{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}' +
         '.rv .dos{display:grid;grid-template-columns:1fr 1fr;gap:14px}' +
         '.rv .pie{display:flex;justify-content:space-between;font-size:10px;color:#8a9097;border-top:1px solid #ece6dc;padding-top:7px;margin-top:18px}';
+
+    // ---------------------------------------------------------------
+    // Gráficos de línea de la Caja (SVG): ganancias anuales (como en Estadísticas, con el monto en cada punto) y saldo proyectado
+    // ---------------------------------------------------------------
+    var FUENTE_SVG = 'Segoe UI, Arial, sans-serif';
+    function curvaSvg(pts, ymax) {
+        if (!pts.length) return '';
+        var d = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1);
+        for (var i = 0; i < pts.length - 1; i++) {
+            var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+            var c1y = Math.min(ymax, p1[1] + (p2[1] - p0[1]) / 6), c2y = Math.min(ymax, p2[1] - (p3[1] - p1[1]) / 6);
+            d += ' C' + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + ',' + c1y.toFixed(1) + ' ' + (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + ',' + c2y.toFixed(1) + ' ' + p2[0].toFixed(1) + ',' + p2[1].toFixed(1);
+        }
+        return d;
+    }
+    function escalaEje(min, max, pasos) {
+        var rango = Math.max(1, max - min), paso = rango / pasos, mag = Math.pow(10, Math.floor(Math.log10(paso))), n = paso / mag;
+        var bonito = (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * mag;
+        var lo = Math.floor(min / bonito) * bonito, hi = Math.ceil(max / bonito) * bonito;
+        if (hi === lo) hi = lo + bonito;
+        return { lo: lo, hi: hi, paso: bonito };
+    }
+    function etiquetaMonto(v) { return (v < 0 ? '-$ ' : '$ ') + Math.abs(Math.round(v)).toLocaleString('es-AR'); }
+
+    // datos: { puntos: [{ label, valor }] } → curva verde con área y el monto en cada punto
+    function svgGanancias(datos, W, H) {
+        var puntos = (datos && datos.puntos) || [];
+        if (!puntos.length) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '"><text x="' + (W / 2) + '" y="' + (H / 2) + '" text-anchor="middle" font-family="' + FUENTE_SVG + '" font-size="13" fill="#8a9097">Sin festivales en este año</text></svg>';
+        var l = 86, r = 28, t = 30, b = 36;
+        var vals = puntos.map(function (p) { return p.valor; });
+        var esc_ = escalaEje(Math.min(0, Math.min.apply(null, vals)), Math.max(1, Math.max.apply(null, vals)), 4);
+        var X = function (i) { return puntos.length === 1 ? (l + (W - l - r) / 2) : l + i * (W - l - r) / (puntos.length - 1); };
+        var Y = function (v) { return t + (H - t - b) * (1 - (v - esc_.lo) / (esc_.hi - esc_.lo)); };
+        var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '">';
+        for (var v = esc_.lo; v <= esc_.hi + 1e-6; v += esc_.paso) {
+            s += '<line x1="' + l + '" x2="' + (W - r) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="#e5e7eb"/><text x="' + (l - 8) + '" y="' + (Y(v) + 4) + '" font-size="10.5" fill="#6b7280" text-anchor="end" font-family="' + FUENTE_SVG + '">' + etiquetaMonto(v) + '</text>';
+        }
+        var pts = puntos.map(function (p, i) { return [X(i), Y(p.valor)]; });
+        var base = Y(Math.max(0, esc_.lo));
+        s += '<path d="' + curvaSvg(pts, base) + ' L' + pts[pts.length - 1][0] + ',' + base + ' L' + pts[0][0] + ',' + base + ' Z" fill="#10b981" opacity=".13"/>';
+        s += '<path d="' + curvaSvg(pts, base) + '" fill="none" stroke="#10b981" stroke-width="3"/>';
+        pts.forEach(function (p, i) {
+            s += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="5" fill="#10b981"/>' +
+                '<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 11).toFixed(1) + '" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle" font-family="' + FUENTE_SVG + '">' + etiquetaMonto(puntos[i].valor) + '</text>' +
+                '<text x="' + p[0].toFixed(1) + '" y="' + (H - 12) + '" font-size="11" font-weight="700" fill="#374151" text-anchor="middle" font-family="' + FUENTE_SVG + '">' + esc(puntos[i].label) + '</text>';
+        });
+        return s + '</svg>';
+    }
+
+    // p: resultado de proyeccionCajaAnio → línea sólida (saldo real) y punteada (estimación)
+    function svgProyeccion(p, W, H) {
+        var l = 92, r = 30, t = 30, b = 30;
+        var todos = [];
+        p.real.concat(p.proy).forEach(function (v) { if (v !== null && v !== undefined) todos.push(v); });
+        if (!todos.length) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '"><text x="' + (W / 2) + '" y="' + (H / 2) + '" text-anchor="middle" font-family="' + FUENTE_SVG + '" font-size="13" fill="#8a9097">Todavía no hay movimientos en este año</text></svg>';
+        var esc_ = escalaEje(Math.min.apply(null, todos), Math.max.apply(null, todos), 4);
+        var X = function (i) { return l + i * (W - l - r) / 11; };
+        var Y = function (v) { return t + (H - t - b) * (1 - (v - esc_.lo) / (esc_.hi - esc_.lo)); };
+        var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '">';
+        for (var v = esc_.lo; v <= esc_.hi + 1e-6; v += esc_.paso) {
+            s += '<line x1="' + l + '" x2="' + (W - r) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="#ece6dc"/><text x="' + (l - 8) + '" y="' + (Y(v) + 4) + '" font-size="10.5" fill="#8a9097" text-anchor="end" font-family="' + FUENTE_SVG + '">' + etiquetaMonto(v) + '</text>';
+        }
+        if (p.hayProyeccion) s += '<rect x="' + X(p.mesHoy) + '" y="' + t + '" width="' + (X(11) - X(p.mesHoy)) + '" height="' + (H - t - b) + '" fill="#e8f4f6" opacity=".7"/>';
+        var pr = [];
+        p.real.forEach(function (v, i) { if (v !== null && v !== undefined) pr.push([X(i), Y(v)]); });
+        if (pr.length > 1) s += '<path d="' + curvaSvg(pr, H - b) + '" fill="none" stroke="#007b8f" stroke-width="3"/>';
+        if (p.hayProyeccion) {
+            var pp = [];
+            p.proy.forEach(function (v, i) { if (v !== null && v !== undefined) pp.push([X(i), Y(v)]); });
+            s += '<path d="' + curvaSvg(pp, H - b) + '" fill="none" stroke="#007b8f" stroke-width="3" stroke-dasharray="7 6"/>';
+            s += '<circle cx="' + pp[0][0] + '" cy="' + pp[0][1] + '" r="5" fill="#007b8f"/><circle cx="' + pp[pp.length - 1][0] + '" cy="' + pp[pp.length - 1][1] + '" r="5" fill="#fff" stroke="#007b8f" stroke-width="3"/>';
+            s += '<text x="' + (pp[0][0] - 8) + '" y="' + (pp[0][1] + 18) + '" font-size="11" font-weight="700" text-anchor="end" font-family="' + FUENTE_SVG + '" fill="#1c1f22">Hoy ' + etiquetaMonto(p.saldoHoy) + '</text>';
+            s += '<text x="' + (W - r) + '" y="' + (pp[pp.length - 1][1] - 11) + '" font-size="11" font-weight="700" text-anchor="end" font-family="' + FUENTE_SVG + '" fill="#1c1f22">Fin de año ≈ ' + etiquetaMonto(p.saldoFin) + '</text>';
+        } else if (pr.length) {
+            s += '<circle cx="' + pr[pr.length - 1][0] + '" cy="' + pr[pr.length - 1][1] + '" r="5" fill="#007b8f"/><text x="' + (pr[pr.length - 1][0] - 8) + '" y="' + (pr[pr.length - 1][1] - 11) + '" font-size="11" font-weight="700" text-anchor="end" font-family="' + FUENTE_SVG + '" fill="#1c1f22">' + etiquetaMonto(p.saldoHoy) + '</text>';
+        }
+        p.meses.forEach(function (m, i) { s += '<text x="' + X(i) + '" y="' + (H - 8) + '" font-size="10.5" fill="#8a9097" text-anchor="middle" font-family="' + FUENTE_SVG + '">' + m + '</text>'; });
+        s += '<text x="' + l + '" y="14" font-size="10.5" fill="#4b5159" font-family="' + FUENTE_SVG + '">━ Saldo real' + (p.hayProyeccion ? '     ┅ Proyección' : '') + '</text>';
+        return s + '</svg>';
+    }
+    function imgSvg(markup, anchoCss) { return '<img src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markup) + '" alt="" style="width:' + (anchoCss || '100%') + ';height:auto;display:block">'; }
+    window.svgProyeccionCaja = function (p, W, H) { return svgProyeccion(p, W || 960, H || 230); };
+    window.svgGananciasAnuales = function (datos, W, H) { return svgGanancias(datos, W || 960, H || 260); };
 
     function infoDe(fId) {
         return (typeof infoFestivales !== 'undefined' && infoFestivales[fId]) ? infoFestivales[fId] : {};
@@ -124,9 +209,21 @@
     // ---------------------------------------------------------------
     // Datos de los gráficos de un evento (también los usa Estadísticas)
     // ---------------------------------------------------------------
+    // Egresos del evento divididos en Gastos operativos y Servicios contratados (función única de la app)
+    function resumenEgreso(fId) {
+        if (typeof window.resumenEgresosEvento === 'function') return window.resumenEgresosEvento(fId);
+        var m = calcularBalanceGeneralFestival(fId, infoDe(fId));
+        return { operativos: m.gastosOperativos || 0, porReintegrar: 0, servicios: (m.gastosCobertura || 0) + (m.tercerosAdelantado || 0), serviciosPendiente: 0, total: m.egresosTotales || 0, pendiente: 0, pagado: 0 };
+    }
+
     function datosGraficosEvento(fId) {
         var info = infoDe(fId), fin = finDe(fId), ent = entDe(fId);
-        var res = { destino: [], ventas: [], gastos: [] };
+        var res = { destino: [], ventas: [], gastos: [], gastosTipo: [] };
+        var egTipo = resumenEgreso(fId);
+        res.gastosTipo = [
+            { nombre: 'Gastos operativos', valor: egTipo.operativos, color: '#8b5cf6' },
+            { nombre: 'Servicios contratados', valor: egTipo.servicios, color: '#1f5491' }
+        ].filter(function (p) { return p.valor > 0; });
 
         // Ventas por tipo de entrada
         var taq = calcularTaquillaFestival(fId, fin, ent);
@@ -191,9 +288,12 @@
             + ((m.ingresosIncumplimientos || 0) > 0 ? fila('Cobros por incumplimiento', m.ingresosIncumplimientos) : '')
             + ((m.ingresosSalasPropias || 0) > 0 ? fila('Uso de salas de la escuela', m.ingresosSalasPropias) : '')
             + ((m.excedenteCobertura || 0) > 0 ? fila('Excedente de cobertura', m.excedenteCobertura) : '');
-        var egr = fila('Gastos operativos', m.gastosOperativos || 0)
-            + fila('Cobertura audiovisual', m.gastosCobertura || 0)
-            + ((m.tercerosAdelantado || 0) > 0 ? fila('Servicios adelantados', m.tercerosAdelantado) : '');
+        // Egresos divididos: Gastos operativos (los ponen los socios u otros y se reintegran) y Servicios contratados
+        var eg = resumenEgreso(fId);
+        var egr = fila('Gastos operativos', eg.operativos)
+            + (eg.porReintegrar > 0 ? fila('&nbsp;&nbsp;Por reintegrar', eg.porReintegrar, 'sub') : '')
+            + fila('Servicios contratados', eg.servicios)
+            + (eg.serviciosPendiente > 0 ? fila('&nbsp;&nbsp;Pendiente de pago', eg.serviciosPendiente, 'sub') : '');
         var tablaIng = '<h3>Ingresos</h3><table><tbody>' + ing + '</tbody><tfoot><tr><td>Total ingresos</td><td class="r">' + ars(m.ingresosTotales) + '</td></tr></tfoot></table>';
         var tablaEgr = '<h3>Egresos</h3><table><tbody>' + egr + '</tbody><tfoot><tr><td>Total egresos</td><td class="r">' + ars(m.egresosTotales) + '</td></tr></tfoot></table>';
         var pend = '<h3>Pendientes</h3><table><tbody>' + fila('Por cobrar', m.deudasPorCobrar || 0) + fila('Pendiente de pago', m.deudasPorPagar || 0) + '</tbody></table>';
@@ -286,34 +386,59 @@
     function cuerpoGastos(fId) {
         var info = infoDe(fId), fin = finDe(fId);
         var d = datosGraficosEvento(fId);
-        var gastos = (Array.isArray(fin.gastosOperativos) ? fin.gastosOperativos : []).filter(function (g) { return g && !(g.esSonido && !(num(g.monto) > 0)); }); // Sonido en $ 0 = no se usó
-        // Primero lo pendiente, después lo pagado; dentro de cada grupo por fecha
+        var eg = resumenEgreso(fId);
+        var lista = (Array.isArray(fin.gastosOperativos) ? fin.gastosOperativos : []).filter(function (g) { return g && !(g.esSonido && !(num(g.monto) > 0)); }); // Sonido en $ 0 = no se usó
+        // Primero lo pendiente, después lo resuelto; dentro de cada grupo por fecha
         var fechaNum = function (s) {
             var x = String(s || '').match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
             if (!x) return 9e9;
             var a = x[3] ? (x[3].length === 2 ? 2000 + parseInt(x[3], 10) : parseInt(x[3], 10)) : 0;
             return a * 10000 + parseInt(x[2], 10) * 100 + parseInt(x[1], 10);
         };
-        gastos = gastos.map(function (g, i) { return { g: g, i: i }; }).sort(function (a, b) {
-            return ((a.g.pagado ? 1 : 0) - (b.g.pagado ? 1 : 0)) || (fechaNum(a.g.fecha) - fechaNum(b.g.fecha)) || (a.i - b.i);
-        }).map(function (x) { return x.g; });
-        var totOp = 0, pendOp = 0;
-        gastos.forEach(function (g) { var m = num(g.monto); totOp += m; if (!g.pagado) pendOp += m; });
-
+        var ordenar = function (arr) {
+            return arr.map(function (g, i) { return { g: g, i: i }; }).sort(function (a, b) {
+                return ((a.g.pagado ? 1 : 0) - (b.g.pagado ? 1 : 0)) || (fechaNum(a.g.fecha) - fechaNum(b.g.fecha)) || (a.i - b.i);
+            }).map(function (x) { return x.g; });
+        };
+        var esServ = function (g) { return typeof window.tipoGasto === 'function' && window.tipoGasto(g) === 'servicio'; };
+        var operativos = ordenar(lista.filter(function (g) { return !esServ(g); }));
+        var servicios = ordenar(lista.filter(esServ));
         var cob = calcularResumenPresupuestoProductora(fId);
         var serv = calcularServiciosFestival(fId, info);
-        var totalEgresos = totOp + serv.adelantado + cob.saldoEscuela;
         var fechaCorta = function (f) { var x = String(f || '').match(/(\d{1,2})\/(\d{1,2})/); return x ? x[1].padStart(2, '0') + '/' + x[2].padStart(2, '0') : '-'; };
+        var fechaIso = function (iso) { var x = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return x ? x[3] + '/' + x[2] + '/' + x[1] : ''; };
+        var nombreDe = function (g) { var dest = (typeof destinoGasto === 'function') ? destinoGasto(g) : { nombre: g.proveedor || '' }; return dest.nombre || g.proveedor || '-'; };
+        var metodoTxt = function (g) { return g.metodo === 'Efectivo' ? 'Efectivo' : 'Transf.'; };
+        var estadoCelda = function (g, okTxt, pendTxt) {
+            return '<td class="' + (g.pagado ? 'est-ok' : 'est-pend') + '">' + (g.pagado ? okTxt : pendTxt) + (g.pagado && g.fechaPago ? '<div class="chico">' + fechaIso(g.fechaPago) + '</div>' : '') + '</td>';
+        };
 
-        var filasGastos = gastos.length ? gastos.map(function (g) {
-            var dest = (typeof destinoGasto === 'function') ? destinoGasto(g) : { nombre: g.proveedor || '' };
-            var metodo = g.metodo === 'Efectivo' ? 'Efectivo' : 'Transf.';
-            return '<tr><td class="nw">' + fechaCorta(g.fecha) + '</td><td>' + esc(g.concepto || '-') + '</td><td class="nw">' + esc(dest.nombre || g.proveedor || '-') + '</td>' +
-                '<td class="nw">' + esc(g.responsable || '-') + ' <span class="chico">· ' + metodo + '</span></td>' +
-                '<td class="' + (g.pagado ? 'est-ok' : 'est-pend') + '">' + (g.pagado ? 'Pagado' : 'Pendiente') + '</td><td class="r">' + ars(num(g.monto)) + '</td></tr>';
-        }).join('') : '<tr><td colspan="6" class="gris">No hay gastos cargados</td></tr>';
-        var pie = '<tr><td colspan="5">Total gastos operativos</td><td class="r">' + ars(totOp) + '</td></tr>';
-        if (pendOp > 0) pie += '<tr><td colspan="5">Pendiente de pago</td><td class="r">' + ars(pendOp) + '</td></tr>';
+        // Gastos operativos: quién pagó y quién reintegra
+        var filasOp = operativos.length ? operativos.map(function (g) {
+            return '<tr><td class="nw">' + fechaCorta(g.fecha) + '</td><td>' + esc(g.concepto || '-') + '</td><td class="nw">' + esc(nombreDe(g)) + '</td>' +
+                '<td class="nw">' + esc(g.responsable || '-') + ' <span class="chico">· ' + metodoTxt(g) + '</span></td>' +
+                estadoCelda(g, 'Reintegrado', 'Por reintegrar') + '<td class="r">' + ars(num(g.monto)) + '</td></tr>';
+        }).join('') : '<tr><td colspan="6" class="gris">No hay gastos operativos cargados</td></tr>';
+        var pieOp = '<tr><td colspan="5">Total gastos operativos</td><td class="r">' + ars(eg.operativos) + '</td></tr>';
+        if (eg.porReintegrar > 0) pieOp += '<tr><td colspan="5">Por reintegrar</td><td class="r">' + ars(eg.porReintegrar) + '</td></tr>';
+        var bloqueOp = seccion('<h3>Gastos operativos</h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Pagó</th><th>Reintegra</th><th>Estado</th><th class="r">Monto</th></tr></thead><tbody>' +
+            filasOp + '</tbody><tfoot>' + pieOp + '</tfoot></table>');
+
+        // Servicios contratados: lo cargado a mano (sonido y otros) y la cobertura audiovisual
+        var bloqueServCarg = '';
+        if (servicios.length) {
+            var totS = 0, pendS = 0;
+            var filasS = servicios.map(function (g) {
+                var m = num(g.monto); totS += m; if (!g.pagado) pendS += m;
+                return '<tr><td class="nw">' + fechaCorta(g.fecha) + '</td><td>' + esc(g.concepto || '-') + '</td><td class="nw">' + esc(nombreDe(g)) + '</td>' +
+                    '<td class="nw">' + esc(g.responsable || '-') + ' <span class="chico">· ' + metodoTxt(g) + '</span></td>' +
+                    estadoCelda(g, 'Pagado', 'Pendiente') + '<td class="r">' + ars(m) + '</td></tr>';
+            }).join('');
+            var pieS = '<tr><td colspan="5">Total servicios cargados</td><td class="r">' + ars(totS) + '</td></tr>';
+            if (pendS > 0) pieS += '<tr><td colspan="5">Pendiente de pago</td><td class="r">' + ars(pendS) + '</td></tr>';
+            bloqueServCarg = seccion('<h3>Servicios contratados</h3><table><thead><tr><th>Fecha</th><th>Servicio</th><th>Proveedor</th><th>Paga</th><th>Estado</th><th class="r">Monto</th></tr></thead><tbody>' +
+                filasS + '</tbody><tfoot>' + pieS + '</tfoot></table>');
+        }
 
         // Cobertura audiovisual: Fotos y Video
         var filasCob = '', totCosto = 0, totAporte = 0, totPagar = 0, totPend = 0;
@@ -328,7 +453,7 @@
                 detalle = '<div class="chico">' + partes.join(' + ') + '</div>';
             }
             var aporte = Math.min(it.aporte, it.costo);
-            var estado = it.diferencia <= 0 ? '<td class="est-ok">Cubierto</td>' : '<td class="' + (it.pagada ? 'est-ok' : 'est-pend') + '">' + (it.pagada ? 'Pagado' : 'Pendiente') + '</td>';
+            var estado = it.diferencia <= 0 ? '<td class="est-ok">Cubierto</td>' : '<td class="' + (it.pagada ? 'est-ok' : 'est-pend') + '">' + (it.pagada ? 'Pagado' : 'Pendiente') + (it.pagada && it.fecha ? '<div class="chico">' + fechaIso(it.fecha) + '</div>' : '') + '</td>';
             filasCob += '<tr><td><b>' + it.nombre + '</b>' + detalle + '</td><td class="r">' + ars(it.costo) + '</td><td class="r">' + ars(aporte) + '</td>' + estado + '<td class="r">' + ars(it.diferencia) + '</td></tr>';
             totCosto += it.costo; totAporte += aporte; totPagar += it.diferencia;
             if (!it.pagada) totPend += it.diferencia;
@@ -337,7 +462,7 @@
         if (filasCob) {
             var pieCob = '<tr><td>Total</td><td class="r">' + ars(totCosto) + '</td><td class="r">' + ars(totAporte) + '</td><td></td><td class="r">' + ars(totPagar) + '</td></tr>';
             if (totPend > 0) pieCob += '<tr><td colspan="4">Pendiente de pago</td><td class="r">' + ars(totPend) + '</td></tr>';
-            bloqueCob = seccion('<h3>Cobertura audiovisual</h3><table><thead><tr><th>Concepto</th><th class="r">Costo</th><th class="r">Cubren bandas</th><th>Estado</th><th class="r">A pagar</th></tr></thead><tbody>' +
+            bloqueCob = seccion('<h3>Servicios contratados · Cobertura audiovisual</h3><table><thead><tr><th>Concepto</th><th class="r">Costo</th><th class="r">Cubren bandas</th><th>Estado</th><th class="r">A pagar</th></tr></thead><tbody>' +
                 filasCob + '</tbody><tfoot>' + pieCob + '</tfoot></table>' +
                 '<p class="aviso">Lo que cubren las bandas se cuenta completo, hayan pagado o no.' + (cob.excedenteCobertura > 0 ? ' Excedente para la escuela: ' + ars(cob.excedenteCobertura) + '.' : '') + '</p>');
         }
@@ -345,34 +470,75 @@
         var bloqueServ = '';
         if (serv.adelantado > 0) {
             var recup = Math.max(0, serv.adelantado - serv.absorbido);
-            bloqueServ = seccion('<h3>Servicios adelantados</h3><table><tbody>' +
+            bloqueServ = seccion('<h3>Servicios contratados · Adelantados a salas y sesionistas</h3><table><tbody>' +
                 '<tr><td>Pagado por la escuela a salas y sesionistas</td><td class="r">' + ars(serv.adelantado) + '</td></tr>' +
                 '<tr><td>A recuperar de los alumnos</td><td class="r">' + ars(recup) + '</td></tr>' +
                 (serv.absorbido > 0 ? '<tr><td>Absorbido por la escuela</td><td class="r">' + ars(serv.absorbido) + '</td></tr>' : '') +
                 '</tbody></table>');
         }
 
-        var resumen = '<tr><td>Gastos operativos</td><td class="r">' + ars(totOp) + '</td></tr>' +
-            '<tr><td>Cobertura audiovisual</td><td class="r">' + ars(cob.saldoEscuela) + '</td></tr>' +
-            (serv.adelantado > 0 ? '<tr><td>Servicios adelantados</td><td class="r">' + ars(serv.adelantado) + '</td></tr>' : '') +
-            '<tr class="total"><td>Total de gastos</td><td class="r">' + ars(totalEgresos) + '</td></tr>';
-        var pendTotal = pendOp + totPend;
+        var resumen = '<tr><td>Gastos operativos</td><td class="r">' + ars(eg.operativos) + '</td></tr>' +
+            '<tr><td>Servicios contratados</td><td class="r">' + ars(eg.servicios) + '</td></tr>' +
+            '<tr class="total"><td>Total de gastos</td><td class="r">' + ars(eg.total) + '</td></tr>' +
+            (eg.pendiente > 0 ? '<tr><td>Falta restar de ganancia</td><td class="r">' + ars(eg.pendiente) + '</td></tr>' : '');
+        var cantOp = operativos.length;
 
         return seccion('<div class="kpis">' +
-                kpi('Gastos operativos', ars(totOp), gastos.length + (gastos.length === 1 ? ' gasto' : ' gastos')) +
-                kpi('Cobertura audiovisual', ars(cob.saldoEscuela), 'de ' + ars(cob.presupuestoProductora) + ' en total') +
-                kpi('Total de gastos', ars(totalEgresos), pendTotal > 0 ? 'pendiente ' + ars(pendTotal) : 'todo pagado', 'neto') + '</div>') +
-            htmlGrafico('Gastos por concepto', d.gastos, ars(totalEgresos), 'total de gastos') +
-            seccion('<h3>Gastos del evento</h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Destinatario</th><th>Paga</th><th>Estado</th><th class="r">Monto</th></tr></thead><tbody>' +
-                filasGastos + '</tbody><tfoot>' + pie + '</tfoot></table>') +
-            bloqueCob + bloqueServ +
+                kpi('Gastos operativos', ars(eg.operativos), cantOp + (cantOp === 1 ? ' gasto' : ' gastos') + (eg.porReintegrar > 0 ? ' · por reintegrar ' + ars(eg.porReintegrar) : '')) +
+                kpi('Servicios contratados', ars(eg.servicios), eg.serviciosPendiente > 0 ? 'pendiente ' + ars(eg.serviciosPendiente) : 'todo pagado') +
+                kpi('Total de gastos', ars(eg.total), eg.pendiente > 0 ? 'pendiente ' + ars(eg.pendiente) : 'todo resuelto', 'neto') + '</div>') +
+            htmlGrafico('Gastos por tipo', d.gastosTipo, ars(eg.total), 'total de gastos') +
+            htmlGrafico('Gastos por concepto', d.gastos, ars(eg.total), 'total de gastos') +
+            bloqueOp + bloqueServCarg + bloqueCob + bloqueServ +
             seccion('<h3>Total de gastos</h3><table><tbody>' + resumen + '</tbody></table>');
     }
 
     // ---------------------------------------------------------------
     // Armado del reporte
     // ---------------------------------------------------------------
+    function cuerpoCaja(anio) {
+        var d = window.datosCajaAnio(anio), g = window.datosGananciasAnio(anio), p = window.proyeccionCajaAnio(anio);
+        var filas = function (lista, vacio) {
+            return lista.length ? lista.map(function (i) {
+                return '<tr><td class="nw">' + esc(i.fecha) + '</td><td>' + esc(i.concepto) + '</td><td class="r">' + ars(i.monto) + '</td></tr>';
+            }).join('') : '<tr><td colspan="3" class="gris">' + vacio + '</td></tr>';
+        };
+        var tabla = function (titulo, lista, total, vacio) {
+            return '<h3>' + titulo + '</h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th class="r">Monto</th></tr></thead><tbody>' + filas(lista, vacio) +
+                '</tbody><tfoot><tr><td colspan="2">Total ' + titulo.toLowerCase() + '</td><td class="r">' + ars(total) + '</td></tr></tfoot></table>';
+        };
+        var tIng = tabla('Ingresos', d.ingresos, d.totalIngresos, 'Sin ingresos en ' + anio);
+        var tGas = tabla('Gastos', d.gastos, d.totalGastos, 'Sin gastos en ' + anio);
+        var tablas = (d.ingresos.length <= 12 && d.gastos.length <= 12)
+            ? seccion('<div class="dos"><div>' + tIng + '</div><div>' + tGas + '</div></div>')
+            : seccion(tIng) + seccion(tGas);
+        var bloqueGan = seccion('<h3>Ganancias anuales · ' + ars(g.total) + '</h3><div class="graf" style="display:block;padding:8px 10px">' + imgSvg(svgGanancias(g, 720, 250)) + '</div>' +
+            '<p class="aviso">Ganancia neta de la escuela de cada festival del año (la misma del gráfico de Estadísticas).</p>');
+        var filasFest = p.festivales.map(function (f) {
+            return '<tr><td>' + esc(f.nombre) + '</td><td class="nw">' + esc(f.estado) + ' · ' + esc(f.fecha) + '</td><td class="gris">' + esc(f.como) + '</td><td class="r">' + ars(f.monto) + '</td></tr>';
+        }).join('');
+        var detalleProy = '';
+        if (p.hayProyeccion) {
+            detalleProy = '<table style="margin-top:8px"><thead><tr><th>Festival que falta</th><th>Estado</th><th>Cómo se estima</th><th class="r">Suma</th></tr></thead><tbody>' +
+                (filasFest || '<tr><td colspan="4" class="gris">No quedan festivales en curso o programados este año</td></tr>') +
+                '<tr><td colspan="3" class="gris">Ritmo mensual de lo cargado a mano × ' + p.mesesRestantes + (p.mesesRestantes === 1 ? ' mes' : ' meses') + '</td><td class="r">' + ars(p.ritmoNeto * p.mesesRestantes) + '</td></tr></tbody>' +
+                '<tfoot><tr><td colspan="3">Saldo estimado al 31/12</td><td class="r">' + ars(p.saldoFin) + '</td></tr></tfoot></table>' +
+                '<p class="aviso">Es una estimación: no incluye gastos o ingresos que todavía no se cargaron.</p>';
+        }
+        var bloqueProy = seccion('<h3>Saldo ' + (p.hayProyeccion ? 'proyectado a fin de año (estimación)' : 'mes a mes') + '</h3><div class="graf" style="display:block;padding:8px 10px">' + imgSvg(svgProyeccion(p, 720, 220)) + '</div>') + (detalleProy ? seccion(detalleProy) : '');
+        return seccion('<div class="kpis">' +
+                kpi('Ingresos', ars(d.totalIngresos), d.ingresos.length + ' movimientos') +
+                kpi('Gastos', ars(d.totalGastos), d.gastos.length + ' movimientos', d.totalGastos > 0 ? '' : '') +
+                kpi('Saldo disponible', ars(d.saldo), p.hayProyeccion ? 'fin de año ≈ ' + ars(p.saldoFin) : 'ingresos − gastos', d.saldo < 0 ? 'neto neg' : 'neto') + '</div>') +
+            tablas + bloqueGan + bloqueProy;
+    }
+
     function cabecera(fId, tipo) {
+        if (tipo === 'caja') {
+            return '<div class="cab"><div><div class="marca">Mandala Ensambles</div><div class="sub">Festivales &amp; Eventos</div></div>' +
+                '<div class="der"><div class="tit">' + TITULOS.caja + '</div><div class="sub">Emitido el ' + new Date().toLocaleDateString('es-AR') + '</div></div></div>' +
+                '<h2>Caja ' + esc(fId) + '</h2><div class="meta"><span>Año ' + esc(fId) + '</span></div>';
+        }
         var info = infoDe(fId), fin = finDe(fId);
         var chips = [info.fecha, info.venue];
         if (tipo !== 'gastos') {
@@ -388,7 +554,7 @@
             '<div class="meta">' + chips.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
     }
     function piePagina(fId, tipo, extra) {
-        return '<div class="pie"><span>Mandala Festivales · ' + esc(infoDe(fId).nombre || 'Evento') + '</span><span>' + TITULOS[tipo] + (extra ? ' · ' + extra : '') + '</span></div>';
+        return '<div class="pie"><span>Mandala Festivales · ' + esc(tipo === 'caja' ? 'Caja ' + fId : (infoDe(fId).nombre || 'Evento')) + '</span><span>' + TITULOS[tipo] + (extra ? ' · ' + extra : '') + '</span></div>';
     }
 
     // Devuelve los bloques del cuerpo (cada uno es una unidad que no se corta al paginar)
@@ -396,6 +562,7 @@
         var cont = document.createElement('div');
         if (tipo === 'ventas') cont.innerHTML = cuerpoVentas(fId);
         else if (tipo === 'gastos') cont.innerHTML = cuerpoGastos(fId);
+        else if (tipo === 'caja') cont.innerHTML = cuerpoCaja(fId);
         else cont.innerHTML = '<div class="sec"><div class="bloque">Resumen del evento</div></div>' + cuerpoResumen(fId) +
             '<div class="sec" data-hoja-nueva="1"><div class="bloque">Ventas</div></div>' + cuerpoVentas(fId) +
             '<div class="sec" data-hoja-nueva="1"><div class="bloque">Gastos</div></div>' + cuerpoGastos(fId);
@@ -426,7 +593,7 @@
     window.generarReporteImagen = async function (festId, tipo, formato) {
         var fId = festId || (typeof eventoActualId !== 'undefined' ? eventoActualId : null);
         tipo = TITULOS[tipo] ? tipo : 'ventas';
-        if (tipo === 'completo' && typeof window.generarReportePDF === 'function') return window.generarReportePDF(fId);
+        if (esReportePdf(tipo) && typeof window.generarReportePDF === 'function') return window.generarReportePDF(fId, tipo);
         if (!fId) { mostrarToast('Elegí un evento para generar el reporte.', 'warning'); return; }
         if (typeof window.html2canvas !== 'function') { mostrarToast('No se pudo cargar la herramienta de imagen. Revisá la conexión y reintentá.', 'error'); return; }
         var esJpg = String(formato || 'png').toLowerCase() === 'jpg';
@@ -501,12 +668,12 @@
         return hojas;
     }
 
-    window.generarReportePDF = async function (festId) {
+    window.generarReportePDF = async function (festId, tipoPdf) {
         var fId = festId || (typeof eventoActualId !== 'undefined' ? eventoActualId : null);
-        var tipo = 'completo';
+        var tipo = esReportePdf(tipoPdf) ? tipoPdf : 'completo';
         if (!fId) { mostrarToast('Elegí un evento para generar el reporte.', 'warning'); return; }
         if (typeof window.html2canvas !== 'function') { mostrarToast('No se pudo cargar la herramienta de imagen. Revisá la conexión y reintentá.', 'error'); return; }
-        mostrarToast('Generando el reporte completo en PDF…', 'info');
+        mostrarToast('Generando el ' + TITULOS[tipo].toLowerCase() + ' en PDF…', 'info');
         var conts = [];
         try {
             var JsPDF = await cargarJsPDF();
@@ -523,8 +690,8 @@
                 pdf.addImage(canvas, 'PNG', 0, 0, ancho, alto, undefined, 'FAST'); // PNG a 3x: texto nítido, sin el desenfoque del JPEG
                 cont.remove();
             }
-            pdf.save('Reporte_completo_' + limpiarNombreArchivo(infoDe(fId).nombre) + '.pdf');
-            mostrarToast('Reporte completo descargado (PDF, ' + hojas.length + (hojas.length === 1 ? ' hoja' : ' hojas') + ')', 'success');
+            pdf.save((tipo === 'caja' ? 'Reporte_caja_' + limpiarNombreArchivo(fId) : 'Reporte_completo_' + limpiarNombreArchivo(infoDe(fId).nombre)) + '.pdf');
+            mostrarToast(TITULOS[tipo] + ' descargado (PDF, ' + hojas.length + (hojas.length === 1 ? ' hoja' : ' hojas') + ')', 'success');
         } catch (e) {
             console.error('[Mandala] Error generando el reporte completo en PDF', e);
             mostrarToast('No se pudo generar el PDF. Revisá la conexión y reintentá.', 'error');
@@ -554,7 +721,7 @@
         if (!fId) { mostrarToast('Elegí un evento para generar el reporte.', 'warning'); return; }
         window.cerrarVistaPreviaReporte();
 
-        var esPdf = tipo === 'completo';
+        var esPdf = esReportePdf(tipo);
         var btnBase = 'font:600 13px Inter,system-ui,sans-serif;padding:9px 16px;border-radius:8px;cursor:pointer;';
         var ov = document.createElement('div');
         ov.id = 'rv-preview-overlay';
@@ -582,7 +749,7 @@
             if (b.getAttribute('data-rv') === 'cerrar') window.cerrarVistaPreviaReporte();
             else {
                 window.cerrarVistaPreviaReporte();
-                if (esPdf) window.generarReportePDF(fId); else window.generarReporteImagen(fId, tipo);
+                if (esPdf) window.generarReportePDF(fId, tipo); else window.generarReporteImagen(fId, tipo);
             }
         });
 

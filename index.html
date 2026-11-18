@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.23">
-    <script src="src/ui/iconos.js?v=v2.23"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.24">
+    <script src="src/ui/iconos.js?v=v2.24"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.23" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.24" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -6186,7 +6186,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.23";
+        const APP_VERSION = "v2.24";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -20807,6 +20807,10 @@
 
             let sumVisiblesEscuela = 0;
             let sumVisiblesCobros = 0;
+            // En la cabecera de cada evento: "Todas" muestra A cobrar, A pagar y Saldo; "A pagar" solo lo que paga la escuela;
+            // las vistas de cobro (A cobrar, alumnos, cobertura) solo lo que se cobra; traspasos no tiene montos
+            const mostrarPagarTot = tipoFiltro === 'todos' || tipoFiltro === 'escuela';
+            const mostrarCobrarTot = tipoFiltro === 'todos' || tipoFiltro === 'cobrar' || tipoFiltro === 'alumnos' || tipoFiltro === 'cobertura';
 
             // Fila de una deuda + su fila de detalle (medio, responsable y observaciones)
             const agregarDeuda = (item, claveGrupo, colapsada) => {
@@ -20895,10 +20899,10 @@
                         </div>
                     </td>
                     <td colspan="2" style="text-align:right; padding:10px 14px; font-size:12px; font-family:'Geist Mono'; font-variant-numeric:tabular-nums; white-space:normal; overflow-wrap:anywhere;">
-                        <div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:2px 12px;">
-                        <span>A pagar ${fmt(grupo.totEscuela)}</span>
-                        <span>A cobrar ${fmt(grupo.totCobros)}</span>
-                        <strong class="${balGrupo >= 0 ? 'm-pos' : 'm-neg'}">Saldo ${balSigno}${Math.abs(balGrupo).toLocaleString('es-AR')}</strong>
+                        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+                        ${mostrarCobrarTot ? `<span>A cobrar ${fmt(grupo.totCobros)}</span>` : ''}
+                        ${mostrarPagarTot ? `<span>A pagar ${fmt(grupo.totEscuela)}</span>` : ''}
+                        ${tipoFiltro === 'todos' ? `<strong class="${balGrupo >= 0 ? 'm-pos' : 'm-neg'}">Saldo ${balSigno}${Math.abs(balGrupo).toLocaleString('es-AR')}</strong>` : ''}
                         </div>
                     </td>`;
                 tbody.appendChild(trHeader);

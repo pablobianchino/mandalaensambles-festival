@@ -4219,3 +4219,46 @@ html.modo-sonidista #tabla-checklist-interactiva :is(input, select, textarea, bu
 .lnk-evento:hover { text-decoration-color: currentColor; }
 .caja-proyeccion { margin-top: 14px; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.02); }
 .caja-proyeccion svg { width: 100%; height: auto; display: block; }
+
+/* ---- v2.25: cobro de la ticketera y chequeos de coherencia ---- */
+.fin-r.fin-alerta em, .fin-r.fin-alerta strong { color: var(--warn); }
+.cierre-ticketera { margin: 12px 4px 4px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-2); max-width: 560px; }
+.cierre-ticketera h4 { margin: 0 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); }
+.chk-lista { list-style: none; margin: 8px 0 0; padding: 0; font-size: 12px; }
+.chk-lista li { padding: 3px 0; }
+.chk-ok { color: var(--ok); }
+.chk-mal { color: var(--bad); font-weight: 700; }
+.chk-neu { color: var(--ink-3); }
+.cuenta-liq { max-width: 560px; margin: 4px 0 8px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-2); }
+.cuenta-liq h4 { margin: 0 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); }
+.cuenta-liq .fin-sub-tot { border-top: 1px solid var(--line-2); font-weight: 700; }
+.cuenta-liq .fin-resta em, .cuenta-liq .fin-resta strong { color: var(--bad); }
+.cuenta-liq .fin-gris { color: var(--ink-3); }
+.cuenta-liq .fin-aparte { margin-top: 6px; border-top: 1px dashed var(--line-2); }
+.cuenta-liq .cuenta-nota { font-size: 11.5px; color: var(--ink-3); padding: 2px 0 4px; }
+
+/* ---- v2.25: liquidación y ganancia real en una sola cuenta + pendientes para cerrar ---- */
+.liq-doble { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 900px) { .liq-doble { grid-template-columns: 1fr; } }
+.liq-cuenta { border: 1px solid var(--line-2); border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+.liq-tit { padding: 10px 16px; border-bottom: 1px solid var(--line-2); font-weight: 800; font-size: 13px; }
+.liq-tit small { display: block; font-weight: 500; color: var(--ink-3); font-size: 11px; margin-top: 2px; }
+.liq-sec { padding: 6px 16px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.liq-sec.liq-ing { background: var(--ok-bg); color: var(--ok); }
+.liq-sec.liq-egr { background: var(--bad-bg); color: var(--bad); }
+.liq-fila { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 6px 16px 6px 28px; border-bottom: 1px dashed var(--line); }
+.liq-fila em { font-style: normal; color: var(--ink-2); }
+.liq-fila strong { font-family: 'Geist Mono', monospace; font-weight: 700; white-space: nowrap; }
+.liq-cuenta > .liq-fila:last-child { border-bottom: 0; }
+.liq-fila.liq-g, .liq-fila.liq-total { font-weight: 800; padding-left: 16px; }
+.liq-fila.liq-gris em, .liq-fila.liq-gris strong { color: var(--ink-3); font-weight: 500; }
+.liq-fila.liq-alerta em, .liq-fila.liq-alerta strong { color: var(--warn); }
+.liq-sub { display: flex; justify-content: space-between; padding: 8px 16px; font-weight: 800; border-top: 1px solid var(--line-2); background: var(--surface-2); }
+.liq-sub strong { font-family: 'Geist Mono', monospace; }
+.liq-sub.liq-ing { color: var(--ok); } .liq-sub.liq-egr { color: var(--bad); }
+.liq-res { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--teal-50, #e8f4f6); color: var(--teal-700, #006173); border-top: 2px solid var(--teal, #007b8f); font-size: 14.5px; font-weight: 800; }
+.liq-res strong { font-family: 'Geist Mono', monospace; font-size: 18px; }
+.liq-barra { height: 8px; background: #e9e5dc; border-radius: 99px; overflow: hidden; margin: 4px 16px 6px; }
+.liq-barra i { display: block; height: 100%; background: var(--ok); }
+.liq-nota { padding: 8px 16px 10px; font-size: 11.5px; color: var(--ink-3); }
+.liq-terceros { margin-top: 14px; }

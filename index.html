@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.24">
-    <script src="src/ui/iconos.js?v=v2.24"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.25">
+    <script src="src/ui/iconos.js?v=v2.25"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.24" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.25" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1646,6 +1646,7 @@
                                         <span style="font-size:1.75em; font-family:'Geist Mono'; font-weight:900; color:var(--accent-blue);" id="saldo-caja-disponible-badge">
                                             $ 0
                                         </span>
+                                        <div id="caja-aviso-ticketera" class="chico-gris" style="display:none; margin-top:2px;"></div>
                                     </div>
                                     <span class="pill-status estado-encurso" id="badge-estado-saldo-caja" style="font-size:11px; padding:4px 10px;">● Positivo</span>
                                 </div>
@@ -1949,8 +1950,11 @@
                                         </div>
                                     </div>
 
-                                    <!-- Cuenta de la liquidación: Ingresos / Descuentos / Resultado -->
-                                    <div class="fin-grupos sec-cierre">
+                                    <!-- Cuenta de la taquilla: una cuenta debajo de la otra (se dibuja en renderizarCierreTaquilla) -->
+                                    <div id="cuenta-taquilla" class="sec-cierre"></div>
+
+                                    <!-- Las tres tablas anteriores (Ingresos / Descuentos / Resultado) quedan ocultas: sus valores los sigue actualizando el cálculo -->
+                                    <div class="fin-grupos sec-cierre" style="display:none;" aria-hidden="true">
                                         <div class="fin-g fin-g-ing"><h4>Ingresos</h4>
                                             <div class="fin-r"><em id="txt-calc-tickets-taquilla">Recaudación bruta (0 entradas)</em><strong id="txt-calc-bruto-taquilla">$ 0</strong></div>
                                             <div class="fin-r fin-tot"><em>Total bruto</em><strong id="txt-calc-bruto-taquilla-tot">$ 0</strong></div>
@@ -2238,6 +2242,40 @@
                                             </tbody>
                                         </table>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- D. COBRO DE LA TICKETERA (ventas online que la ticketera deposita después del evento) -->
+                            <div class="content-card collapsible-numbered-card" id="card-finanzas-cobro-ticketera" style="margin-top:14px;">
+                                <div class="card-header-flex" onclick="toggleBloqueNumerado(this, event)">
+                                    <div>
+                                        <h3 class="card-title"><span class="collapsible-chevron">▼</span><span class="sec-ltr">D</span>Cobro de la ticketera</h3>
+                                        <span style="font-size:12px; color:var(--text-muted);">
+                                            Ventas online (preventa + general) en bruto. La ticketera las deposita después del evento: marcalo cobrado cuando el dinero ingrese.
+                                        </span>
+                                    </div>
+                                    <div class="sec-chips" onclick="event.stopPropagation()">
+                                        <span class="sec-chip" id="badge-cobro-ticketera">Por cobrar $ 0</span>
+                                    </div>
+                                </div>
+                                <div class="collapsible-card-body">
+                                    <div class="table-responsive">
+                                        <table class="sec-tabla cobros-tabla" id="tabla-cobros-ticketera">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:150px;">Ticketera</th>
+                                                    <th style="width:190px;">Concepto</th>
+                                                    <th class="r" style="width:120px;">Monto</th>
+                                                    <th style="width:100px;">Estado</th>
+                                                    <th>Detalle del cobro</th>
+                                                    <th style="width:128px;">Fecha de cobro</th>
+                                                    <th class="r" style="width:190px;">Acción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody-cobros-ticketera"></tbody>
+                                        </table>
+                                    </div>
+                                    <div id="cobro-ticketera-cierre"></div>
                                 </div>
                             </div>
                         </div>
@@ -6186,7 +6224,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.24";
+        const APP_VERSION = "v2.25";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6847,9 +6885,11 @@
         }
         window.hoyISO = hoyISO;
 
-        // Desplegable de cada festival en Finanzas: tres bloques (Ingresos / Egresos / Resultado)
+        // Liquidación y ganancia real de un evento: una sola cuenta (ingresos → egresos → ganancia real) y, al lado,
+        // los pendientes para cerrar la liquidación. Se usa en Finanzas del evento y en el desplegable de cada festival.
         function htmlDesplegableFinanzas(m) {
-            const fila = (rotulo, monto, extra) => '<div class="fin-r' + (extra || '') + '"><em>' + rotulo + '</em><strong>' + monto + '</strong></div>';
+            const fila = (rotulo, monto, extra) => '<div class="liq-fila' + (extra || '') + '"><em>' + rotulo + '</em><strong>' + monto + '</strong></div>';
+            const resta = (n) => (Math.round(Number(n) || 0) === 0 ? htmlMonto(0) : '− ' + htmlMonto(n));
             let ingresos, egresos;
             if (m.conDetalle) {
                 ingresos = fila('Ventas netas de entradas', htmlMonto(m.ventasEntradasNetas !== undefined ? m.ventasEntradasNetas : m.recaudacionEntradas))
@@ -6860,35 +6900,53 @@
                 // Egresos divididos: Gastos operativos (los ponen los socios u otros y se reintegran) y Servicios contratados
                 const opPuros = Math.max(0, (m.gastosOperativos || 0) - (m.gastosServiciosCargados || 0));
                 const servContratados = (m.gastosServiciosCargados || 0) + (m.gastosCobertura || 0) + (m.tercerosAdelantado || 0);
-                egresos = fila('Gastos operativos', htmlMonto(opPuros))
-                    + fila('Servicios contratados', htmlMonto(servContratados));
+                egresos = fila('Gastos operativos', resta(opPuros)) + fila('Servicios contratados', resta(servContratados));
             } else {
                 ingresos = fila('Recaudación bruta del festival', htmlMonto(m.ingresosTotales));
-                egresos = fila('Gastos del festival', htmlMonto(m.egresosTotales));
+                egresos = fila('Gastos del festival', resta(m.egresosTotales));
             }
-            const pie = [];
-            if (m.conDetalle) {
-                // Igual que en Deudas: todo lo que falta cobrar y todo lo que falta pagar de este evento
-                pie.push(fila('Por cobrar', htmlMonto(m.deudasPorCobrar)));
-                pie.push(fila('Pendiente de pago', htmlMonto(m.deudasPorPagar)));
-                if ((m.serviciosRetenido || 0) > 0) pie.push(fila('Retenido para proveedores', htmlMonto(m.serviciosRetenido)));
+            const cuenta = '<div class="liq-cuenta">'
+                + '<div class="liq-tit">Liquidación y ganancia real</div>'
+                + '<div class="liq-sec liq-ing">Ingresos</div>' + ingresos
+                + '<div class="liq-sub liq-ing"><span>Total ingresos</span><strong>' + htmlMonto(m.ingresosTotales) + '</strong></div>'
+                + '<div class="liq-sec liq-egr">Egresos</div>' + egresos
+                + '<div class="liq-sub liq-egr"><span>Total egresos</span><strong>' + resta(m.egresosTotales) + '</strong></div>'
+                + '<div class="liq-res"><span>Ganancia real de la escuela</span><strong>' + htmlMonto(m.gananciaEscuela, { resultado: true }) + '</strong></div>'
+                + '</div>';
+
+            // Pendientes para cerrar la liquidación: no cambian la ganancia, muestran cuánto falta cobrar y devolver
+            let pendientes = '';
+            if (m.conDetalle && m.fId) {
+                let cob = null, egr = null;
+                try { cob = calcularCobrosEvento(m.fId); egr = resumenEgresosEvento(m.fId); } catch (e) { cob = null; }
+                if (cob && egr) {
+                    const pct = cob.total > 0 ? Math.min(100, Math.round((cob.cobrado / cob.total) * 100)) : 100;
+                    pendientes = '<div class="liq-cuenta">'
+                        + '<div class="liq-tit">Pendientes para cerrar liquidación del evento</div>'
+                        + fila('Ganancia real', htmlMonto(m.gananciaEscuela, { resultado: true }), ' liq-g')
+                        + fila('Ya cobrado', htmlMonto(cob.cobrado))
+                        + '<div class="liq-barra"><i style="width:' + pct + '%"></i></div>'
+                        + (cob.ticketeraPendiente > 0 ? fila('⏳ Falta el depósito de la ticketera', htmlMonto(cob.ticketeraPendiente), ' liq-alerta') : '')
+                        + fila('Otros cobros pendientes', htmlMonto(cob.otrosPendientes))
+                        + fila('Por reintegrar a quienes pagaron', resta(egr.porReintegrar))
+                        + fila('Pagos a servicios pendientes', htmlMonto(egr.serviciosPendiente), ' liq-gris')
+                        + ((m.serviciosRetenido || 0) > 0 ? fila('Retenido para proveedores', htmlMonto(m.serviciosRetenido), ' liq-gris') : '')
+                        + '<div class="liq-nota">Los pendientes no cambian la ganancia: muestran cuánto falta cobrar y devolver para que quede todo saldado.</div>'
+                        + '</div>';
+                }
             }
             // Servicios de terceros: plata de los alumnos que la escuela cobra y le paga al proveedor (no es ingreso ni egreso de la escuela)
             let terceros = '';
             if (m.conDetalle && ((m.tercerosCobrado || 0) > 0 || (m.tercerosPagado || 0) > 0)) {
                 const saldo = (m.tercerosCobrado || 0) - (m.tercerosPagado || 0);
-                terceros = '<div class="fin-g fin-g-terc" style="margin-top:12px;"><h4>Servicios de terceros <span class="fin-g-nota">Plata de los alumnos que pasa por la escuela: se cobra y se paga al proveedor, no es ingreso ni egreso</span></h4>'
+                terceros = '<div class="liq-cuenta liq-terceros"><div class="liq-tit">Servicios de terceros <small>Plata de los alumnos que pasa por la escuela: se cobra y se paga al proveedor, no es ingreso ni egreso</small></div>'
                     + fila('Cobrado a los alumnos', htmlMonto(m.tercerosCobrado))
                     + fila('Pagado a salas y proveedores', htmlMonto(m.tercerosPagado))
-                    + fila(saldo >= 0 ? 'Saldo en poder de la escuela (para pagar a proveedores)' : 'Adelantado por la escuela (a recuperar)', htmlMonto(Math.abs(saldo)), ' fin-tot')
+                    + fila(saldo >= 0 ? 'Saldo en poder de la escuela (para pagar a proveedores)' : 'Adelantado por la escuela (a recuperar)', htmlMonto(Math.abs(saldo)), ' liq-total')
                     + ((m.tercerosAbsorbido || 0) > 0 ? fila('Absorbido por la escuela', htmlMonto(m.tercerosAbsorbido)) : '')
                     + '</div>';
             }
-            return '<div class="fin-grupos">'
-                + '<div class="fin-g fin-g-ing"><h4>Ingresos</h4>' + ingresos + fila('Total ingresos', htmlMonto(m.ingresosTotales), ' fin-tot') + '</div>'
-                + '<div class="fin-g fin-g-egr"><h4>Egresos</h4>' + egresos + fila('Total egresos', htmlMonto(m.egresosTotales), ' fin-tot') + '</div>'
-                + '<div class="fin-g fin-g-res"><h4>Resultado</h4>' + fila('Ganancia real de la escuela', htmlMonto(m.gananciaEscuela, { resultado: true }), ' fin-tot') + pie.join('') + '</div>'
-                + '</div>' + terceros;
+            return '<div class="liq-doble">' + cuenta + pendientes + '</div>' + terceros;
         }
         window.htmlDesplegableFinanzas = htmlDesplegableFinanzas;
 
@@ -7272,6 +7330,7 @@
                 if (typeof renderizarCobrosContratoUnificado === 'function') renderizarCobrosContratoUnificado();
                 if (typeof renderizarCobrosCoberturaFinanzas === 'function') renderizarCobrosCoberturaFinanzas();
                 if (typeof renderizarCobrosServiciosFinanzas === 'function') renderizarCobrosServiciosFinanzas();
+                if (typeof renderizarCobrosTicketera === 'function') renderizarCobrosTicketera();
             }
             if (typeof renderizarTablaTaquillaCierre === 'function') {
                 renderizarTablaTaquillaCierre();
@@ -7309,6 +7368,7 @@
             if (typeof renderizarCobrosServiciosFinanzas === 'function') {
                 renderizarCobrosServiciosFinanzas();
             }
+            if (typeof renderizarCobrosTicketera === 'function') renderizarCobrosTicketera();
         }
 
         // =========================================================
@@ -8226,6 +8286,14 @@
                     estadoBadge.style.background = '#fee2e2';
                     estadoBadge.style.color = '#991b1b';
                 }
+            }
+            // Aviso: el saldo ya incluye la ganancia de eventos finalizados cuyo depósito de la ticketera todavía no ingresó
+            const avisoTkt = document.getElementById('caja-aviso-ticketera');
+            if (avisoTkt) {
+                let pendTkt = 0;
+                ingFestivales.forEach(i => { try { pendTkt += cobroTicketeraEvento(i.festId).pendiente; } catch (e) { /* sin dato */ } });
+                avisoTkt.style.display = pendTkt > 0 ? 'block' : 'none';
+                avisoTkt.textContent = pendTkt > 0 ? `Incluye ${formatearMonedaAr(pendTkt)} pendientes de cobrar a la ticketera` : '';
             }
             if (typeof renderizarProyeccionCaja === 'function') renderizarProyeccionCaja();
         }
@@ -10234,6 +10302,7 @@
             const egresosTotales = conDetalle ? (gastosOperativos + serv.adelantado + gastosCobertura) : (brutoTotal - gananciaEscuela);
 
             return {
+                fId,
                 conDetalle,
                 ingresosTotales,
                 egresosTotales,
@@ -17683,6 +17752,203 @@
         }
         window.renderizarFilasCoberturaGastos = renderizarFilasCoberturaGastos;
 
+        // ---------------------------------------------------------------
+        // COBRO DE LA TICKETERA: lo que la ticketera deposita por las ventas online (preventa + general; sin puerta ni especiales), en bruto.
+        // Hasta que ingresa, los pagos del evento salen de la caja del festival. Es solo cuándo entra la plata: no cambia la ganancia,
+        // que ya incluye estas ventas. Marcarlo cobrado confirma que el dinero realmente ingresó.
+        // ---------------------------------------------------------------
+        var TICKETERA_DESDE_ISO = '2026-10-01'; // los eventos desde esta fecha tienen cobro de la ticketera
+        var TICKETERA_YA_COBRADOS = ['fest-1792162655340', 'fest-1792180604238']; // Vol V y Vol VI: ya ingresó (se puede deshacer)
+
+        function fechaEventoISO(info) {
+            const m = String((info && (info.fechaRaw || info.fecha)) || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+            return m ? m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0') : '';
+        }
+
+        function cobroTicketeraEvento(fId) {
+            const fin = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[fId]) || {};
+            const info = (typeof infoFestivales !== 'undefined' && infoFestivales[fId]) || {};
+            const ent = (typeof entradasFestivales !== 'undefined' && entradasFestivales[fId]) || (typeof preciosEntradasPorDefecto !== 'undefined' ? preciosEntradasPorDefecto : {});
+            const taq = calcularTaquillaFestival(fId, fin, ent);
+            const pPue = Number(ent.puerta) || 0;
+            // Bruto online = taquilla bruta menos las entradas de puerta (las especiales ya van aparte)
+            const esperado = Math.max(0, Math.round(taq.brutoTaquilla - (taq.usaBrutoHistorico ? 0 : taq.cantPuerta * pPue)));
+            const guardado = (fin.cobroTicketera && typeof fin.cobroTicketera === 'object') ? fin.cobroTicketera : null;
+            const iso = fechaEventoISO(info);
+            const yaCobrado = !guardado && TICKETERA_YA_COBRADOS.includes(fId);
+            const c = guardado || (yaCobrado ? { pagada: true, fecha: iso, auto: true } : {});
+            const aplica = esperado > 0 && (Boolean(guardado) || yaCobrado || Boolean(iso && iso >= TICKETERA_DESDE_ISO));
+            const pagada = Boolean(c.pagada);
+            const recibido = Math.max(0, Number(c.montoCobrado) || 0);
+            return {
+                aplica, esperado, pagada, recibido,
+                fecha: c.fecha || '', medio: c.medio || 'Transferencia', cobradoPor: c.cobradoPor || RESPONSABLE_COBRO_DEFECTO, obs: c.obs || '',
+                cobrado: (aplica && pagada) ? (recibido > 0 ? recibido : esperado) : 0,
+                pendiente: (aplica && !pagada) ? esperado : 0,
+                verificado: pagada && recibido > 0,
+                diferencia: (pagada && recibido > 0) ? recibido - esperado : 0,
+                finalizado: String(info.estado || '').trim() === 'Finalizado',
+                auto: Boolean(c.auto), taq
+            };
+        }
+        window.cobroTicketeraEvento = cobroTicketeraEvento;
+
+        // Crea el registro editable del evento (parte de lo que se ve en pantalla) para poder cambiarlo y guardarlo
+        function asegurarCobroTicketera(fin, fId) {
+            if (!fin.cobroTicketera || typeof fin.cobroTicketera !== 'object') {
+                const t = cobroTicketeraEvento(fId);
+                fin.cobroTicketera = { pagada: t.pagada, fecha: t.fecha, medio: t.medio, cobradoPor: t.cobradoPor, obs: t.obs };
+            }
+            return fin.cobroTicketera;
+        }
+
+        function cambiarEstadoCobroTicketera(estado) {
+            const fin = obtenerDatosIngresosEventoActual();
+            const c = asegurarCobroTicketera(fin, eventoActualId);
+            c.pagada = Boolean(estado);
+            delete c.auto;
+            if (c.pagada) c.fecha = hoyISO(); else { c.fecha = ''; delete c.montoCobrado; }
+            renderizarCobrosTicketera();
+            renderizarFranjaEstados();
+            recalcularIngresosFestival(true);
+            if (typeof actualizarBadgeDeudasSidebar === 'function') actualizarBadgeDeudasSidebar();
+            mostrarToast(c.pagada ? 'Cobro de la ticketera registrado. Cargá lo que realmente ingresó para verificarlo.' : 'Cobro de la ticketera marcado como pendiente.', c.pagada ? 'success' : 'info');
+        }
+        window.cambiarEstadoCobroTicketera = cambiarEstadoCobroTicketera;
+
+        function actualizarCobroTicketera(campo, valor) {
+            const fin = obtenerDatosIngresosEventoActual();
+            const c = asegurarCobroTicketera(fin, eventoActualId);
+            if (campo === 'montoCobrado') c.montoCobrado = Math.max(0, parseMontoAr(valor));
+            else c[campo] = valor;
+            renderizarCobrosTicketera();
+            renderizarFranjaEstados();
+            recalcularIngresosFestival(true);
+        }
+        window.actualizarCobroTicketera = actualizarCobroTicketera;
+
+        // Sección D de Cobros: el cobro, su verificación y el cierre de las ventas online
+        function renderizarCobrosTicketera() {
+            const tbody = document.getElementById('tbody-cobros-ticketera');
+            const cierre = document.getElementById('cobro-ticketera-cierre');
+            if (!tbody) return;
+            const t = cobroTicketeraEvento(eventoActualId);
+            const chip = document.getElementById('badge-cobro-ticketera');
+            const money = (n) => formatearMonedaAr(n);
+            const tarjeta = document.getElementById('card-finanzas-cobro-ticketera');
+            if (tarjeta) tarjeta.style.display = t.aplica ? '' : 'none';
+            if (!t.aplica) { tbody.innerHTML = ''; if (cierre) cierre.innerHTML = ''; renderizarCierreTaquilla(); return; }
+            if (chip) chip.textContent = t.pagada ? `Cobrado ${money(t.cobrado)}` : `Por cobrar ${money(t.esperado)}`;
+
+            // Verificación del monto recibido contra lo calculado
+            let aviso;
+            if (t.pagada && t.verificado) {
+                aviso = t.diferencia === 0
+                    ? '<span class="pill-status pill-success">✔ Coincide con lo calculado</span>'
+                    : `<span class="pill-status pill-danger">⚠ Difiere en ${money(Math.abs(t.diferencia))}: ${t.diferencia > 0 ? 'ingresó de más' : 'ingresó de menos'} (recibido ${money(t.recibido)}, calculado ${money(t.esperado)})</span>`;
+            } else if (t.pagada) {
+                aviso = '<span class="pill-status pill-neutral">Sin verificar: cargá lo que realmente ingresó en "Recibido"</span>';
+            } else if (t.finalizado) {
+                aviso = '<span class="pill-status pill-warning">⏳ El evento ya finalizó: falta que ingrese el depósito de la ticketera</span>';
+            } else {
+                aviso = '<span class="chico-gris">Se cobra después del evento. Marcalo cuando el depósito ingrese.</span>';
+            }
+            const medio = (t.medio === 'Efectivo') ? 'Efectivo' : 'Transferencia';
+            tbody.innerHTML = `<tr>
+                <td><strong>Ticketera</strong></td>
+                <td>Ventas online (preventa + general)</td>
+                <td class="r sec-mono">${htmlMonto(t.esperado)}</td>
+                <td>${t.pagada ? '<span class="pill-status pill-success">Cobrado</span>' : '<span class="pill-status pill-warning">Pendiente</span>'}</td>
+                <td><span class="srv-det-pago">
+                    <select class="installment-select" onchange="actualizarCobroTicketera('medio', this.value)"><option value="Transferencia"${medio === 'Transferencia' ? ' selected' : ''}>Transferencia</option><option value="Efectivo"${medio === 'Efectivo' ? ' selected' : ''}>Efectivo</option></select>
+                    <select class="installment-select" onchange="actualizarCobroTicketera('cobradoPor', this.value)">${opcionesResponsablesHTML(t.cobradoPor)}</select>
+                    <span style="white-space:nowrap;"><span class="lbl-det">Recibido</span> <input type="text" class="spreadsheet-inp gasto-monto-inp" style="width:110px;" value="${t.recibido > 0 ? money(t.recibido) : ''}" placeholder="${money(t.esperado)}" ${t.pagada ? '' : 'disabled'} title="${t.pagada ? 'Lo que realmente ingresó (para verificar contra lo calculado)' : 'Se completa al registrar el cobro'}" onfocus="this.value=this.value.replace(/[^0-9]/g,'');this.select();" onchange="actualizarCobroTicketera('montoCobrado', this.value)"></span>
+                    <input type="text" class="spreadsheet-inp text-left" style="width:150px; font-size:11.5px;" value="${esc(t.obs)}" placeholder="Observaciones..." onchange="actualizarCobroTicketera('obs', this.value)">
+                </span></td>
+                <td><input type="date" class="installment-date-inp" value="${esc(t.fecha)}" ${t.pagada ? '' : 'disabled'} title="${t.pagada ? 'Día en que ingresó (editable)' : 'Se completa al registrar el cobro'}" onchange="actualizarCobroTicketera('fecha', this.value)"></td>
+                <td class="r">${t.pagada
+                    ? '<button type="button" class="btn-deshacer" onclick="cambiarEstadoCobroTicketera(false)" title="Marcar como pendiente">Deshacer</button>'
+                    : '<button type="button" class="btn-marcar" onclick="cambiarEstadoCobroTicketera(true)" title="Registrar que el dinero ingresó">Marcar cobrado</button>'}</td>
+            </tr>
+            <tr><td colspan="7" style="padding:4px 10px 8px;">${aviso}${t.auto ? ' <span class="chico-gris">· Marcado como cobrado de entrada (el evento ya pasó).</span>' : ''}</td></tr>`;
+            if (cierre) cierre.innerHTML = htmlChecksTicketera(eventoActualId, t);
+            renderizarCierreTaquilla();
+        }
+        window.renderizarCobrosTicketera = renderizarCobrosTicketera;
+
+        // Cierre de las ventas online: del bruto cobrado a la ganancia de la escuela, más chequeos de coherencia
+        function calcCierreTaquilla(fId, t) {
+            const info = infoFestivales[fId] || {};
+            const m = calcularBalanceGeneralFestival(fId, info);
+            const taq = t.taq;
+            const money = (n) => formatearMonedaAr(n);
+            const fila = (rot, val, extra) => '<div class="fin-r' + (extra || '') + '"><em>' + rot + '</em><strong>' + val + '</strong></div>';
+            const rotVenue = taq.esAlquiler ? 'Venue (monto fijo)' : `Venue (${Math.max(0, 100 - taq.porcEscuela)}%)`;
+            const bruto = t.verificado ? t.recibido : t.esperado;                       // ventas online (lo que deposita la ticketera)
+            const puerta = Math.max(0, taq.brutoTaquilla - t.esperado);                  // entradas de puerta (se cobran el día del evento)
+            const taquillaReal = bruto + puerta;
+            const baseReal = Math.max(0, taquillaReal - taq.montoSadaic);
+            const netoReal = taq.esAlquiler ? Math.round(baseReal) - taq.alquilerSala : Math.round(baseReal * (taq.porcEscuela / 100));
+            const venue = taq.esAlquiler ? taq.alquilerSala : Math.round(baseReal - netoReal);
+            const checks = [];
+            const ok = (txt) => checks.push('<li class="chk-ok">✔ ' + txt + '</li>');
+            const mal = (txt) => checks.push('<li class="chk-mal">⚠ ' + txt + '</li>');
+            // 1. Lo cobrado contra lo calculado
+            if (t.verificado) (t.diferencia === 0 ? ok('Lo que ingresó coincide con el bruto online calculado.') : mal(`Lo que ingresó difiere en ${money(Math.abs(t.diferencia))} del bruto online calculado: revisá las entradas cargadas o lo que informa la ticketera.`));
+            else checks.push('<li class="chk-neu">Sin verificar: falta cargar lo que realmente ingresó.</li>');
+            // 2. Ingresos − egresos = ganancia
+            const dif = Math.round((m.ingresosTotales || 0) - (m.egresosTotales || 0) - (m.gananciaEscuela || 0));
+            if (Math.abs(dif) <= 1) ok('Ingresos menos egresos da la ganancia del evento.');
+            else mal(`Ingresos menos egresos no coincide con la ganancia (diferencia ${money(Math.abs(dif))}).`);
+            // 3. Lo que usa la Caja contra el cálculo (solo eventos finalizados: son los que entran a la Caja)
+            if (t.finalizado) {
+                const f = info;
+                const enCaja = (typeof f.netoEscuela === 'number' && !isNaN(f.netoEscuela) && f.netoEscuela !== 0) ? f.netoEscuela : (m.gananciaEscuela || 0);
+                if (Math.abs(Math.round(enCaja - (m.gananciaEscuela || 0))) <= 1) ok('La Caja toma la misma ganancia que el cálculo del evento.');
+                else mal(`La Caja usa ${money(enCaja)} y el cálculo del evento da ${money(m.gananciaEscuela || 0)}.`);
+            }
+            // 4. El venue
+            if (taq.esAlquiler && taq.saldoVenue !== 0) checks.push(`<li class="chk-neu">Al venue se le paga el día del evento: ${money(taq.saldoVenue)} (después de seña y efectivo).</li>`);
+            return { bruto, puerta, venue, rotVenue, netoReal, taq, t, checks, fila };
+        }
+
+        // Cuenta de la taquilla (Ventas › A): una cuenta debajo de la otra, de las ventas al neto de la escuela
+        function htmlCuentaTaquilla(fId) {
+            const t = cobroTicketeraEvento(fId);
+            const c = calcCierreTaquilla(fId, t);
+            const { taq, fila } = c;
+            if (!(taq.brutoTaquilla > 0)) return '<div class="cuenta-liq"><h4>Cuenta de la taquilla</h4><div class="cuenta-nota">Todavía no hay entradas cargadas en este evento.</div></div>';
+            const rotOnline =t.aplica && t.verificado ? 'Ventas online (recibido de la ticketera)' : 'Ventas online (preventa + general)';
+            const extras = taq.esAlquiler ? (
+                (taq.senaVenue > 0 ? fila('Seña ya pagada al venue', htmlMonto(taq.senaVenue), ' fin-gris') : '')
+                + (taq.efectivoVenue > 0 ? fila(`Entradas que cobró el venue en efectivo (${taq.efectivoVenueCant})`, htmlMonto(taq.efectivoVenue), ' fin-gris') : '')
+                + fila('A pagar al venue el día del festival', htmlMonto(taq.saldoVenue), ' fin-aparte')
+            ) : '';
+            const sub = taq.esAlquiler ? '' : `<div class="cuenta-nota">${taq.porcEscuela}% del saldo posterior a SADAIC${taq.porcAsumido ? ' (porcentaje asumido: confirmalo)' : ''}</div>`;
+            return `<div class="cuenta-liq"><h4>Cuenta de la taquilla</h4>
+                ${fila(rotOnline, htmlMonto(c.bruto))}
+                ${c.puerta > 0 ? fila('+ Entradas de puerta', htmlMonto(c.puerta)) : ''}
+                ${fila('Recaudación bruta', htmlMonto(c.bruto + c.puerta), ' fin-sub-tot')}
+                ${fila('− Canon SADAIC', htmlMonto(taq.montoSadaic), ' fin-resta')}
+                ${fila('− ' + c.rotVenue, htmlMonto(c.venue), ' fin-resta')}
+                ${fila('Ingreso neto de la escuela', htmlMonto(c.netoReal, { resultado: true }), ' fin-tot')}
+                ${sub}${extras}</div>`;
+        }
+        window.htmlCuentaTaquilla = htmlCuentaTaquilla;
+
+        // Verificación del cobro de la ticketera (Cobros › D): solo los chequeos
+        function htmlChecksTicketera(fId, t) {
+            const c = calcCierreTaquilla(fId, t);
+            return `<div class="cierre-ticketera"><h4>Verificación</h4><ul class="chk-lista">${c.checks.join('')}</ul></div>`;
+        }
+
+        function renderizarCierreTaquilla() {
+            const cont = document.getElementById('cuenta-taquilla');
+            if (!cont || !eventoActualId) return;
+            try { cont.innerHTML = htmlCuentaTaquilla(eventoActualId); } catch (e) { console.error('[Mandala] cuenta de la taquilla', e); }
+        }
+        window.renderizarCierreTaquilla = renderizarCierreTaquilla;
+
         // Egresos de un evento divididos en Gastos operativos (los ponen los socios u otros y se reintegran) y Servicios contratados
         // (los cargados a mano + cobertura audiovisual + servicios adelantados). Fuente única para la franja de estados y los reportes.
         function resumenEgresosEvento(fId) {
@@ -17724,7 +17990,9 @@
                 + fila('Pendiente de pago', htmlMonto(e.serviciosPendiente), ' fin-sub')
                 + fila('Falta restar de ganancia', htmlMonto(e.pendiente), ' fin-tot') + '</div>'
                 + '<div class="fin-g fin-g-ing"><h4>Estado de cobros</h4>' + barra(pctCobro, 'Cobrado', 'Pendiente')
-                + (c ? fila('Cobrado', htmlMonto(c.cobrado)) + fila('Por cobrar', htmlMonto(c.pendiente)) + fila('Total esperado', htmlMonto(c.total), ' fin-tot')
+                + (c ? fila('Cobrado', htmlMonto(c.cobrado)) + fila('Por cobrar', htmlMonto(c.pendiente))
+                     + ((c.ticketeraPendiente > 0 && c.ticketeraFinalizado) ? fila('⏳ Falta el depósito de la ticketera', htmlMonto(c.ticketeraPendiente), ' fin-alerta') : '')
+                     + fila('Total esperado', htmlMonto(c.total), ' fin-tot')
                      : '<div class="chico-gris" style="padding:8px 12px;">Calculando…</div>') + '</div>';
             if (!c && typeof actualizarKpiPendienteTotalCobros === 'function' && !window._calculandoCobros) {
                 window._calculandoCobros = true;
@@ -18501,6 +18769,7 @@
             // Recalcular gastos y ganancia real de la escuela (sin reconstruir tabla si el usuario está tipeando)
             const editandoGastoOp = document.activeElement && document.activeElement.closest && document.activeElement.closest('#tbody-gastos-festival-operativos, #tbody-servicios-contratados');
             renderizarGastosFestival(!editandoGastoOp);
+            if (typeof renderizarCierreTaquilla === 'function') renderizarCierreTaquilla();
 
             // Autoguardar finanzas en Firestore SOLO cuando hay edición explícita del usuario
             if (guardarEnFirestore && typeof autoguardarDetalleFestivalFirestore === 'function') {
@@ -18525,6 +18794,7 @@
                     coberturaEscuelaContactoId: datos.coberturaEscuelaContactoId || '',
                     coberturaItems: datos.coberturaItems || null,
                     coberturaAportes: datos.coberturaAportes || null,
+                    cobroTicketera: datos.cobroTicketera || null,
                     sonidoOmitido: Boolean(datos.sonidoOmitido),
                     cantTaquilla,
                     cantVentasEspeciales,
@@ -20250,10 +20520,11 @@
         }
         window.actualizarDetallePagoContratoAlumno = actualizarDetallePagoContratoAlumno;
 
-        function actualizarKpiPendienteTotalCobros() {
+        // Lo cobrado y lo que falta cobrar de un evento, por concepto (entradas incumplidas, cobertura de bandas, servicios y ticketera)
+        function calcularCobrosEvento(fId) {
             // 1. Contratos (entradas): lo cobrado y lo pendiente de todas las cuotas de la lista consolidada
             let cobContrato = 0, pendContrato = 0;
-            const cacheContratos = obtenerListaParticipantesContratoFestival(eventoActualId);
+            const cacheContratos = obtenerListaParticipantesContratoFestival(fId);
             cacheContratos.forEach(c => {
                 if (c && Array.isArray(c.pagosDeuda)) {
                     c.pagosDeuda.forEach(p => {
@@ -20266,8 +20537,8 @@
 
             // 2. Cobertura audiovisual (bandas)
             let cobCobertura = 0, pendCobertura = 0;
-            const cobObj = (typeof obtenerCoberturaFestival === 'function') ? obtenerCoberturaFestival(eventoActualId) : {};
-            const bandasFestival = (typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[eventoActualId]) ? participantesFestivalesDB[eventoActualId] : [];
+            const cobObj = (typeof obtenerCoberturaFestival === 'function') ? obtenerCoberturaFestival(fId) : {};
+            const bandasFestival = (typeof participantesFestivalesDB !== 'undefined' && participantesFestivalesDB[fId]) ? participantesFestivalesDB[fId] : [];
             bandasFestival.forEach((banda, idx) => {
                 if (!banda || banda.tipo === 'jam') return;
                 const nombre = banda.nombre || `Artista ${idx + 1}`;
@@ -20288,16 +20559,23 @@
             });
 
             // 3. Servicios adicionales (sesionistas y ensayos): fuente única
-            const servK = calcularServiciosFestival(eventoActualId, (typeof infoFestivales !== 'undefined') ? infoFestivales[eventoActualId] : null);
+            const servK = calcularServiciosFestival(fId, (typeof infoFestivales !== 'undefined') ? infoFestivales[fId] : null);
             const cobServicios = servK.cobrado;
             const pendServicios = servK.porCobrar;
 
-            const totalCobrado = cobContrato + cobCobertura + cobServicios;
-            const totalPendiente = pendContrato + pendCobertura + pendServicios;
-            const totalEsperado = totalCobrado + totalPendiente;
+            // 4. Cobro de la ticketera (ventas online que se depositan después del evento)
+            const tkt = cobroTicketeraEvento(fId);
 
+            const cobrado = cobContrato + cobCobertura + cobServicios + tkt.cobrado;
+            const pendiente = pendContrato + pendCobertura + pendServicios + tkt.pendiente;
+            return { fId, cobrado, pendiente, total: cobrado + pendiente, otrosPendientes: pendContrato + pendCobertura + pendServicios,
+                ticketeraPendiente: tkt.pendiente, ticketeraFinalizado: tkt.finalizado };
+        }
+        window.calcularCobrosEvento = calcularCobrosEvento;
+
+        function actualizarKpiPendienteTotalCobros() {
             // El resumen se muestra en la franja fija "Estado de cobros" (arriba de las pestañas)
-            window._estadoCobrosEvento = { fId: eventoActualId, cobrado: totalCobrado, pendiente: totalPendiente, total: totalEsperado };
+            window._estadoCobrosEvento = calcularCobrosEvento(eventoActualId);
             if (typeof renderizarFranjaEstados === 'function') renderizarFranjaEstados();
         }
         window.actualizarKpiPendienteTotalCobros = actualizarKpiPendienteTotalCobros;
@@ -20406,6 +20684,32 @@
                             responsable: datosIng.coberturaEscuelaResponsable || RESPONSABLE_COBRO_DEFECTO,
                             obs: `Presupuesto: $ ${resProd.presupuestoProductora.toLocaleString('es-AR')} - Bandas: $ ${resProd.totalBandas.toLocaleString('es-AR')}`,
                             itemId: 'cobertura_escuela',
+                            idxCuota: null
+                        });
+                    }
+                }
+
+                // 2b. Cobro de la ticketera: ventas online que se depositan después del evento (por cobrar hasta que ingresen)
+                {
+                    const tk = cobroTicketeraEvento(festId);
+                    if (tk.aplica && !tk.pagada) {
+                        deudas.push({
+                            id: `tkt-${festId}`,
+                            festId,
+                            festNombre,
+                            festFecha,
+                            tipo: 'ticketera_cobro',
+                            tipoCat: 'cobrar',
+                            tipoBadge: '<span class="pill-status pill-warning" style="font-size:10.5px;">⏳ Ticketera</span>',
+                            concepto: '🎟️ Cobro de la ticketera · ventas online',
+                            categoria: 'Ventas online (preventa + general)',
+                            banda: 'Ticketera',
+                            monto: tk.esperado,
+                            esPasivoEscuela: false,
+                            medio: tk.medio,
+                            responsable: tk.cobradoPor,
+                            obs: tk.obs,
+                            itemId: 'ticketera',
                             idxCuota: null
                         });
                     }
@@ -21127,7 +21431,15 @@
         async function saldarDeudaIndividual(tipo, festId, itemId, idxCuota) {
             if (!festId) return;
 
-            if (tipo === 'escuela_gasto') {
+            if (tipo === 'ticketera_cobro') {
+                const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) ? ingresosFestivalesDB[festId] : null;
+                if (datos) {
+                    const c = asegurarCobroTicketera(datos, festId);
+                    c.pagada = true; delete c.auto; c.fecha = hoyISO();
+                    await persistirCambiosFestivalDirecto(festId, { finanzas: datos });
+                    mostrarToast('Cobro de la ticketera registrado. Cargá lo que realmente ingresó en Finanzas › Cobros para verificarlo.', 'success');
+                }
+            } else if (tipo === 'escuela_gasto') {
                 const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) ? ingresosFestivalesDB[festId] : { gastosOperativos: [] };
                 if (!datos.gastosOperativos) datos.gastosOperativos = [];
                 const gIdx = parseInt(itemId, 10);
@@ -21192,6 +21504,7 @@
                 if (typeof renderizarCobrosContratoUnificado === 'function') renderizarCobrosContratoUnificado();
                 if (typeof renderizarCobrosCoberturaFinanzas === 'function') renderizarCobrosCoberturaFinanzas();
                 if (typeof renderizarCobrosServiciosFinanzas === 'function') renderizarCobrosServiciosFinanzas();
+                if (typeof renderizarCobrosTicketera === 'function') renderizarCobrosTicketera();
                 if (typeof renderizarTablaCumplimientoContrato === 'function') renderizarTablaCumplimientoContrato();
             }
             if (typeof sincronizarFilaTablaFinanzasGeneral === 'function') {
@@ -21309,7 +21622,14 @@
 
         async function actualizarDatoDeudaEnVivo(tipo, festId, itemId, idxCuota, campo, valor) {
             if (!festId) return;
-            if (tipo === 'escuela_gasto') {
+            if (tipo === 'ticketera_cobro') {
+                const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) ? ingresosFestivalesDB[festId] : null;
+                if (datos) {
+                    const c = asegurarCobroTicketera(datos, festId);
+                    c[campo === 'responsable' ? 'cobradoPor' : campo] = valor;
+                    await persistirCambiosFestivalDirecto(festId, { finanzas: datos });
+                }
+            } else if (tipo === 'escuela_gasto') {
                 const datos = (typeof ingresosFestivalesDB !== 'undefined' && ingresosFestivalesDB[festId]) ? ingresosFestivalesDB[festId] : { gastosOperativos: [] };
                 if (datos && datos.gastosOperativos) {
                     const gIdx = parseInt(itemId, 10);

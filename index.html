@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.7">
-    <script src="src/ui/iconos.js?v=v2.7"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.8">
+    <script src="src/ui/iconos.js?v=v2.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.7" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.8" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -735,7 +735,7 @@
                                     <table class="spreadsheet-table" id="tabla-checklist-interactiva">
                                         <thead>
                                             <tr>
-                                                <th class="no-print" style="width:46px; text-align:center;" title="Usar en este evento: lo destildado baja a Sin usar y no se imprime">Usar</th>
+                                                <th class="no-print" style="width:46px; text-align:center;" title="Usar en este evento: lo destildado baja a Sin usar y no se imprime">✓</th>
                                                 <th class="col-drag-header" style="width:32px;">⠿</th>
                                                 <th style="width:30%; text-align:left;">Ítem / Instrumento</th>
                                                 <th class="no-print" style="width:15%; text-align:left;">Categoría</th>
@@ -998,6 +998,7 @@
                                 <table class="spreadsheet-table" id="tabla-checklist-produccion">
                                     <thead>
                                         <tr>
+                                            <th class="col-drag-header" style="width:32px; text-align:center;" title="Arrastrá la fila para mover la tarea">⠿</th>
                                             <th style="width:44px; text-align:center;">Listo</th>
                                             <th class="text-left">Tarea</th>
                                             <th class="text-left" style="width:38%;">Nota</th>
@@ -6170,7 +6171,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.7";
+        const APP_VERSION = "v2.8";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -9290,7 +9291,8 @@
             tbody.innerHTML = lista.map((t, i) => {
                 const estilo = t.hecho ? 'text-decoration:line-through; color:var(--text-muted);' : '';
                 return `
-                <tr>
+                <tr ondragstart="prodDragStart(event, ${i})" ondragover="prodDragOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="prodDrop(event, ${i})" ondragend="prodDragEnd(event)">
+                    <td class="drag-handle tecnico-handle" title="Arrastrar para mover la tarea" onmousedown="this.parentNode.draggable = true" onmouseup="this.parentNode.draggable = false">⠿</td>
                     <td style="text-align:center;"><input type="checkbox" style="transform:scale(1.2); cursor:pointer;" ${t.hecho ? 'checked' : ''} onchange="alternarTareaChecklistProduccion(${i}, this.checked)"></td>
                     <td><input type="text" class="spreadsheet-inp text-left" id="inp-tarea-prod-${i}" style="${estilo}" value="${esc(t.tarea)}" onchange="editarTareaChecklistProduccion(${i}, 'tarea', this.value)"></td>
                     <td><input type="text" class="spreadsheet-inp text-left" value="${esc(t.nota)}" placeholder="Nota..." onchange="editarTareaChecklistProduccion(${i}, 'nota', this.value)"></td>
@@ -9309,6 +9311,43 @@
             if (btnPlantilla) btnPlantilla.style.display = (!lista.length && plantillaChecklistProduccion.length) ? '' : 'none';
             actualizarContadorChecklistProduccion();
         }
+
+        // Reordenar tareas arrastrando desde ⠿ (igual que los canales del Rider técnico)
+        let _tareaProdArrastrada = null;
+        function prodDragStart(e, i) {
+            _tareaProdArrastrada = i;
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', String(i)); } catch (err) { /* algunos navegadores lo exigen */ }
+            e.currentTarget.classList.add('dragging');
+        }
+        function prodDragOver(e) {
+            if (_tareaProdArrastrada === null) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            document.querySelectorAll('#tbody-checklist-produccion tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+            e.currentTarget.classList.add('drag-over');
+        }
+        function prodDragEnd(e) {
+            _tareaProdArrastrada = null;
+            if (e && e.currentTarget) { e.currentTarget.classList.remove('dragging'); e.currentTarget.draggable = false; }
+            document.querySelectorAll('#tbody-checklist-produccion tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+        }
+        function prodDrop(e, destino) {
+            e.preventDefault();
+            e.stopPropagation();
+            const origen = _tareaProdArrastrada;
+            prodDragEnd(e);
+            const lista = listaChecklistProduccionEvento();
+            if (origen === null || origen === destino || !lista[origen] || !lista[destino]) return;
+            const [tarea] = lista.splice(origen, 1);
+            lista.splice(destino, 0, tarea);
+            renderizarChecklistProduccionFestival();
+            guardarChecklistProduccionEvento();
+        }
+        window.prodDragStart = prodDragStart;
+        window.prodDragOver = prodDragOver;
+        window.prodDragEnd = prodDragEnd;
+        window.prodDrop = prodDrop;
 
         function alternarTareaChecklistProduccion(i, marcado) {
             const lista = listaChecklistProduccionEvento();

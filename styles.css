@@ -4274,3 +4274,11 @@ html.modo-sonidista #tabla-checklist-interactiva :is(input, select, textarea, bu
 .badge-rec { display: inline-flex; align-items: center; gap: 6px; background: #d93025; color: #fff; border-radius: 99px; padding: 2px 10px; font-size: 11px; font-weight: 800; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .badge-rec:before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
 @media print { .tecnico-hoja-tabla thead.rec-on th { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .rec-btn, .rec-leyenda { display: none !important; } }
+
+/* ---- v2.8: la fila de la banda en el Rider general usa el mismo tono claro que las categorías del checklist de equipamiento (solo en pantalla) ---- */
+@media screen {
+    #tabla-rider-interactiva tr.rider-group-header,
+    #tabla-rider-interactiva tr.rider-group-header td,
+    #card-rider-bandas.rider-modo-vista #tabla-rider-interactiva tr.rider-group-header td { background: var(--teal-50) !important; background-color: var(--teal-50) !important; }
+    #tabla-rider-interactiva tr.rider-group-header td { color: var(--teal-700) !important; }
+}

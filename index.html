@@ -12,13 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.5">
-    <script src="src/ui/iconos.js?v=v2.5"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.6">
+    <script src="src/ui/iconos.js?v=v2.6"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.5" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.6" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -1819,8 +1819,8 @@
                             <div id="resumen-liquidacion-tarjetas"></div>
                         </div>
 
-                        <!-- FRANJA FIJA: Estado de pago y Estado de cobros (se dibuja en renderizarFranjaEstados) -->
-                        <div id="franja-estados" class="franja-estados"></div>
+                        <!-- La franja "Estado de pago / Estado de cobros" se quitó: esa información está en "Pendientes para cerrar liquidación del evento".
+                             Para volver a mostrarla alcanza con agregar acá <div id="franja-estados" class="franja-estados"></div> -->
 
                         <!-- PESTAÑAS DE FINANZAS: VENTAS / GASTOS / COBROS -->
                         <div class="segmented-tabs-bar" style="margin-bottom:16px;">
@@ -6224,7 +6224,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.5";
+        const APP_VERSION = "v2.6";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {

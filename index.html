@@ -12,13 +12,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.10">
-    <script src="src/ui/iconos.js?v=v2.10"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.11">
+    <script src="src/ui/iconos.js?v=v2.11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.10" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.11" defer></script>
+    <script src="src/ui/planificacion.js?v=v2.11" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -188,6 +189,20 @@
                     <span class="nav-badge" id="badge-total-eventos">3</span>
                 </li>
 
+                <!-- v2.11: avisos propios del docente asignado (como "Mis Pendientes" de Admisión) -->
+                <li class="nav-item nav-mis-avisos" data-view="mis-avisos" onclick="navegarPanel('mis-avisos')" style="display:none;">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></span>
+                    <span>Mis avisos</span>
+                    <span class="nav-badge" id="badge-mis-avisos" style="background:var(--bad); color:#fff; display:none;">0</span>
+                </li>
+
+                <!-- v2.11: Planificación de clases (Admin y Planificador de clases) -->
+                <li class="nav-item nav-planificacion" data-view="planificacion" onclick="navegarPanel('planificacion')">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3M8 17h6"/></svg></span>
+                    <span>Planificación</span>
+                    <span class="nav-badge" id="badge-planificacion" style="background:var(--bad); color:#fff; display:none;">0</span>
+                </li>
+
                 <li class="nav-item" data-view="venues" onclick="navegarPanel('venues')">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
                     <span>Venues</span>
@@ -275,6 +290,8 @@
                             </div>
 
                             <div class="popover-body">
+                                <!-- v2.11: "Ver plataforma como" (solo con varios roles), igual que Admisión -->
+                                <div id="popover-vista-rol" style="display:none;"></div>
                                 <div class="popover-links">
                                     <div class="popover-link-item" onclick="abrirModalCambiarPassword(); cerrarProfilePopover();">
                                         <span>🔑</span> <span>Cambiar Contraseña</span>
@@ -476,6 +493,9 @@
                                 <!-- Se renderiza reactivamente vía renderizarArtistasFestival() -->
                             </div>
                         </div>
+
+                        <!-- v2.11: DOCENTES DEL EVENTO (se revisa su agenda del día del evento) -->
+                        <div class="content-card" id="card-docentes-evento" style="margin-top:20px;"></div>
                     </div>
 
 
@@ -1108,6 +1128,13 @@
                 <!-- =====================================================
                      SECCIÓN: CONFIGURACIÓN GENERAL (EN PESTAÑAS)
                      ===================================================== -->
+                <!-- =====================================================
+                     v2.11: PLANIFICACIÓN DE CLASES (Admin y Planificador) y MIS AVISOS (docente asignado)
+                     Se renderizan desde src/ui/planificacion.js
+                     ===================================================== -->
+                <section id="panel-planificacion" style="display:none;"></section>
+                <section id="panel-mis-avisos" style="display:none;"></section>
+
                 <section id="panel-configuracion" style="display:none;">
                     <div class="segmented-tabs-bar" style="margin-bottom:16px;">
                         <button class="segmented-tab-btn active" id="btn-tab-cfg-entradas" onclick="cambiarTabConfiguracion('entradas')">
@@ -3407,6 +3434,30 @@
             <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
                 <button type="button" class="btn-app btn-secondary" id="btn-sonidista-acceso-whatsapp" onclick="enviarAccesoSonidistaWhatsApp()">Enviar por WhatsApp</button>
                 <button type="button" class="btn-app btn-primary" onclick="cerrarModales()">Listo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- v2.11: popup de clases que chocan con un evento (docente asignado) -->
+    <div id="modal-avisos-clases" class="modal-overlay">
+        <div class="modal-box" style="width:640px; max-height:90vh; overflow-y:auto;">
+            <div class="modal-header">
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <span class="aviso-clases-ico" aria-hidden="true"><svg class="ico-linea" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+                    <div>
+                        <h3 style="margin:0;" id="avisos-clases-titulo">Tenés clases el día de un evento</h3>
+                        <span style="font-size:12px; color:var(--text-muted);" id="avisos-clases-subtitulo"></span>
+                    </div>
+                </div>
+                <button class="btn-close-modal" onclick="Planificacion.cerrarPopup()" title="Cerrar" aria-label="Cerrar" type="button"><svg class="ico-linea" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div class="modal-body" id="avisos-clases-cuerpo"></div>
+            <div class="modal-footer" style="display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" class="btn-app btn-secondary" onclick="Planificacion.posponer('manana')">Recordar mañana</button>
+                    <button type="button" class="btn-app btn-secondary" onclick="Planificacion.posponer('2h')">Pausar 2 h</button>
+                </div>
+                <button type="button" class="btn-app btn-primary" onclick="Planificacion.atenderAhora()">Atender ahora</button>
             </div>
         </div>
     </div>
@@ -6176,7 +6227,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.10";
+        const APP_VERSION = "v2.11";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -6449,7 +6500,9 @@
                 'finanzas': 'Finanzas',
                 'deudas': 'Deudas',
                 'configuracion': 'Configuración General',
-                'estadisticas': 'Estadísticas'
+                'estadisticas': 'Estadísticas',
+                'planificacion': 'Planificación',
+                'mis-avisos': 'Mis avisos'
             };
             document.getElementById('topbar-titulo').textContent = titulos[panelId] || 'Eventos';
             actualizarBotonVolverTopbar();
@@ -6468,6 +6521,8 @@
             if (panelId === 'sesionistas') renderizarTablaSesionistas();
             if (panelId === 'sonidistas') cargarSonidistas();
             if (panelId === 'estadisticas') renderizarGraficos();
+            if (panelId === 'planificacion' && window.Planificacion) window.Planificacion.renderizarPanel();
+            if (panelId === 'mis-avisos' && window.Planificacion) window.Planificacion.renderizarMisAvisos();
         }
 
         // Alternar pestañas dentro de Configuración General
@@ -6726,7 +6781,10 @@
                 window.event.currentTarget.classList.add('active');
             }
 
-            if (tabId === 'info') renderizarArtistasFestival();
+            if (tabId === 'info') {
+                renderizarArtistasFestival();
+                if (window.Planificacion) window.Planificacion.renderizarDocentesEvento();
+            }
             if (tabId === 'rider') {
                 switchRiderSubTab('bandas');
                 renderizarRiderTecnicoFestival();
@@ -7167,7 +7225,7 @@
                 acuerdoTextoCabecera = `${porcEsc}% Escuela / ${100 - porcEsc}% Venue`;
             }
             // El acuerdo con el venue es información económica: el sonidista no la ve
-            const sub = `<strong>Fecha:</strong> ${fecha} &nbsp;·&nbsp; <strong>Venue:</strong> ${esc(venue)}` + (window.modoSonidista ? '' : ` &nbsp;·&nbsp; <strong>Acuerdo:</strong> ${acuerdoTextoCabecera}`);
+            const sub = `<strong>Fecha:</strong> ${fecha} &nbsp;·&nbsp; <strong>Venue:</strong> ${esc(venue)}` + ((window.modoSonidista || window.modoPlanificador) ? '' : ` &nbsp;·&nbsp; <strong>Acuerdo:</strong> ${acuerdoTextoCabecera}`);
 
             let claseEstado = 'estado-programado';
             if (estado === 'Lapiz') claseEstado = 'estado-lapiz';
@@ -9161,7 +9219,7 @@
         window.estaUsuarioEditandoDetalleFestival = estaUsuarioEditandoDetalleFestival;
 
         function autoguardarDetalleFestivalFirestore(campo, datos) {
-            if (window.modoSonidista) return; // el sonidista no escribe en `festivales` (solo en festivales_sonido)
+            if (window.modoSonidista || window.modoPlanificador) return; // sonidista y planificador no escriben en `festivales`
             if (!eventoActualId || !window.MandalaApp || !window.MandalaApp.festivales || typeof window.MandalaApp.festivales.actualizarCampos !== 'function') return;
             window._ultimoAutoguardadoLocalTs = Date.now();
             _bufferAutoguardadoFestival[campo] = datos;
@@ -9968,7 +10026,9 @@
                     gastosFestival: Number(fest.gastosFestival) || 0,
                     link: fest.linkVenta || fest.link || '',
                     linkVenta: fest.linkVenta || fest.link || '',
-                    netoEscuela: Number(fest.netoEscuela) || (Number(fest.recaudacionBruta) - Number(fest.gastosFestival)) || 0
+                    netoEscuela: Number(fest.netoEscuela) || (Number(fest.recaudacionBruta) - Number(fest.gastosFestival)) || 0,
+                    // v2.11: docentes asignados al evento (se revisa su agenda del día del evento)
+                    docentesAsignados: Array.isArray(fest.docentesAsignados) ? fest.docentesAsignados : []
                 };
 
                 if (fest.tarifasCongeladas) {
@@ -10617,6 +10677,13 @@
             const tbody = document.getElementById('tbody-cronograma');
             if (!tbody) return;
 
+            // Planificador (solo lectura): si el evento no tiene cronograma, se avisa (no se muestra la plantilla como si fuera real)
+            if (window.modoPlanificador && (!cronogramasFestivalesDB[eventoActualId] || cronogramasFestivalesDB[eventoActualId].length === 0)) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-muted);">Este evento todavía no tiene cronograma cargado.</td></tr>';
+                const chip = document.getElementById('chip-cronograma-hitos');
+                if (chip) chip.textContent = '0 hitos';
+                return;
+            }
             // Si el festival no tiene cronograma aún, se carga el cronograma oficial por defecto
             if (!cronogramasFestivalesDB[eventoActualId] || cronogramasFestivalesDB[eventoActualId].length === 0) {
                 cronogramasFestivalesDB[eventoActualId] = JSON.parse(JSON.stringify(cronogramaOficialPlantilla));
@@ -13101,8 +13168,22 @@
                     asignaciones: riderAsignacionesFestivales[id] || {},
                     cancionesNotas: riderCancionesNotasFestivales[id] || {}
                 },
-                checklist: { items: sanearChecklistParaSonido(checklistFestivalesDB[id]), categorias: categoriasParaSonido(), orden: checklistOrdenCategoriasDB[id] || [] }
+                checklist: { items: sanearChecklistParaSonido(checklistFestivalesDB[id]), categorias: categoriasParaSonido(), orden: checklistOrdenCategoriasDB[id] || [] },
+                // v2.11: el Planificador de clases ve el cronograma y los docentes del evento (sin finanzas)
+                cronograma: sanearCronogramaParaEspejo(cronogramasFestivalesDB[id]),
+                planificacion: { docentes: sanearDocentesParaEspejo(info.docentesAsignados) }
             });
+        }
+
+        function sanearCronogramaParaEspejo(lista) {
+            return (Array.isArray(lista) ? lista : []).map(h => ({ hora: h.hora || '', hito: h.hito || '', detalle: h.detalle || '' }));
+        }
+        function sanearDocentesParaEspejo(lista) {
+            return (Array.isArray(lista) ? lista : []).map(d => ({ email: d.email || '', nombre: d.nombre || '', calendarioId: d.calendarioId || '', recibeAvisos: d.recibeAvisos !== false }));
+        }
+        // Estados que cuentan para el aviso de clases y que tienen copia sin finanzas (Lápiz no cuenta)
+        function estadoConCopiaSinFinanzas(estado) {
+            return estado === 'En Curso' || estado === 'Programado';
         }
 
         function espejoParcialDesdeCampos(campos) {
@@ -13116,6 +13197,8 @@
             }
             if (Array.isArray(campos.checklist)) partes.checklist = { items: sanearChecklistParaSonido(campos.checklist), categorias: categoriasParaSonido() };
             if (Array.isArray(campos.checklistOrden)) partes.checklist = { ...(partes.checklist || {}), orden: campos.checklistOrden };
+            if (Array.isArray(campos.cronograma)) partes.cronograma = sanearCronogramaParaEspejo(campos.cronograma);
+            if (Array.isArray(campos.docentesAsignados)) partes.planificacion = { docentes: sanearDocentesParaEspejo(campos.docentesAsignados) };
             return Object.keys(partes).length ? limpiarParaFirestore(partes) : null;
         }
 
@@ -13146,15 +13229,15 @@
             if (window.modoSonidista) return;
             const { id, campos } = (e && e.detail) || {};
             if (!id || !campos) return;
-            if (campos.estado === 'En Curso') {
-                // Pasó a "En Curso": se copia todo el evento desde la memoria
+            if (estadoConCopiaSinFinanzas(campos.estado)) {
+                // Pasó a "En Curso" o "Programado": se copia todo el evento desde la memoria
                 const completo = espejoCompletoDesdeMemoria(id);
-                if (completo) { completo.ficha = { ...(completo.ficha || {}), estado: 'En Curso' }; programarEspejoSonido(id, completo); }
+                if (completo) { completo.ficha = { ...(completo.ficha || {}), estado: campos.estado }; programarEspejoSonido(id, completo); }
                 _espejadosEstaSesion.add(id);
                 return;
             }
-            const enCurso = infoFestivales[id] && infoFestivales[id].estado === 'En Curso';
-            if (!enCurso && campos.estado === undefined) return; // eventos que no están en curso no se copian
+            const conCopia = infoFestivales[id] && estadoConCopiaSinFinanzas(infoFestivales[id].estado);
+            if (!conCopia && campos.estado === undefined) return; // eventos en Lápiz o finalizados no se copian (sí se avisa el cambio de estado)
             programarEspejoSonido(id, espejoParcialDesdeCampos(campos));
         });
         window.addEventListener('mandala:festival-eliminado', (e) => {
@@ -13167,7 +13250,7 @@
         function espejarEnCursoParaSonidistas(lista) {
             if (window.modoSonidista) return;
             (Array.isArray(lista) ? lista : []).forEach(f => {
-                if (!f || !f.id || f.estado !== 'En Curso' || _espejadosEstaSesion.has(f.id)) return;
+                if (!f || !f.id || !estadoConCopiaSinFinanzas(f.estado) || _espejadosEstaSesion.has(f.id)) return;
                 _espejadosEstaSesion.add(f.id);
                 programarEspejoSonido(f.id, espejoCompletoDesdeMemoria(f.id));
             });
@@ -13237,6 +13320,44 @@
             }
         }
         window.poblarEventosSonidista = poblarEventosSonidista;
+
+        // =========================================================
+        // MODO PLANIFICADOR DE CLASES (v2.11): eventos Programado y En Curso desde la copia sin finanzas.
+        // Ve Info y artistas y Cronograma en solo lectura, y la sección Planificación.
+        // =========================================================
+        function poblarEventosPlanificador(lista) {
+            const docs = Array.isArray(lista) ? lista : [];
+            const festivales = docs.map(d => {
+                const f = d.ficha || {};
+                return {
+                    id: d.id,
+                    nombre: f.nombre || 'Festival',
+                    venue: f.venue || 'Venue',
+                    direccion: f.direccion || '',
+                    capacidad: f.capacidad || '',
+                    fechaHora: f.fechaHora || f.fecha || '',
+                    fecha: f.fecha || '',
+                    estado: f.estado || 'Programado',
+                    participantes: (d.artistas && d.artistas.participantes) || [],
+                    cronograma: Array.isArray(d.cronograma) ? d.cronograma : [],
+                    docentesAsignados: (d.planificacion && Array.isArray(d.planificacion.docentes)) ? d.planificacion.docentes : []
+                };
+            });
+            poblarFestivalesDesdeFirestore(festivales);
+            if (eventoActualId && !infoFestivales[eventoActualId] && document.getElementById('panel-evento-detalle')?.style.display === 'block') {
+                mostrarToast('Ese evento ya no está programado ni en curso.', 'info');
+                navegarPanel('eventos', false);
+            } else if (eventoActualId && infoFestivales[eventoActualId]) {
+                try { renderizarArtistasFestival(); renderizarCronogramaFestival(); } catch (e) { console.warn('[Planificador] No se pudo refrescar el evento abierto:', e); }
+            }
+            if (typeof ocultarIndicadorCarga === 'function') ocultarIndicadorCarga();
+            if (!docs.length) {
+                const tbody = document.getElementById('tbody-eventos-dinamicos');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:36px 16px; color:var(--text-muted);"><div style="font-weight:700; color:var(--text-main); font-size:13.5px;">No hay eventos programados ni en curso</div></td></tr>`;
+            }
+            if (window.Planificacion && typeof window.Planificacion.alCargarEventos === 'function') window.Planificacion.alCargarEventos();
+        }
+        window.poblarEventosPlanificador = poblarEventosPlanificador;
 
         // =========================================================
         // SONIDO › RIDER TÉCNICO (lista de canales para el sonidista)
@@ -17339,7 +17460,11 @@
         var TICKETERA_YA_COBRADOS = ['fest-1792162655340', 'fest-1792180604238']; // Vol V y Vol VI: ya ingresó (se puede deshacer)
 
         function fechaEventoISO(info) {
-            const m = String((info && (info.fechaRaw || info.fecha)) || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+            // La fecha puede estar como "15/12/2026 20:30" o como "2026-12-17T20:30" (según cómo se cargó el evento)
+            const txt = String((info && (info.fechaRaw || info.fecha)) || '');
+            const iso = txt.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];
+            const m = txt.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
             return m ? m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0') : '';
         }
 

@@ -26,12 +26,14 @@ import {
 } from "./services/festivalesService.js";
 import { obtenerVenuesFirestore, guardarVenueFirestore, guardarLoteVenues, eliminarVenueFirestore } from "./services/venuesService.js";
 import { obtenerSesionistasFirestore, guardarSesionistaFirestore, eliminarSesionistaFirestore } from "./services/sesionistasService.js";
-import { obtenerUsuariosSistemaFirestore, obtenerUsuarioPorEmail, consultarAccesoUsuario, marcarPasswordModificada } from "./services/usuariosService.js";
+import { obtenerUsuariosSistemaFirestore, obtenerUsuarioPorEmail, consultarAccesoUsuario, marcarPasswordModificada, obtenerDocentesActivos } from "./services/usuariosService.js";
+import { obtenerClasesDelDia, obtenerCalendarioDocente } from "./services/calendarioService.js";
+import { escucharPlanificacion, guardarRevisionEvento, guardarResolucionClase, leerUltimaRevisionDiaria, marcarRevisionDiaria, guardarAvisosPospuestos, modoPruebaSinEscritura, ID_CONTROL } from "./services/planificacionService.js";
 import { obtenerGastosCajaFirestore, guardarGastosCajaFirestore, obtenerIngresosManualesCajaFirestore, guardarIngresosManualesCajaFirestore, escucharCajaEnTiempoReal, migrarCajaAFormato2, revertirCajaAFormato1, obtenerFormatoCaja, usarColeccionCaja } from "./services/cajaService.js";
 import { obtenerTarifasProductoraFirestore, guardarTarifasProductoraFirestore, obtenerProductorasFirestore, guardarProductorasFirestore, obtenerPreciosEntradasFirestore, guardarPreciosEntradasFirestore, obtenerChecklistProduccionPlantillaFirestore, guardarChecklistProduccionPlantillaFirestore, obtenerCategoriasEquipamientoFirestore, guardarCategoriasEquipamientoFirestore } from "./services/configuracionService.js";
 import { obtenerInstrumentosFirestore, escucharInstrumentosEnTiempoReal, getEmojiParaInstrumento, obtenerInstrumentosActualesSync } from "./services/instrumentosService.js";
 
-import { obtenerSonidoEvento, guardarRiderTecnicoEvento, borrarRecDeTodosLosEventos, copiarSonidoEvento, espejarSonidoEvento, eliminarSonidoEvento, escucharEventosSonidoEnCurso } from "./services/sonidoService.js";
+import { obtenerSonidoEvento, guardarRiderTecnicoEvento, borrarRecDeTodosLosEventos, copiarSonidoEvento, espejarSonidoEvento, eliminarSonidoEvento, escucharEventosSonidoEnCurso, escucharEventosSonidoPlanificador } from "./services/sonidoService.js";
 import { obtenerSonidistasFirestore, guardarDatosSonidistaFirestore, altaSonidistaFirestore, cambiarActivoSonidistaFirestore, quitarSonidistaFirestore } from "./services/sonidistasService.js";
 
 import { idVenueEstable, idHistoricoEstable } from "./utils/ids.js";
@@ -57,7 +59,23 @@ window.MandalaApp = {
     usuarios: {
         obtener: obtenerUsuariosSistemaFirestore,
         obtenerPorEmail: obtenerUsuarioPorEmail,
+        obtenerDocentes: obtenerDocentesActivos,
         marcarPasswordModificada
+    },
+    // v2.11: aviso de clases que chocan con un evento
+    calendario: {
+        clasesDelDia: obtenerClasesDelDia,
+        calendarioDocente: obtenerCalendarioDocente
+    },
+    planificacion: {
+        escuchar: escucharPlanificacion,
+        guardarRevision: guardarRevisionEvento,
+        guardarResolucion: guardarResolucionClase,
+        leerRevisionDiaria: leerUltimaRevisionDiaria,
+        marcarRevisionDiaria,
+        guardarPospuestos: guardarAvisosPospuestos,
+        modoPrueba: modoPruebaSinEscritura,
+        ID_CONTROL
     },
     alumnos: {
         obtener: obtenerAlumnosMandala,
@@ -152,8 +170,9 @@ function mostrarPantallaLogin() {
     const appLayout = document.getElementById('app-layout');
     document.documentElement.classList.remove('user-has-session');
     // Si se cierra una sesión de sonidista, la siguiente persona no hereda el modo reducido
-    document.documentElement.classList.remove('modo-sonidista');
+    document.documentElement.classList.remove('modo-sonidista', 'modo-planificador', 'ver-planificacion');
     window.modoSonidista = false;
+    window.modoPlanificador = false;
     if (typeof window.ocultarIndicadorCarga === 'function') window.ocultarIndicadorCarga();
     if (loginContainer) loginContainer.style.display = 'flex';
     if (appLayout) appLayout.classList.remove('active');
@@ -166,7 +185,7 @@ function mostrarPantallaLogin() {
 const MENSAJES_ACCESO_DENEGADO = {
     sin_perfil: 'Tu correo no está dado de alta en el sistema Mandala. Consultá con administración.',
     inactivo: 'Tu usuario se encuentra inactivo. Consultá con administración.',
-    sin_rol_festivales: 'Tu usuario no tiene el perfil "Gestor de Festivales" ni el de sonidista. Pedile a administración que te lo asigne.',
+    sin_rol_festivales: 'Tu usuario no tiene el perfil "Gestor de Festivales", "Planificador de clases" ni el de sonidista. Pedile a administración que te lo asigne.',
     sin_permiso: 'Tu usuario no tiene permiso para acceder. Consultá con administración.',
     error: 'No se pudo verificar tu acceso. Revisá tu conexión y reintentá.'
 };
@@ -201,12 +220,18 @@ async function manejarCambioSesion(user) {
 
     const perfil = acceso.perfil;
     const esSoloSonidista = !!perfil.esSoloSonidista;
+    const vista = resolverVistaRol(perfil);
     const nombreUsuario = perfil.nombre || user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario');
-    const rolUsuario = esSoloSonidista ? 'Sonidista' : (perfil.rol ? (perfil.rol.charAt(0).toUpperCase() + perfil.rol.slice(1)) : 'Coordinador');
+    const rolUsuario = esSoloSonidista ? 'Sonidista' : (vista.modoPlanificador ? 'Planificador de clases' : (perfil.rol ? (perfil.rol.charAt(0).toUpperCase() + perfil.rol.slice(1)) : 'Coordinador'));
     window.usuarioActual = perfil;
+    window.vistaRol = vista;
     // Modo sonidista: acceso reducido (solo eventos en curso; lee casi todo y edita Rider técnico y REC)
     window.modoSonidista = esSoloSonidista;
     document.documentElement.classList.toggle('modo-sonidista', esSoloSonidista);
+    // Modo planificador (v2.11): eventos en solo lectura (Info y Cronograma) + Planificación
+    window.modoPlanificador = vista.modoPlanificador;
+    document.documentElement.classList.toggle('modo-planificador', vista.modoPlanificador);
+    document.documentElement.classList.toggle('ver-planificacion', vista.verPlanificacion);
 
     // Datos solo de presentación (no otorgan acceso): evitan parpadeos al recargar
     try {
@@ -232,8 +257,65 @@ async function manejarCambioSesion(user) {
         if (typeof window.exigirCambioClaveInicial === 'function') window.exigirCambioClaveInicial();
     }
 
+    if (typeof window.renderizarSelectorVistaRol === 'function') window.renderizarSelectorVistaRol();
+
     if (esSoloSonidista) sincronizarDatosSonidista();
+    else if (vista.modoPlanificador) sincronizarDatosPlanificador();
     else sincronizarDatosTrasLogin();
+}
+
+// =======================================================================
+// VISTA POR ROL (v2.11) — igual que "Ver plataforma como" de Admisión
+//   'multi'        Vista Global Multi-Rol: los permisos sumados (gestión + Planificación)
+//   'gestion'      Administrador o Gestor de Festivales
+//   'planificador' Planificador de clases (vista reducida)
+// Con un solo rol no hay elección. Se recuerda la última en este navegador.
+// =======================================================================
+const CLAVE_VISTA_ROL = 'mandala_festival_vista_rol';
+
+function resolverVistaRol(perfil) {
+    const opciones = [];
+    if (perfil.tieneGestion) opciones.push('gestion');
+    if (perfil.esPlanificador) opciones.push('planificador');
+    const varios = opciones.length > 1;
+    if (varios) opciones.unshift('multi');
+    let elegida = opciones[0] || 'gestion';
+    if (varios) {
+        try { const g = localStorage.getItem(CLAVE_VISTA_ROL); if (opciones.includes(g)) elegida = g; } catch (e) {}
+    }
+    const modoPlanificador = !perfil.esSoloSonidista && (perfil.esSoloPlanificador || elegida === 'planificador');
+    const verPlanificacion = modoPlanificador || (elegida === 'multi') || (!!perfil.esAdmin && elegida !== 'planificador') || (perfil.esPlanificador && elegida !== 'gestion');
+    return { opciones, elegida, varios, modoPlanificador, verPlanificacion, esAdmin: !!perfil.esAdmin };
+}
+
+window.cambiarVistaRol = function (vista) {
+    const v = window.vistaRol;
+    if (!v || !v.varios || !v.opciones.includes(vista) || v.elegida === vista) return;
+    try { localStorage.setItem(CLAVE_VISTA_ROL, vista); } catch (e) {}
+    // Cada vista lee datos distintos (el planificador solo la copia sin finanzas): se vuelve a cargar la app
+    window.location.reload();
+};
+
+/**
+ * Datos de un planificador de clases: los eventos Programado y En Curso de la copia sin finanzas
+ * (festivales_sonido) y la planificación de clases. No lee festivales, caja ni alumnos.
+ */
+function sincronizarDatosPlanificador() {
+    detenerListenersTiempoReal();
+    listenersActivos.push(escucharEventosSonidoPlanificador((lista) => {
+        console.log(`[Mandala Festivales] Modo planificador: ${lista.length} evento(s) programados o en curso.`);
+        if (typeof window.poblarEventosPlanificador === 'function') window.poblarEventosPlanificador(lista);
+    }, () => {
+        if (typeof window.ocultarIndicadorCarga === 'function') window.ocultarIndicadorCarga();
+        if (typeof window.mostrarToast === 'function') window.mostrarToast('No se pudieron cargar los eventos. Revisá la conexión o pedí que te habiliten.', 'error');
+    }));
+    escucharPlanificacionClases();
+}
+
+function escucharPlanificacionClases() {
+    listenersActivos.push(escucharPlanificacion((mapa) => {
+        if (window.Planificacion && typeof window.Planificacion.alRecibirDatos === 'function') window.Planificacion.alRecibirDatos(mapa);
+    }));
 }
 
 /**
@@ -314,7 +396,12 @@ async function sincronizarDatosTrasLogin() {
             if (typeof window.renderizarListaProductoras === 'function') window.renderizarListaProductoras();
             // Una vez por sesión se asegura la copia de lectura de los eventos en curso para los sonidistas
             if (typeof window.espejarEnCursoParaSonidistas === 'function') window.espejarEnCursoParaSonidistas(festivalesActualizados);
+            // Aviso de clases (v2.11): con los eventos ya cargados se hace la revisión del día, si corresponde
+            if (window.Planificacion && typeof window.Planificacion.alCargarEventos === 'function') window.Planificacion.alCargarEventos();
         }));
+
+        // Planificación de clases (v2.11): resultado de la revisión y resoluciones, en tiempo real
+        escucharPlanificacionClases();
 
         // Sincronización continua en tiempo real de Caja (Gastos e Ingresos manuales) desde Firestore
         listenersActivos.push(escucharCajaEnTiempoReal((gastosActualizados) => {

@@ -32,6 +32,8 @@ export async function obtenerSonidoEvento(eventoId) {
  * Se mezcla con lo que ya hay (merge): no toca `sonido` (Rider técnico y REC).
  */
 export async function espejarSonidoEvento(eventoId, partes) {
+    // Modo prueba (solo local): no se escribe la copia en la base real
+    try { if (localStorage.getItem('mandala_pruebas_sin_escritura') === '1') { console.info(`[Sonido · prueba] Copia de ${eventoId} no escrita (modo prueba).`, partes); return true; } } catch (e) {}
     try {
         await setDoc(doc(db, COLLECTIONS.FESTIVALES_SONIDO, eventoId), {
             eventoId,
@@ -116,6 +118,22 @@ export function escucharEventosSonidoEnCurso(onDatos, onError) {
         onDatos(lista);
     }, (err) => {
         console.warn('[Mandala Festivales] Error al escuchar los eventos para sonidistas:', err);
+        if (typeof onError === 'function') onError(err);
+    });
+}
+
+/**
+ * Planificador de clases (v2.11): escucha los eventos que cuentan para la planificación (Programado y En Curso).
+ * Lee solo la copia sin finanzas; la consulta lleva el filtro de estado.
+ */
+export function escucharEventosSonidoPlanificador(onDatos, onError) {
+    const q = query(collection(db, COLLECTIONS.FESTIVALES_SONIDO), where('ficha.estado', 'in', ['Programado', 'En Curso']));
+    return onSnapshot(q, (snap) => {
+        const lista = [];
+        snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
+        onDatos(lista);
+    }, (err) => {
+        console.warn('[Mandala Festivales] Error al escuchar los eventos para planificación:', err);
         if (typeof onError === 'function') onError(err);
     });
 }

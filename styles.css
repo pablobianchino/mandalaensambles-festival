@@ -4282,3 +4282,110 @@ html.modo-sonidista #tabla-checklist-interactiva :is(input, select, textarea, bu
     #card-rider-bandas.rider-modo-vista #tabla-rider-interactiva tr.rider-group-header td { background: var(--teal-50) !important; background-color: var(--teal-50) !important; }
     #tabla-rider-interactiva tr.rider-group-header td { color: var(--teal-700) !important; }
 }
+
+/* =======================================================================
+   v2.11 · AVISO DE CLASES QUE CHOCAN CON UN EVENTO
+   ======================================================================= */
+/* Planificación: solo la ven Admin y Planificador (o la vista Multi-Rol) */
+html:not(.ver-planificacion) #sidebar .nav-planificacion { display: none !important; }
+
+/* MODO PLANIFICADOR: ve Eventos (Info y artistas, y Cronograma, en solo lectura) y Planificación.
+   Esto oculta lo que no le corresponde; la seguridad real la ponen las reglas de Firestore (solo lee la copia sin finanzas). */
+html.modo-planificador .solo-gestion,
+html.modo-planificador #sidebar .nav-item:not([data-view="eventos"]):not([data-view="planificacion"]),
+html.modo-planificador #sidebar .nav-divider,
+html.modo-planificador .btn-nuevo-sidebar,
+html.modo-planificador #panel-evento-detalle .mode-switch-pill,
+html.modo-planificador #panel-evento-detalle > .segmented-tabs-bar .segmented-tab-btn:not([data-tab="info"]):not([data-tab="cronograma"]),
+html.modo-planificador #tabla-eventos-filas th:last-child,
+html.modo-planificador #tabla-eventos-filas td:last-child,
+html.modo-planificador #tab-ev-info .editable-hint,
+html.modo-planificador #contenedor-banner-traspasos-participantes,
+html.modo-planificador #tab-ev-cronograma .sec-chips .btn-primary,
+html.modo-planificador #tabla-cronograma th:last-child,
+html.modo-planificador #tabla-cronograma td:last-child,
+html.modo-planificador #tab-ev-info .band-grid :is(.btn-table-pill, .btn-row-del) { display: none !important; }
+html.modo-planificador #tab-ev-info .editable-card,
+html.modo-planificador #tab-ev-info .band-grid { pointer-events: none; }
+html.modo-planificador #tab-ev-info .band-grid .group-arrow { pointer-events: auto; cursor: pointer; }
+html.modo-planificador #tabla-cronograma :is(input, button) { pointer-events: none; }
+html.modo-planificador #tabla-cronograma input { background: transparent; border-color: transparent; }
+html.modo-planificador #panel-evento-detalle > .segmented-tabs-bar::after {
+    content: "Solo lectura"; align-self: center; margin-left: 10px; padding: 2px 10px; border-radius: var(--r-pill);
+    background: #eef0f2; color: var(--ink-2); font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+
+/* Selector "Ver plataforma como" (igual que Admisión) */
+.role-switch-section { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; flex-direction: column; gap: 6px; }
+.role-switch-header { display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; padding: 0 2px; }
+.role-options-grid { display: flex; flex-direction: column; gap: 4px; }
+.role-option-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 9px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--text-main); cursor: pointer; transition: all .15s; }
+.role-option-item:hover { border-color: var(--teal); background: #f0fdfa; }
+.role-option-item.selected { background: #e4f2f4; border-color: var(--teal); color: var(--teal); }
+.role-option-item.selected::after { content: '✓'; font-weight: 900; font-size: 13px; color: var(--teal); }
+
+/* Pastillas, acciones y tablas de Planificación / Mis avisos / Docentes del evento */
+.pc-pill { display: inline-block; border-radius: var(--r-pill); padding: 2px 9px; font-size: 11px; font-weight: 700; white-space: nowrap; vertical-align: middle; }
+.pc-bad { background: var(--bad-bg); color: var(--bad); }
+.pc-ok { background: var(--ok-bg); color: var(--ok); }
+.pc-warn { background: var(--warn-bg); color: var(--warn); }
+.pc-neu { background: #eef0f2; color: var(--ink-2); }
+.pc-gris { color: var(--ink-3); }
+/* Opción A (v2.11): una tarjeta por evento; el docente es un sub-encabezado liviano y sus clases van con sangría.
+   Una sola negrita por nivel: evento en negrita, docente semi-negrita, hora y clase en peso normal. */
+.pc-resumen { display: flex; gap: 18px; flex-wrap: wrap; align-items: baseline; margin: 0 0 14px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--r-sm); color: var(--ink-2); font-size: 12.5px; }
+.pc-resumen strong { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px; color: var(--ink); }
+.pc-resumen .pc-rojo strong { color: var(--bad); }
+.pc-ev { border: 1px solid var(--line); border-radius: var(--r-md); margin-top: 12px; overflow: hidden; background: var(--surface); }
+.pc-ev-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.pc-ev-t { font-weight: 800; font-size: 13px; color: var(--ink); }
+.pc-ev-link { cursor: pointer; }
+.pc-ev-link:hover { color: var(--teal-700); text-decoration: underline; text-underline-offset: 2px; }
+.pc-ev-f { margin-left: 8px; color: var(--ink-2); font-size: 12.5px; }
+.pc-ev-cuerpo { padding: 4px 14px 8px; }
+.pc-doc { padding-top: 8px; }
+.pc-doc + .pc-doc { border-top: 1px solid var(--line); margin-top: 6px; }
+.pc-doc-h { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); margin-bottom: 2px; }
+.pc-doc-n { font-weight: 600; color: var(--ink); }
+.pc-doc-h .pc-avatar { width: 26px; height: 26px; flex-basis: 26px; font-size: 11px; }
+.pc-fila { display: grid; grid-template-columns: 110px 1fr auto; align-items: center; gap: 12px; padding: 7px 0; border-top: 1px dashed var(--line); }
+.pc-doc .pc-fila { padding-left: 34px; }
+.pc-doc-h + .pc-fila, .pc-ev-cuerpo > .pc-fila:first-child, .pc-popup-lista > .pc-fila:first-child { border-top: 0; }
+.pc-hora { font-family: 'Geist Mono', ui-monospace, Consolas, monospace; font-size: 12.5px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+.pc-clase { color: var(--ink); min-width: 0; overflow-wrap: anywhere; }
+.pc-accion { justify-self: end; white-space: nowrap; }
+.pc-fila-resuelta .pc-clase { color: var(--ink-2); }
+.pc-resuelta { display: inline-flex; align-items: center; gap: 6px; }
+.pc-resolver { position: relative; display: inline-block; }
+.pc-btn-resolver { height: 26px; padding: 0 10px; border-radius: var(--r-sm); border: 1px solid var(--teal); background: var(--surface); color: var(--teal-700); font: 700 11.5px var(--font); white-space: nowrap; cursor: pointer; }
+.pc-btn-resolver:hover, .pc-resolver.abierto .pc-btn-resolver { background: var(--teal-50); }
+.pc-menu { display: none; position: fixed; z-index: 10050; min-width: 160px; padding: 4px; background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r-sm); box-shadow: var(--sh-3); }
+.pc-resolver.abierto .pc-menu { display: flex; flex-direction: column; }
+.pc-menu button { border: 0; background: transparent; text-align: left; padding: 7px 10px; border-radius: 6px; font: 600 12.5px var(--font); color: var(--ink); cursor: pointer; }
+.pc-menu button:hover { background: var(--surface-2); }
+.pc-menu button:first-child { color: var(--teal-700); }
+.pc-popup-lista { border: 1px solid var(--line); border-radius: var(--r-md); padding: 2px 14px; }
+.pc-vacio { padding: 12px 4px; color: var(--ink-3); font-size: 12.5px; }
+.pc-vacio-centro { text-align: center; padding: 26px 12px; }
+.pc-cab { flex-wrap: wrap; gap: 10px; }
+.pc-filtros { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pc-select { height: 30px; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: var(--surface); padding: 0 8px; font: 600 12px var(--font); color: var(--ink); }
+.pc-pie { margin-top: 10px; font-size: 11.5px; color: var(--ink-3); }
+.pc-prueba { margin-bottom: 12px; padding: 8px 12px; border: 1px dashed var(--warn); border-radius: var(--r-sm); background: var(--warn-bg); color: var(--warn); font-size: 12px; font-weight: 700; }
+.pc-personas { display: flex; flex-direction: column; gap: 8px; }
+.pc-persona { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: var(--r-md); padding: 8px 12px; background: var(--surface); }
+.pc-persona-info { flex: 1; min-width: 0; }
+.pc-persona-info b { display: block; font-size: 13px; }
+.pc-persona-info small { color: var(--ink-3); font-size: 11.5px; }
+.pc-avatar { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 50%; background: var(--teal-50); color: var(--teal-700); display: grid; place-items: center; font-weight: 800; font-size: 12px; }
+.pc-agregar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; padding: 10px; border: 1px dashed var(--line-2); border-radius: var(--r-md); background: var(--surface-2); font-size: 12.5px; }
+.pc-agregar .pc-select { min-width: 260px; }
+.aviso-clases-ico { width: 38px; height: 38px; border-radius: 10px; background: var(--bad-bg); color: var(--bad); display: grid; place-items: center; flex: 0 0 38px; }
+.aviso-clases-ico .ico-linea { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 760px) {
+    .pc-fila { grid-template-columns: 90px 1fr; }
+    .pc-doc .pc-fila { padding-left: 0; }
+    .pc-accion { grid-column: 1 / -1; justify-self: start; }
+    .pc-ev-f { display: block; margin-left: 0; }
+    .pc-agregar .pc-select { min-width: 0; width: 100%; }
+}

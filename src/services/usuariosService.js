@@ -4,7 +4,7 @@
 // =======================================================================
 
 import { db, collection, getDocs, doc, updateDoc, query, where } from "../config/firebase.js";
-import { COLLECTIONS, EMAIL_CUENTA_EMERGENCIA, ROL_SONIDISTA } from "../config/constants.js";
+import { COLLECTIONS, EMAIL_CUENTA_EMERGENCIA, ROL_SONIDISTA, ROL_PLANIFICADOR, ROLES_DOCENTE } from "../config/constants.js";
 
 /**
  * Cache en memoria de usuarios del sistema
@@ -21,7 +21,10 @@ function mapearUsuarioSistema(d) {
         rol: data.rol || (Array.isArray(data.roles) && data.roles[0]) || 'coordinador',
         activo: data.activo !== false,
         password_modificada: data.password_modificada,
-        modulos_habilitados: data.modulos_habilitados || []
+        modulos_habilitados: data.modulos_habilitados || [],
+        profesor_id: data.profesor_id || '',
+        correo_calendario: (data.correo_calendario || '').trim().toLowerCase(),
+        avisos_festival_pospuestos: data.avisos_festival_pospuestos || null
     };
 }
 
@@ -103,10 +106,42 @@ export function tieneRolSonidista(roles) {
     return lista.includes(ROL_SONIDISTA);
 }
 
+/** Planificador de clases (v2.11): puede tenerlo además de otros roles */
+export function tieneRolPlanificador(roles) {
+    const lista = (Array.isArray(roles) ? roles : [roles]).map(r => String(r || '').toLowerCase().trim());
+    return lista.includes(ROL_PLANIFICADOR);
+}
+
+/** Docente (docente, profesor o evaluador, como en Admisión) */
+export function tieneRolDocente(roles) {
+    const lista = (Array.isArray(roles) ? roles : [roles]).map(r => String(r || '').toLowerCase().trim());
+    return lista.some(r => ROLES_DOCENTE.includes(r));
+}
+
+/**
+ * Usuarios activos con rol docente, para el bloque "Docentes del evento".
+ * Se unen los documentos repetidos de un mismo email (se queda con el que tiene profesor_id).
+ */
+export async function obtenerDocentesActivos() {
+    const usuarios = await obtenerUsuariosSistemaFirestore(usuariosCache.length === 0);
+    const porEmail = new Map();
+    usuarios.filter(u => u.activo !== false && u.email).forEach(u => {
+        const prev = porEmail.get(u.email);
+        if (!prev) { porEmail.set(u.email, { ...u }); return; }
+        const roles = [...new Set([...(prev.roles || []), ...(u.roles || [])])];
+        const mejor = (!prev.profesor_id && u.profesor_id) ? { ...u } : prev;
+        porEmail.set(u.email, { ...mejor, roles });
+    });
+    // Docente = rol docente/profesor/evaluador o ficha docente vinculada (profesor_id), como en Admisión
+    return [...porEmail.values()].filter(u => tieneRolDocente(u.roles) || Boolean(u.profesor_id))
+        .map(u => ({ ...u, recibeAvisos: tieneAccesoFestivales(u.roles) }))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+}
+
 export async function consultarAccesoUsuario(email) {
     const emailNorm = (email || '').trim().toLowerCase();
     const esEmergencia = emailNorm === EMAIL_CUENTA_EMERGENCIA;
-    const perfilEmergencia = { id: null, email: emailNorm, nombre: 'Administración', rol: 'admin', roles: ['admin'], activo: true, esEmergencia: true };
+    const perfilEmergencia = { id: null, email: emailNorm, nombre: 'Administración', rol: 'admin', roles: ['admin'], activo: true, esEmergencia: true, esAdmin: true, tieneGestion: true, esPlanificador: false, esDocente: false };
 
     try {
         let usuarios;
@@ -126,9 +161,20 @@ export async function consultarAccesoUsuario(email) {
         const activos = coincidencias.filter(x => x.activo !== false);
         if (activos.length === 0) return { estado: 'inactivo', perfil: coincidencias[0] };
         const roles = [...new Set(activos.flatMap(x => x.roles))];
-        const perfil = { ...activos[0], roles };
-        // Entran los administradores y los Gestores de Festivales (acceso completo) y los sonidistas (acceso reducido)
-        if (tieneAccesoFestivales(roles)) return { estado: 'ok', perfil };
+        // Con duplicados, se prefiere el documento con perfil docente (profesor_id)
+        const base = activos.find(x => x.profesor_id) || activos[0];
+        const perfil = {
+            ...base,
+            roles,
+            esAdmin: roles.map(r => String(r).toLowerCase()).includes('admin') || esEmergencia,
+            tieneGestion: tieneAccesoFestivales(roles) || esEmergencia,
+            esPlanificador: tieneRolPlanificador(roles),
+            esDocente: tieneRolDocente(roles) || Boolean(base.profesor_id)
+        };
+        // Entran los administradores y los Gestores de Festivales (acceso completo), los planificadores de clases
+        // (acceso reducido: eventos en solo lectura y Planificación) y los sonidistas (acceso reducido)
+        if (perfil.tieneGestion) return { estado: 'ok', perfil };
+        if (perfil.esPlanificador) return { estado: 'ok', perfil: { ...perfil, esSoloPlanificador: true } };
         if (tieneRolSonidista(roles)) return { estado: 'ok', perfil: { ...perfil, esSoloSonidista: true } };
         return { estado: 'sin_rol_festivales', perfil };
     } catch (error) {

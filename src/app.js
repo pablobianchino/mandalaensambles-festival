@@ -202,6 +202,14 @@ async function manejarCambioSesion(user) {
         console.log("[Mandala Festivales] No hay sesión activa. Mostrando pantalla de login.");
         detenerListenersTiempoReal();
         limpiarSesionLocal();
+        // Si en esta página había una sesión abierta, se recarga entera: así quien entre después arranca en Eventos,
+        // sin la pantalla, el historial ni los datos en memoria de la persona anterior (por ejemplo, las finanzas
+        // de un admin quedando cargadas para un sonidista o un planificador).
+        if (window.usuarioActual) {
+            window.usuarioActual = null;
+            window.location.reload();
+            return;
+        }
         mostrarPantallaLogin();
         return;
     }
@@ -212,6 +220,7 @@ async function manejarCambioSesion(user) {
     const acceso = await consultarAccesoUsuario(user.email);
     if (acceso.estado !== 'ok') {
         console.warn(`[Mandala Festivales] Acceso denegado a ${user.email}: ${acceso.estado}`);
+        window.usuarioActual = null; // no se recarga: tiene que quedar visible el motivo en la pantalla de login
         await cerrarSesionFirebase();
         mostrarPantallaLogin();
         mostrarErrorLogin(MENSAJES_ACCESO_DENEGADO[acceso.estado] || MENSAJES_ACCESO_DENEGADO.error);

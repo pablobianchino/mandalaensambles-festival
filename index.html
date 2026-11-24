@@ -12,14 +12,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.12">
-    <script src="src/ui/iconos.js?v=v2.12"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.13">
+    <script src="src/ui/iconos.js?v=v2.13"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.12" defer></script>
-    <script src="src/ui/planificacion.js?v=v2.12" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.13" defer></script>
+    <script src="src/ui/planificacion.js?v=v2.13" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -6227,7 +6227,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.12";
+        const APP_VERSION = "v2.13";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {
@@ -11441,17 +11441,11 @@
             lista.forEach((art, artIdx) => {
                 const expandido = estadoExpansionEnsambles[artIdx] !== undefined ? estadoExpansionEnsambles[artIdx] : todosLosEnsamblesExpandidos;
 
-                let alumnos = [];
-                if (art.tipo === 'ensamble') {
-                    alumnos = art.alumnos || [];
-                } else if (art.tipo === 'jam') {
-                    alumnos = art.musicos || [];
-                } else if (art.tipo === 'invitado') {
-                    alumnos = [{ nombre: art.nombre || '', instrumento: art.instrumento || 'Solista / Invitado' }];
-                }
+                // v2.13: los tres tipos (Escuela, Invitado y JAM) muestran y editan sus integrantes
+                const alumnos = integrantesEditables(art);
                 totalMusicosResumen += alumnos.length;
                 const elResumenPart = document.getElementById('resumen-participantes');
-                if (elResumenPart) elResumenPart.textContent = lista.length + ' banda' + (lista.length === 1 ? '' : 's') + ' · ' + lista.reduce((a, x) => a + ((x.tipo === 'jam' ? x.musicos : (x.tipo === 'invitado' ? [1] : x.alumnos)) || []).length, 0) + ' músicos';
+                if (elResumenPart) elResumenPart.textContent = lista.length + ' banda' + (lista.length === 1 ? '' : 's') + ' · ' + lista.reduce((a, x) => a + integrantesEditables(x).length, 0) + ' músicos';
 
                 // 1. FILA DE CABECERA COMPLETA DE BANDA / ENSAMBLE (OPCIÓN B)
                 const cardBanda = document.createElement('div');
@@ -11596,8 +11590,8 @@
 
         function renderizarOpcionesInstrumentosCheckboxesIntegrante(artIdx, intIdx, filtro = '') {
             const lista = participantesFestivalesDB[eventoActualId];
-            if (!lista || !lista[artIdx] || !lista[artIdx].alumnos) return '';
-            const al = lista[artIdx].alumnos[intIdx];
+            if (!lista || !lista[artIdx]) return '';
+            const al = integrantesEditables(lista[artIdx])[intIdx];
             if (!al) return '';
 
             const nombreAlu = typeof al === 'string' ? al : (al.nombre || '');
@@ -11673,9 +11667,9 @@
         function toggleSeleccionInstrumentoIntegrante(artIdx, intIdx, inst, checked, evt) {
             if (evt) evt.stopPropagation();
             const lista = participantesFestivalesDB[eventoActualId];
-            if (!lista || !lista[artIdx] || !lista[artIdx].alumnos) return;
-            const al = lista[artIdx].alumnos[intIdx];
-            if (!al) return;
+            if (!lista || !lista[artIdx]) return;
+            const al = integrantesEditables(lista[artIdx])[intIdx];
+            if (!al || typeof al !== 'object') return;
 
             if (!Array.isArray(al.instrumentos)) {
                 al.instrumentos = al.instrumento ? String(al.instrumento).split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -11824,12 +11818,34 @@
         }
         window.cambiarTipoArtistaEnTabla = cambiarTipoArtistaEnTabla;
 
+        // v2.13: lista de integrantes que se muestra y se edita, la misma para los tres tipos de banda.
+        //  - Escuela e Invitado: `alumnos`. JAM: `musicos` (así la arma el alta de JAM).
+        //  - Antes "＋ Integrante" guardaba siempre en `alumnos`: en Invitados y JAM esos integrantes quedaban ocultos.
+        //    Acá se juntan en la lista que corresponde (no se pierde ninguno) y, si se cambia el tipo de banda, se mueven.
+        //  - Un integrante guardado como texto suelto pasa a ser una ficha { nombre, instrumentos }, para poder editarlo.
+        function integrantesEditables(art) {
+            if (!art) return [];
+            const esJam = art.tipo === 'jam';
+            const destino = esJam ? 'musicos' : 'alumnos';
+            const otra = esJam ? 'alumnos' : 'musicos';
+            if (!Array.isArray(art[destino])) art[destino] = [];
+            if (Array.isArray(art[otra])) {
+                if (art[otra].length) art[destino].push(...art[otra]);
+                delete art[otra]; // sin la lista vacía: otras partes leen `alumnos || musicos`
+            }
+            const lista = art[destino];
+            for (let i = 0; i < lista.length; i++) {
+                if (typeof lista[i] === 'string') lista[i] = { nombre: lista[i], instrumentos: [], instrumento: '' };
+                else if (!lista[i] || typeof lista[i] !== 'object') lista[i] = { nombre: '', instrumentos: [], instrumento: '' };
+            }
+            return lista;
+        }
+
         function agregarIntegranteEnsambleDirecto(artIdx) {
             const lista = participantesFestivalesDB[eventoActualId];
             if (!lista || !lista[artIdx]) return;
             const art = lista[artIdx];
-            if (!art.alumnos) art.alumnos = [];
-            art.alumnos.push({ nombre: '', instrumentos: [], instrumento: '' });
+            integrantesEditables(art).push({ nombre: '', instrumentos: [], instrumento: '' });
             estadoExpansionEnsambles[artIdx] = true;
             renderizarArtistasFestival();
             renderizarRiderTecnicoFestival();
@@ -11840,8 +11856,8 @@
 
         function eliminarIntegranteEnsambleDirecto(artIdx, intIdx) {
             const lista = participantesFestivalesDB[eventoActualId];
-            if (!lista || !lista[artIdx] || !lista[artIdx].alumnos) return;
-            lista[artIdx].alumnos.splice(intIdx, 1);
+            if (!lista || !lista[artIdx]) return;
+            integrantesEditables(lista[artIdx]).splice(intIdx, 1);
             renderizarArtistasFestival();
             renderizarRiderTecnicoFestival();
             if (typeof autoguardarDetalleFestivalFirestore === 'function') {
@@ -12044,9 +12060,9 @@
 
         function cambiarAlumnoIntegranteDirecto(artIdx, intIdx, nombreIngresado) {
             const lista = participantesFestivalesDB[eventoActualId];
-            if (!lista || !lista[artIdx] || !lista[artIdx].alumnos) return;
-            const aluItem = lista[artIdx].alumnos[intIdx];
-            if (!aluItem) return;
+            if (!lista || !lista[artIdx]) return;
+            const aluItem = integrantesEditables(lista[artIdx])[intIdx];
+            if (!aluItem || typeof aluItem !== 'object') return;
 
             const nuevoNombre = (nombreIngresado || '').trim();
             const cambioNombre = (aluItem.nombre || '').toLowerCase() !== nuevoNombre.toLowerCase();
@@ -12247,6 +12263,8 @@
                     nombre: nombre,
                     tel: tel,
                     instrumento: inst || 'Voz / Instrumento',
+                    // v2.13: el artista queda como primer integrante; después se agregan los demás con ＋ Integrante
+                    alumnos: [{ nombre: nombre, instrumentos: inst ? [inst] : [], instrumento: inst || '' }],
                     canciones: ['Set ' + nombre]
                 });
             } else if (tipo === 'jam') {
@@ -12878,8 +12896,18 @@
                     opts += `</optgroup>`;
                 }
             } else if (banda.tipo === 'invitado') {
-                opts += `<optgroup label="Artista Invitado">`;
-                opts += `<option value="${esc(banda.nombre)}" ${valorActual === banda.nombre ? 'selected' : ''}>${esc(banda.nombre)}</option>`;
+                // v2.13: integrantes de la banda invitada que tocan el instrumento de la columna (si no hay, el nombre de la banda)
+                const integ = (Array.isArray(banda.alumnos) ? banda.alumnos : []).filter(m => {
+                    if (!m || typeof m !== 'object') return false;
+                    const instM = Array.isArray(m.instrumentos) && m.instrumentos.length > 0 ? m.instrumentos : (m.instrumento || '');
+                    return m.nombre && instrumentoCoincide(instM, instColumna);
+                });
+                opts += `<optgroup label="Invitados${integ.length ? ' (' + esc(instColumna) + ')' : ''}">`;
+                if (integ.length) {
+                    integ.forEach(m => { opts += `<option value="${esc(m.nombre)}" ${valorActual === m.nombre ? 'selected' : ''}>${esc(m.nombre)}</option>`; });
+                } else {
+                    opts += `<option value="${esc(banda.nombre)}" ${valorActual === banda.nombre ? 'selected' : ''}>${esc(banda.nombre)}</option>`;
+                }
                 opts += `</optgroup>`;
             }
 
@@ -18881,9 +18909,14 @@
         }
         window.idContratoEstable = idContratoEstable;
 
-        // Integrantes de una banda, sin repetir al mismo alumno (aunque toque varios instrumentos)
+        // Integrantes de una banda para los contratos de entradas, sin repetir al mismo alumno (aunque toque varios instrumentos).
+        // v2.13: el cupo de una banda Invitada es de la banda (un solo contrato con su nombre), aunque tenga integrantes
+        // cargados para el rider. En las bandas de la escuela y en la JAM el cupo es por integrante.
         function obtenerIntegrantesBanda(banda) {
             let integrantes = [];
+            if ((banda.tipo || 'ensamble') === 'invitado') {
+                return [banda.nombre || 'Artista Invitado'];
+            }
             if (Array.isArray(banda.alumnos) && banda.alumnos.length > 0) {
                 integrantes = banda.alumnos.map(al => typeof al === 'string' ? al : (al.nombre || '')).filter(Boolean);
             } else if (Array.isArray(banda.musicos) && banda.musicos.length > 0) {

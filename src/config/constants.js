@@ -2,7 +2,7 @@
 // src/config/constants.js — Constantes y Configuración de Firebase Mandala
 // =======================================================================
 
-export const APP_VERSION = "v2.13";
+export const APP_VERSION = "v2.14";
 
 // Clave inicial de las cuentas nuevas (la misma que usa Mandala Admisión). La persona debe cambiarla en su primer ingreso.
 export const CLAVE_INICIAL_DEFECTO = "mandala333";
@@ -19,6 +19,12 @@ export const ROLES_DOCENTE = ["docente", "profesor", "evaluador"];
 // API de Google Calendar (Apps Script compartido con Mandala Admisión)
 export const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx033Es_BuZJk5x0MmyV-u8foA58ENNl1K3Cv-BE6ZeguXCG62UIQl5H4v94EB7MT0/exec";
 export const SCRIPT_API_KEY = "mandala-seg-2026";
+
+// Portal Central (Core): ahí se dan los accesos a cada app (usuarios_sistema.apps_habilitadas) y los roles
+export const URL_PORTAL_CORE = "https://mandalaensambles-core.vercel.app";
+
+// Id de esta app dentro de usuarios_sistema.apps_habilitadas
+export const APP_ID_FESTIVAL = "festival";
 
 // Cuenta de emergencia: siempre puede ingresar (misma regla que en las reglas de Firestore de Admisión)
 export const EMAIL_CUENTA_EMERGENCIA = "productora.mandalahouse@gmail.com";

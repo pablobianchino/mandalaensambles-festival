@@ -12,14 +12,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css?v=v2.13">
-    <script src="src/ui/iconos.js?v=v2.13"></script>
+    <link rel="stylesheet" href="styles.css?v=v2.14">
+    <script src="src/ui/iconos.js?v=v2.14"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Librería SheetJS para lectura nativa de archivos Excel .xlsx en cargas masivas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="src/ui/reporteVentas.js?v=v2.13" defer></script>
-    <script src="src/ui/planificacion.js?v=v2.13" defer></script>
+    <script src="src/ui/reporteVentas.js?v=v2.14" defer></script>
+    <script src="src/ui/planificacion.js?v=v2.14" defer></script>
 
     <!-- Anti-flicker de sesión para recargas y nuevas versiones (idéntico a Mandala Admisión) -->
     <style>
@@ -115,7 +115,20 @@
             <img src="logo.png" alt="Mandala Ensambles" style="width: 64px; height: 64px; object-fit: contain; margin-bottom: 12px;">
             <h2 style="font-size:1.45em; font-weight:800; margin:0 0 2px 0; color:#1f5491; letter-spacing:-0.02em;">Mandala Ensambles</h2>
             <div style="font-size:1em; color:#9a9388; font-weight:700; margin-bottom: 20px;">Festivales & Eventos</div>
-            
+
+            <!-- v2.14: SIN ACCESO (el acceso a cada app se da en el Portal Central). Lo completa mostrarSinAcceso() en src/app.js -->
+            <div id="login-sin-acceso" style="display:none; width:100%;">
+                <div class="aviso-acceso">
+                    <b id="sin-acceso-titulo">No tenés acceso a Festivales</b>
+                    <p id="sin-acceso-texto"></p>
+                    <div class="apps" id="sin-acceso-apps" style="display:none;"></div>
+                </div>
+                <a class="btn-app btn-primary btn-lg sin-acceso-btn" id="sin-acceso-portal" href="https://mandalaensambles-core.vercel.app" target="_blank" rel="noopener noreferrer">Ir al Portal Central</a>
+                <button type="button" class="btn-app btn-secondary btn-lg sin-acceso-btn" onclick="volverAlFormularioLogin()">Cerrar sesión</button>
+                <div class="sin-acceso-pie">Desde el Portal ves todas tus aplicaciones.</div>
+            </div>
+
+            <div id="login-formulario" style="width:100%;">
             <!-- FORMULARIO DE ACCESO CON CORREO Y CONTRASEÑA -->
             <form id="form-login-email" onsubmit="ejecutarLogin(event)" style="width:100%; display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
                 <div style="text-align:left;">
@@ -159,6 +172,7 @@
                 ¿Olvidaste tu contraseña?<br>
                 Contactá al administrador para restablecerla.
             </div>
+            </div><!-- /#login-formulario -->
         </div>
     </div>
 
@@ -6227,7 +6241,7 @@
         // =========================================================
         // CONTROL Y AUTO-REFRESCO DE VERSIÓN (SIN CTRL+F5)
         // =========================================================
-        const APP_VERSION = "v2.13";
+        const APP_VERSION = "v2.14";
         let versionActualizando = false;
 
         async function chequearActualizacionVersion() {

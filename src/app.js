@@ -2,7 +2,7 @@
 // src/app.js — Orquestador Modular de Mandala Festivales
 // =======================================================================
 
-import { APP_VERSION } from "./config/constants.js";
+import { APP_VERSION, URL_PORTAL_CORE, APP_ID_FESTIVAL } from "./config/constants.js";
 import { db, auth } from "./config/firebase.js";
 import { 
     loginConGoogle, 
@@ -182,6 +182,67 @@ function mostrarPantallaLogin() {
     if (btnGoogle) btnGoogle.disabled = false;
 }
 
+// =======================================================================
+// v2.14: PANTALLA "SIN ACCESO" (dentro de la tarjeta del login). Los accesos se dan en el Portal Central (Core).
+// =======================================================================
+const TITULOS_SIN_ACCESO = {
+    sin_acceso_app: 'No tenés acceso a Festivales',
+    inactivo: 'Tu usuario está inactivo',
+    sin_perfil: 'Tu correo no está dado de alta'
+};
+const NOMBRES_APPS = {
+    admision: { nombre: 'Admisión', clase: '' },
+    festival: { nombre: 'Festivales', clase: 'fest' },
+    core: { nombre: 'Portal Central', clase: 'gen' }
+};
+
+function escHtml(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function mostrarSinAcceso(estado, email, apps) {
+    const caja = document.getElementById('login-sin-acceso');
+    const form = document.getElementById('login-formulario');
+    if (!caja || !form) { mostrarErrorLogin(MENSAJES_ACCESO_DENEGADO[estado] || MENSAJES_ACCESO_DENEGADO.error); return; }
+    const correo = escHtml(email || '');
+    document.getElementById('sin-acceso-titulo').textContent = TITULOS_SIN_ACCESO[estado] || TITULOS_SIN_ACCESO.sin_acceso_app;
+    const textos = {
+        sin_acceso_app: `Tu usuario (${correo}) no tiene habilitada esta aplicación. Si la necesitás, pedile acceso al administrador.`,
+        inactivo: `Tu usuario (${correo}) está dado de baja. Si necesitás volver a entrar, pedile acceso al administrador.`,
+        sin_perfil: `Tu correo (${correo}) no está registrado en el sistema Mandala. Pedile acceso al administrador.`
+    };
+    document.getElementById('sin-acceso-texto').innerHTML = textos[estado] || textos.sin_acceso_app;
+    const otras = (Array.isArray(apps) ? apps : []).filter(a => a && a !== APP_ID_FESTIVAL);
+    const elApps = document.getElementById('sin-acceso-apps');
+    if (otras.length) {
+        elApps.innerHTML = '<span class="apps-tit">Tenés acceso a:</span>' + otras.map(a => {
+            const info = NOMBRES_APPS[a] || { nombre: a.charAt(0).toUpperCase() + a.slice(1), clase: 'gen' };
+            return `<span class="app-pill ${info.clase}">${escHtml(info.nombre)}</span>`;
+        }).join('');
+        elApps.style.display = 'flex';
+    } else {
+        elApps.innerHTML = '';
+        elApps.style.display = 'none';
+    }
+    const portal = document.getElementById('sin-acceso-portal');
+    if (portal) portal.href = URL_PORTAL_CORE;
+    const errBox = document.getElementById('login-error-msg');
+    if (errBox) errBox.style.display = 'none';
+    form.style.display = 'none';
+    caja.style.display = 'block';
+}
+
+window.mostrarSinAccesoLogin = mostrarSinAcceso; // solo pantalla (para revisar el diseño desde la consola)
+
+// "Cerrar sesión" de la pantalla sin acceso: la sesión ya se cerró; se vuelve al formulario de ingreso
+window.volverAlFormularioLogin = function () {
+    const caja = document.getElementById('login-sin-acceso');
+    const form = document.getElementById('login-formulario');
+    if (caja) caja.style.display = 'none';
+    if (form) form.style.display = '';
+    cerrarSesionFirebase().catch(() => {});
+};
+
 const MENSAJES_ACCESO_DENEGADO = {
     sin_perfil: 'Tu correo no está dado de alta en el sistema Mandala. Consultá con administración.',
     inactivo: 'Tu usuario se encuentra inactivo. Consultá con administración.',
@@ -223,7 +284,12 @@ async function manejarCambioSesion(user) {
         window.usuarioActual = null; // no se recarga: tiene que quedar visible el motivo en la pantalla de login
         await cerrarSesionFirebase();
         mostrarPantallaLogin();
-        mostrarErrorLogin(MENSAJES_ACCESO_DENEGADO[acceso.estado] || MENSAJES_ACCESO_DENEGADO.error);
+        // v2.14: sin acceso a la app, inactivo o sin alta → pantalla con el diseño de Admisión y el botón al Portal Central
+        if (['sin_acceso_app', 'inactivo', 'sin_perfil'].includes(acceso.estado)) {
+            mostrarSinAcceso(acceso.estado, user.email, acceso.apps || []);
+        } else {
+            mostrarErrorLogin(MENSAJES_ACCESO_DENEGADO[acceso.estado] || MENSAJES_ACCESO_DENEGADO.error);
+        }
         return;
     }
 

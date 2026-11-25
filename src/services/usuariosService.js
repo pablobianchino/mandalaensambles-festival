@@ -4,7 +4,7 @@
 // =======================================================================
 
 import { db, collection, getDocs, doc, updateDoc, query, where } from "../config/firebase.js";
-import { COLLECTIONS, EMAIL_CUENTA_EMERGENCIA, ROL_SONIDISTA, ROL_PLANIFICADOR, ROLES_DOCENTE } from "../config/constants.js";
+import { COLLECTIONS, EMAIL_CUENTA_EMERGENCIA, ROL_SONIDISTA, ROL_PLANIFICADOR, ROLES_DOCENTE, APP_ID_FESTIVAL } from "../config/constants.js";
 
 /**
  * Cache en memoria de usuarios del sistema
@@ -24,6 +24,8 @@ function mapearUsuarioSistema(d) {
         modulos_habilitados: data.modulos_habilitados || [],
         profesor_id: data.profesor_id || '',
         correo_calendario: (data.correo_calendario || '').trim().toLowerCase(),
+        // v2.14: apps habilitadas desde Core (null = ficha vieja, sin el campo)
+        apps_habilitadas: Array.isArray(data.apps_habilitadas) ? data.apps_habilitadas.map(a => String(a || '').toLowerCase().trim()).filter(Boolean) : null,
         avisos_festival_pospuestos: data.avisos_festival_pospuestos || null
     };
 }
@@ -171,6 +173,13 @@ export async function consultarAccesoUsuario(email) {
             esPlanificador: tieneRolPlanificador(roles),
             esDocente: tieneRolDocente(roles) || Boolean(base.profesor_id)
         };
+        // v2.14: acceso por app dado desde Core (apps_habilitadas de las fichas activas). El admin entra siempre.
+        // Si ninguna ficha activa tiene el campo (fichas viejas), se sigue decidiendo solo por los roles.
+        const fichasConApps = activos.filter(x => Array.isArray(x.apps_habilitadas));
+        const apps = [...new Set(fichasConApps.flatMap(x => x.apps_habilitadas))];
+        if (!perfil.esAdmin && fichasConApps.length > 0 && !apps.includes(APP_ID_FESTIVAL)) {
+            return { estado: 'sin_acceso_app', perfil, apps };
+        }
         // Entran los administradores y los Gestores de Festivales (acceso completo), los planificadores de clases
         // (acceso reducido: eventos en solo lectura y Planificación) y los sonidistas (acceso reducido)
         if (perfil.tieneGestion) return { estado: 'ok', perfil };

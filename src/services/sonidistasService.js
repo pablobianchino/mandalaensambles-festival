@@ -12,7 +12,7 @@
 // =======================================================================
 
 import {
-    db, collection, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc,
+    db, collection, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, arrayUnion,
     initializeApp, getAuth, createUserWithEmailAndPassword, signOut
 } from "../config/firebase.js";
 import { COLLECTIONS, ROL_SONIDISTA, CLAVE_INICIAL_DEFECTO, firebaseConfig } from "../config/constants.js";
@@ -109,7 +109,8 @@ export async function altaSonidistaFirestore(datos, esAdmin) {
                 if (!esAdmin) {
                     return { ok: false, motivo: 'requiere_admin', mensaje: 'Ese email ya pertenece a otro usuario de Mandala. Para sumarle el rol de sonidista pedile a un administrador.' };
                 }
-                await updateDoc(doc(db, COLLECTIONS.USUARIOS_SISTEMA, existente.id), { roles: [...roles, ROL_SONIDISTA], fecha_actualizacion: new Date().toISOString() });
+                // v2.14: además del rol, acceso a Festivales en Core (sin borrar las otras apps que tenga)
+                await updateDoc(doc(db, COLLECTIONS.USUARIOS_SISTEMA, existente.id), { roles: [...roles, ROL_SONIDISTA], apps_habilitadas: arrayUnion('festival'), fecha_actualizacion: new Date().toISOString() });
             }
             cuentaExistente = true;
         } else {
@@ -118,6 +119,7 @@ export async function altaSonidistaFirestore(datos, esAdmin) {
                 nombre: `${nombre} ${apellido}`.trim(),
                 rol: ROL_SONIDISTA,
                 roles: [ROL_SONIDISTA],
+                apps_habilitadas: ['festival'], // v2.14: acceso a Festivales en Core
                 activo: true,
                 modulos_habilitados: [],
                 password_modificada: false,

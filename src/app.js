@@ -37,6 +37,7 @@ import { obtenerSonidoEvento, guardarRiderTecnicoEvento, borrarRecDeTodosLosEven
 import { obtenerSonidistasFirestore, guardarDatosSonidistaFirestore, altaSonidistaFirestore, cambiarActivoSonidistaFirestore, quitarSonidistaFirestore } from "./services/sonidistasService.js";
 
 import { idVenueEstable, idHistoricoEstable } from "./utils/ids.js";
+import { usarPaseDeCore } from "./services/pase.js";
 
 console.log(`[Mandala Festivales] Inicializando arquitectura modular (${APP_VERSION})...`);
 
@@ -541,6 +542,11 @@ window.reintentarSincronizacion = function () {
         if (window.notificarSincronizacion) window.notificarSincronizacion('hide');
     });
 };
+
+// v2.16 (etapa 4): si se abrió desde Core con un pase (#pase=…), se entra con ese usuario antes de escuchar la sesión.
+// Reemplaza cualquier sesión anterior de este navegador. Sin pase, o si el canje falla, el arranque sigue igual que antes.
+const resultadoPase = await usarPaseDeCore(auth, APP_ID_FESTIVAL);
+if (resultadoPase.error) console.warn('[Mandala Festivales] Pase de Core:', resultadoPase.error);
 
 // Suscripción al observer de Firebase Auth
 escucharEstadoAutenticacion(manejarCambioSesion);

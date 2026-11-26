@@ -85,7 +85,8 @@ export async function obtenerClasesDelDia(calendarioId, fechaISO) {
         const ini = ev.start && (ev.start.dateTime || ev.start.date) ? new Date(ev.start.dateTime || ev.start.date) : null;
         const fin = ev.end && (ev.end.dateTime || ev.end.date) ? new Date(ev.end.dateTime || ev.end.date) : null;
         return { ev, ini, fin };
-    }).filter(x => x.ev && x.ev.id && x.ini && !isNaN(x.ini) && !esDeTodoElDia(x.ev, x.ini, x.fin))
+    }).filter(x => x.ev && x.ev.id && x.ini && !isNaN(x.ini) && !esDeTodoElDia(x.ev, x.ini, x.fin)
+        && !String(x.ev.summary || '').trim().startsWith('❌'))   // v2.15: clase anulada por una suplencia (Portal Docentes)
       .map(x => ({ id: String(x.ev.id), titulo: String(x.ev.summary || '(sin título)'), inicio: x.ini.toISOString(), fin: x.fin && !isNaN(x.fin) ? x.fin.toISOString() : '' }))
       .sort((p, q) => p.inicio.localeCompare(q.inicio));
 }
